@@ -1,9 +1,5 @@
 import 'package:zones_api_client/src/madhel_aerodromes.g.dart';
 import 'package:zones_api_client/src/models/zone_data.dart';
-import 'package:zones_api_client/src/remote_zones_api_client.dart'
-    show RemoteZonesApiClient;
-import 'package:zones_api_client/zones_api_client.dart'
-    show RemoteZonesApiClient;
 
 /// Data client that provides a bundled, offline snapshot of Argentine
 /// drone-restriction zones, including the full ANAC MADHEL aerodrome catalog.
@@ -17,7 +13,7 @@ class BundledZonesApiClient {
   /// The bundled zones (synchronous).
   List<ZoneData> get zones => _zones;
 
-  /// Async surface mirroring [RemoteZonesApiClient].
+  /// Async surface mirroring `RemoteZonesApiClient`.
   Future<List<ZoneData>> fetchZones() async => _zones;
 
   static const _special = {'special_permit'};

@@ -1,8 +1,6 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:zones_api_client/src/bundled_zones_api_client.dart'
-    show BundledZonesApiClient;
 import 'package:zones_api_client/src/models/zone_data.dart';
 import 'package:zones_api_client/src/zones_feed_client.dart';
 
@@ -22,7 +20,7 @@ class RemoteZonesException implements Exception {
 /// Geometry coordinates are `[longitude, latitude]` per the GeoJSON spec.
 ///
 /// Point this at an official ANAC/AIP-derived GeoJSON export to make the app a
-/// live source of truth; otherwise the app uses [BundledZonesApiClient].
+/// live source of truth; otherwise the app uses `BundledZonesApiClient`.
 class RemoteZonesApiClient implements ZonesFeedClient {
   RemoteZonesApiClient({required this.url, http.Client? httpClient})
       : _httpClient = httpClient ?? http.Client();

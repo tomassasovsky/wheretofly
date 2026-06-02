@@ -5,11 +5,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
 /// Filters and styles map overlays so dense urban areas stay readable.
 abstract final class MapZoneDisplay {
-  static const maxCircles = 120;
+  static const maxCircles = 300;
   static const urbanZoomThreshold = 11.5;
-  static const detailedZoomThreshold = 14.0;
-  static const mediumZoomMinRadiusMeters = 3000;
-  static const wideZoomMinRadiusMeters = 4000;
+  // Below the urban threshold (country/region view) hide only the smallest
+  // footprints so the map stays readable; everything else is drawn.
+  static const wideZoomMinRadiusMeters = 2000;
 
   /// Zones to draw for the current camera. Assessment uses the full dataset.
   static List<FlyZone> visibleZones({
@@ -48,11 +48,10 @@ abstract final class MapZoneDisplay {
     if (highlightIds.contains(zone.id)) return true;
     if (_alwaysDraw(zone)) return true;
 
+    // Only thin out the smallest footprints at country/region zoom; from the
+    // urban threshold up, every zone is drawn (subject to [maxCircles]).
     if (zoom < urbanZoomThreshold) {
       return zone.radiusMeters >= wideZoomMinRadiusMeters;
-    }
-    if (zoom < detailedZoomThreshold) {
-      return zone.radiusMeters >= mediumZoomMinRadiusMeters;
     }
     return true;
   }

@@ -189,6 +189,17 @@ class _MapViewState extends State<MapView> {
     }
   }
 
+  Future<void> _zoomBy(double delta) async {
+    final controller = _controller;
+    if (controller == null || !mounted) return;
+    try {
+      await controller.animateCamera(gmaps.CameraUpdate.zoomBy(delta));
+      await _updateVisibleRegion();
+    } on PlatformException {
+      // Map platform view was disposed during navigation.
+    }
+  }
+
   void _clearSearchBar() {
     context.read<MapSearchCubit>().clearSearch();
     _searchController.clear();
@@ -452,6 +463,8 @@ class _MapViewState extends State<MapView> {
                         onLocate: () => unawaited(
                           context.read<MapSearchCubit>().locateMe(),
                         ),
+                        onZoomIn: () => unawaited(_zoomBy(1)),
+                        onZoomOut: () => unawaited(_zoomBy(-1)),
                       );
                     },
                   ),
@@ -549,11 +562,15 @@ class _MapFabColumn extends StatelessWidget {
     required this.locating,
     required this.onToggleLegend,
     required this.onLocate,
+    required this.onZoomIn,
+    required this.onZoomOut,
   });
 
   final bool locating;
   final VoidCallback onToggleLegend;
   final VoidCallback onLocate;
+  final VoidCallback onZoomIn;
+  final VoidCallback onZoomOut;
 
   @override
   Widget build(BuildContext context) {
@@ -569,6 +586,9 @@ class _MapFabColumn extends StatelessWidget {
           child: const Icon(Icons.layers_outlined),
         ),
         const SizedBox(height: 12),
+        // Zoom controls grouped as a single rounded pill (+ over −).
+        _ZoomControls(onZoomIn: onZoomIn, onZoomOut: onZoomOut),
+        const SizedBox(height: 12),
         FloatingActionButton(
           heroTag: 'locate',
           onPressed: locating ? null : onLocate,
@@ -582,6 +602,42 @@ class _MapFabColumn extends StatelessWidget {
               : const Icon(Icons.my_location),
         ),
       ],
+    );
+  }
+}
+
+class _ZoomControls extends StatelessWidget {
+  const _ZoomControls({required this.onZoomIn, required this.onZoomOut});
+
+  final VoidCallback onZoomIn;
+  final VoidCallback onZoomOut;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      elevation: 3,
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(14),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            onPressed: onZoomIn,
+            icon: const Icon(Icons.add),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: theme.dividerColor.withValues(alpha: 0.4),
+          ),
+          IconButton(
+            onPressed: onZoomOut,
+            icon: const Icon(Icons.remove),
+          ),
+        ],
+      ),
     );
   }
 }
