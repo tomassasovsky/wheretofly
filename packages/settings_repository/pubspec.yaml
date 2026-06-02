@@ -1,0 +1,15 @@
+name: settings_repository
+description: Repository persisting user settings (permission, language, theme).
+version: 1.0.0
+publish_to: "none"
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  storage:
+    path: ../storage
+
+dev_dependencies:
+  test: ^1.25.0
+  very_good_analysis: ^6.0.0

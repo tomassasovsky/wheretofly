@@ -1,0 +1,17 @@
+name: zones_api_client
+description: Data clients (bundled + remote GeoJSON) for Argentine zone data.
+version: 1.0.0
+publish_to: "none"
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  equatable: ^2.0.5
+  http: ^1.2.0
+  latlong2: ^0.9.1
+
+dev_dependencies:
+  mocktail: ^1.0.4
+  test: ^1.25.0
+  very_good_analysis: ^6.0.0

@@ -1,0 +1,15 @@
+name: social_repository
+description: Repository for social feed and profiles.
+version: 1.0.0
+publish_to: "none"
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  social_api_client:
+    path: ../social_api_client
+
+dev_dependencies:
+  test: ^1.25.0
+  very_good_analysis: ^6.0.0

@@ -1,0 +1,75 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:settings_repository/settings_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:storage/storage.dart';
+import 'package:where_to_fly/app/router/app_routes.dart';
+import 'package:where_to_fly/l10n/gen/app_localizations.dart';
+import 'package:where_to_fly/settings/settings_cubit.dart';
+
+void main() {
+  late SettingsCubit settingsCubit;
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    final repository = SettingsRepository(
+      Storage(await SharedPreferences.getInstance()),
+    );
+    settingsCubit = SettingsCubit(repository);
+  });
+
+  Future<void> pumpSettingsPage(WidgetTester tester) async {
+    await tester.pumpWidget(
+      BlocProvider.value(
+        value: settingsCubit,
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: GoRouter(
+            initialLocation: const SettingsRoute().location,
+            routes: $appRoutes,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('shows theme and language controls', (tester) async {
+    await pumpSettingsPage(tester);
+
+    expect(find.text('Settings'), findsOneWidget);
+    expect(find.text('Appearance'), findsOneWidget);
+    expect(find.text('Language'), findsOneWidget);
+    expect(find.text('System default'), findsOneWidget);
+  });
+
+  testWidgets('shows sponsor me button', (tester) async {
+    await pumpSettingsPage(tester);
+
+    expect(find.text('Sponsor me'), findsOneWidget);
+    expect(find.text('Support development on Cafecito.'), findsOneWidget);
+    expect(find.byIcon(Icons.local_cafe_outlined), findsOneWidget);
+  });
+
+  testWidgets('updates theme when segmented button changes', (tester) async {
+    await pumpSettingsPage(tester);
+
+    await tester.tap(find.text('Dark'));
+    await tester.pumpAndSettle();
+
+    expect(settingsCubit.state.themeMode, ThemeMode.dark);
+  });
+
+  testWidgets('updates language when a language tile is tapped',
+      (tester) async {
+    await pumpSettingsPage(tester);
+
+    await tester.tap(find.text('Español'));
+    await tester.pumpAndSettle();
+
+    expect(settingsCubit.state.locale?.languageCode, 'es');
+  });
+}

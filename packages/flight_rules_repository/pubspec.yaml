@@ -1,0 +1,17 @@
+name: flight_rules_repository
+description: Repository exposing drone flight-restriction zones and verdicts.
+version: 1.0.0
+publish_to: "none"
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  equatable: ^2.0.5
+  latlong2: ^0.9.1
+  zones_api_client:
+    path: ../zones_api_client
+
+dev_dependencies:
+  test: ^1.25.0
+  very_good_analysis: ^6.0.0

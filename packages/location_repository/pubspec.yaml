@@ -1,0 +1,16 @@
+name: location_repository
+description: Repository exposing the device location as a domain value.
+version: 1.0.0
+publish_to: "none"
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  latlong2: ^0.9.1
+  location_client:
+    path: ../location_client
+
+dev_dependencies:
+  test: ^1.25.0
+  very_good_analysis: ^6.0.0

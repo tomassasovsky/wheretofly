@@ -1,0 +1,75 @@
+name: where_to_fly
+description: >-
+  Dónde Volar — an app to check where you can and cannot fly a drone in
+  Argentina, based on ANAC regulations (Res. 550/2025 / RAAC 100) and the
+  permissions you hold.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  auth_api_client:
+    path: packages/auth_api_client
+  auth_repository:
+    path: packages/auth_repository
+  backend_zones_api_client:
+    path: packages/backend_zones_api_client
+  bloc: ^8.1.4
+  cupertino_icons: ^1.0.9
+  equatable: ^2.0.5
+  flight_rules_repository:
+    path: packages/flight_rules_repository
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^8.1.6
+  flutter_localizations:
+    sdk: flutter
+  geocoding_api_client:
+    path: packages/geocoding_api_client
+  geocoding_repository:
+    path: packages/geocoding_repository
+  go_router: ^16.3.0
+  go_router_guards: ^2.0.0+2
+  google_maps_flutter: ^2.9.0
+  intl: any
+  latlong2: ^0.9.1
+  location_repository:
+    path: packages/location_repository
+  media_kit: ^1.2.6
+  media_kit_libs_video: ^1.0.7
+  media_kit_video: ^2.0.1
+  messaging_api_client:
+    path: packages/messaging_api_client
+  messaging_repository:
+    path: packages/messaging_repository
+  settings_repository:
+    path: packages/settings_repository
+  social_api_client:
+    path: packages/social_api_client
+  social_repository:
+    path: packages/social_repository
+  storage:
+    path: packages/storage
+  url_launcher: ^6.3.0
+  weather_api_client:
+    path: packages/weather_api_client
+  weather_repository:
+    path: packages/weather_repository
+  zones_api_client:
+    path: packages/zones_api_client
+
+dev_dependencies:
+  bloc_test: ^9.1.7
+  build_runner: ^2.15.0
+  flutter_test:
+    sdk: flutter
+  go_router_builder: ^4.3.0
+  mocktail: ^1.0.4
+  shared_preferences: ^2.3.3
+  very_good_analysis: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true

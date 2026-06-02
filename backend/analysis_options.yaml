@@ -1,0 +1,4 @@
+analyzer:
+  errors:
+    avoid_catching_errors: ignore
+include: package:dart_frog_lint/recommended.yaml
