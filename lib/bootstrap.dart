@@ -11,7 +11,6 @@ import 'package:flutter/widgets.dart';
 import 'package:geocoding_api_client/geocoding_api_client.dart';
 import 'package:geocoding_repository/geocoding_repository.dart';
 import 'package:location_repository/location_repository.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:messaging_api_client/messaging_api_client.dart';
 import 'package:messaging_repository/messaging_repository.dart';
 import 'package:settings_repository/settings_repository.dart';
@@ -22,9 +21,11 @@ import 'package:weather_api_client/weather_api_client.dart';
 import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/app/app.dart';
 import 'package:where_to_fly/config/api_config.dart';
+import 'package:where_to_fly/map/map_initializer.dart';
+import 'package:where_to_fly/map/wind_map_config.dart';
+import 'package:where_to_fly/map/wind_map_html_loader.dart';
 import 'package:where_to_fly/messaging/push/push_registration_service.dart';
 import 'package:where_to_fly/zone_sync/zone_sync_service.dart';
-import 'package:zones_api_client/zones_api_client.dart';
 
 /// Observes all Bloc/Cubit state changes and errors for debugging.
 class AppBlocObserver extends BlocObserver {
@@ -46,7 +47,11 @@ class AppBlocObserver extends BlocObserver {
 /// Wires up the layers (data clients -> repositories) and runs the app.
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
+  await MapInitializer.initializePlatform();
+  if (WindMapConfig.enabled) {
+    unawaited(WindMapHtmlLoader.prewarm());
+  }
+  // MediaKit.ensureInitialized();
 
   FlutterError.onError = (details) {
     log(details.exceptionAsString(), stackTrace: details.stack);
@@ -58,17 +63,6 @@ Future<void> bootstrap() async {
 
   // Data layer.
   final storage = await Storage.getInstance();
-
-  // Optional live zone feeds. Provide any combination with:
-  //   --dart-define=ZONES_FEED_URL=https://.../zones.geojson
-  //   --dart-define=OPENAIP_API_KEY=<your key>
-  //   --dart-define=MADHEL_ENABLED=false   (live MADHEL refresh; on by default)
-  // When set, live feeds overlay the bundled offline snapshot by id. Feeds that
-  // error are ignored; bundled zones always remain as the baseline.
-  const zonesFeedUrl = String.fromEnvironment('ZONES_FEED_URL');
-  const openAipApiKey = String.fromEnvironment('OPENAIP_API_KEY');
-  const madhelEnabled =
-      bool.fromEnvironment('MADHEL_ENABLED', defaultValue: true);
   final apiBaseUri = resolveApiBaseUri();
   if (kDebugMode) {
     log('API base URL: $apiBaseUri');
@@ -116,23 +110,12 @@ Future<void> bootstrap() async {
     backendZonesClient: backendZonesClient,
   );
 
-  ZonesFeedClient? geojsonClient;
-  if (zonesFeedUrl.isNotEmpty) {
-    geojsonClient = RemoteZonesApiClient(url: Uri.parse(zonesFeedUrl));
-  } else if (await authRepository.currentSession() != null) {
-    geojsonClient = backendZonesClient;
-  }
-
   final flightRulesRepository = await FlightRulesRepository.load(
-    geojson: geojsonClient,
-    openaip: openAipApiKey.isEmpty
-        ? null
-        : OpenAipZonesApiClient(apiKey: openAipApiKey),
-    madhel: madhelEnabled ? MadhelZonesApiClient() : null,
+    feed: backendZonesClient,
   );
   const locationRepository = LocationRepository();
   final geocodingRepository = GeocodingRepository(
-    apiClient: GeocodingApiClient(),
+    apiClient: GeocodingApiClient(baseUrl: apiBaseUri),
     storage: storage,
   );
 

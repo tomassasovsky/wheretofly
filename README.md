@@ -9,9 +9,10 @@ your selected permission — and, if not, how to request the right authorization
 
 ## Features
 
-- **Interactive map** (Google Maps via `google_maps_flutter`) showing
-  colour-coded restriction zones across Argentina as native map circles.
-  Requires a Google Maps API key (see *Google Maps setup* below).
+- **Interactive map** ([MapLibre](https://maplibre.org/) via the
+  [`maplibre`](https://pub.dev/packages/maplibre) package) showing
+  colour-coded restriction zones across Argentina. Uses free demo tiles by
+  default; optional MapTiler styles via dart-define (see *Map tiles* below).
 - **Tap-to-check**: tap any point to get a verdict — *Podés volar* /
   *Podés volar con tu permiso* / *No podés volar* — with the specific zones
   involved.
@@ -123,18 +124,35 @@ gen-l10n` (triggered automatically by `flutter pub get` because
 in; if your IDE shows the `app_localizations.dart` import as missing, run
 `flutter pub get` once.
 
-### Google Maps setup
+### Map tiles
 
-The app renders with the Google Maps SDK, which needs an API key with **Maps
-SDK for Android** and **Maps SDK for iOS** enabled in the Google Cloud console.
-The key is already wired into both platforms:
+By default the app loads **CARTO** raster basemaps via [flutter_map](https://pub.dev/packages/flutter_map)
+(no API key): Voyager (light) and Dark Matter (dark), with attribution on the map.
+Zone circles use **meter radius** and scale while you zoom.
 
-- **Android** — `com.google.android.geo.API_KEY` meta-data in
-  `android/app/src/main/AndroidManifest.xml`.
-- **iOS** — `GMSServices.provideAPIKey(...)` in `ios/Runner/AppDelegate.swift`.
+For custom styles (e.g. [MapTiler](https://www.maptiler.com/)), pass URLs at
+build time (never commit API keys):
 
-To swap the key, edit those two values. For production, restrict the key by
-app/bundle id in the Google Cloud console.
+```bash
+flutter run \
+  --dart-define=MAP_STYLE_URL_LIGHT=https://api.maptiler.com/maps/streets-v2/style.json?key=YOUR_KEY \
+  --dart-define=MAP_STYLE_URL_DARK=https://api.maptiler.com/maps/dataviz-dark/style.json?key=YOUR_KEY
+```
+
+Attribution for the active tile provider is shown on the map via
+`SourceAttribution`.
+
+### Wind field (Open-Meteo)
+
+The map is a single **flutter_map** view (zones, tap-to-check, search). Use
+the **wind** FAB (air icon) to show or hide an Open-Meteo **gust overlay**
+(WebView raster on top, same camera). **Does not use your backend** — it needs
+internet to `map-tiles.open-meteo.com`. MapLibre GL JS + weather-map-layer are
+bundled in `assets/wind_map/` (GPL-2.0).
+
+- Hide the toggle: `flutter run --dart-define=WIND_MAP_ENABLED=false`
+- Refresh vendored JS: `./scripts/vendor_wind_map_assets.sh`
+- Capture simulator screenshots: `flutter test integration_test/wind_map_screenshot_test.dart -d <device_id>`
 
 ### Platform permissions (already configured)
 
@@ -145,53 +163,39 @@ app/bundle id in the Google Cloud console.
 
 ### iOS notes
 
-After `flutter pub get`, run `cd ios && pod install`. The Google Maps iOS SDK
-requires a minimum deployment target of iOS 15 — set it in the Xcode project /
-`ios/Podfile` (`platform :ios, '15.0'`) if a build complains.
+After `flutter pub get`, run `cd ios && pod install`. MapLibre requires iOS 15+
+(`platform :ios, '15.0'` in `ios/Podfile`).
 
 ## Zone data
 
-The app aims to be a practical source of truth for Argentine drone zones as of
-its development date. Zones come from up to four sources, merged at startup
-(`FlightRulesRepository.load`) and de-duplicated by id:
+All map zone data is served by the **Dónde Volar backend** (`GET /v1/zones`).
+The backend merges and publishes a single GeoJSON feed from:
 
-1. **ANAC MADHEL aerodrome catalog (default, live)** — on startup the app
-   refreshes the official aerodrome and heliport list from
-   `https://datos.anac.gob.ar/madhel/api/v2/airports/` via
-   `MadhelZonesApiClient`. Disable with `--dart-define=MADHEL_ENABLED=false`.
-   Live results overlay the bundled snapshot by id (`madhel_<trigram>`).
+1. **Bundled baseline** — national parks, prohibited government/defence sites,
+   restricted sites, and critical infrastructure (nuclear plants, major dams).
+2. **ANAC MADHEL** — live aerodrome and heliport catalog from
+   `https://datos.anac.gob.ar/madhel/api/v2/airports/`.
+3. **OpenAIP** — live controlled/restricted airspace for Argentina (when
+   `OPENAIP_API_KEY` is set on the backend).
 
-2. **Bundled offline snapshot (always present)** — `BundledZonesApiClient` ships:
-   the full **712-entry MADHEL aerodrome/heliport snapshot** (regenerate with
-   `dart run packages/zones_api_client/tool/import_madhel.dart`), all **35
-   national parks** (APN), prohibited government/defence sites, restricted
-   sites, and critical infrastructure (nuclear plants, major dams). Parks and
-   infrastructure remain even when live feeds fail.
+The Flutter app loads zones from the backend at startup and caches them locally
+for offline use. If the backend is unreachable and no cache exists yet, the app
+falls back to a bundled emergency snapshot.
 
-3. **Self-hosted GeoJSON feed** — `--dart-define=ZONES_FEED_URL=<url>` loads a
-   GeoJSON `FeatureCollection` via `RemoteZonesApiClient`. A ready-to-host file
-   is included at [`feed/zones.geojson`](feed/zones.geojson) (generated from the
-   bundled snapshot). Host it (e.g. GitHub raw, your CDN) and edit it to update
-   zones without shipping a new app build. Regenerate it from the bundled data
-   with:
-
-   ```bash
-   dart run packages/zones_api_client/tool/export_geojson.dart > feed/zones.geojson
-   ```
-
-4. **OpenAIP airspace feed** — `--dart-define=OPENAIP_API_KEY=<key>` pulls live
-   airspaces for Argentina via `OpenAipZonesApiClient` (free key at
-   openaip.net). Polygonal airspaces are approximated as circles. This adds
-   continuously-updated controlled/restricted airspace; it does **not** cover
-   parks, government or infrastructure, so it complements (not replaces) the
-   bundled baseline.
-
-Run live feeds together, e.g.:
+Refresh the published feed manually:
 
 ```bash
-flutter run \
-  --dart-define=ZONES_FEED_URL=https://raw.githubusercontent.com/<you>/<repo>/main/feed/zones.geojson \
-  --dart-define=OPENAIP_API_KEY=<your-key>
+curl -X POST http://localhost:8080/v1/zones/ingest \
+  -H "Authorization: Bearer <access-token>"
+```
+
+Or schedule it via `POST /v1/cron/zone_ingest` with header
+`x-cron-secret: <JWT_SECRET>`.
+
+Regenerate the static snapshot checked into the repo (optional hosting mirror):
+
+```bash
+dart run packages/zones_api_client/tool/export_geojson.dart > feed/zones.geojson
 ```
 
 Zones are modelled as circles; centres come from MADHEL coordinates and radii

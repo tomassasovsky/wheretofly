@@ -836,6 +836,18 @@ abstract class AppLocalizations {
   /// **'Could not log in. Check your credentials and connection.'**
   String get authLoginFailed;
 
+  /// No description provided for @authContinueWithoutAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue without account'**
+  String get authContinueWithoutAccount;
+
+  /// No description provided for @splashLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your session…'**
+  String get splashLoading;
+
   /// No description provided for @weatherAdvisoryTitle.
   ///
   /// In en, this message translates to:
@@ -853,6 +865,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Advisory only — pilot responsibility under RAAC 100.'**
   String get weatherDisclaimer;
+
+  /// No description provided for @mapLayerZones.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones'**
+  String get mapLayerZones;
+
+  /// No description provided for @mapLayerWind.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind'**
+  String get mapLayerWind;
+
+  /// No description provided for @mapWindOverlayToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show wind gusts'**
+  String get mapWindOverlayToggle;
+
+  /// No description provided for @mapWindLegendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind gusts (10 m)'**
+  String get mapWindLegendTitle;
+
+  /// No description provided for @mapWindLegendUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'m/s'**
+  String get mapWindLegendUnit;
+
+  /// No description provided for @openMeteoAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'© Open-Meteo · DWD ICON'**
+  String get openMeteoAttribution;
+
+  /// No description provided for @mapWindLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind map unavailable. Check your connection and try again.'**
+  String get mapWindLoadFailed;
+
+  /// No description provided for @mapWindErrorOpenOverlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open wind overlay.'**
+  String get mapWindErrorOpenOverlay;
+
+  /// No description provided for @mapWindErrorReachTiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach Open-Meteo wind tiles.'**
+  String get mapWindErrorReachTiles;
+
+  /// No description provided for @mapWindScriptsNotLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind overlay scripts did not load. Try a full app restart.'**
+  String get mapWindScriptsNotLoaded;
+
+  /// No description provided for @mapWindBridgeError.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind map bridge error.'**
+  String get mapWindBridgeError;
+
+  /// No description provided for @mapWindBasemapTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Basemap style timed out. Check your internet connection.'**
+  String get mapWindBasemapTimeout;
+
+  /// No description provided for @mapWindTilesTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind overlay did not load. Open-Meteo tiles need internet.'**
+  String get mapWindTilesTimeout;
+
+  /// No description provided for @mapWindMaplibreMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'MapLibre GL script missing.'**
+  String get mapWindMaplibreMissing;
+
+  /// No description provided for @mapWindOmLayerMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-Meteo weather map layer script missing.'**
+  String get mapWindOmLayerMissing;
+
+  /// No description provided for @mapWindOverlayPartialFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind overlay could not load.'**
+  String get mapWindOverlayPartialFailed;
+
+  /// No description provided for @mapWindMetadataFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-Meteo metadata failed ({statusCode}).'**
+  String mapWindMetadataFailed(int statusCode);
+
+  /// No description provided for @mapWindVariableNotInFeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind data is not available from Open-Meteo for this field.'**
+  String get mapWindVariableNotInFeed;
+
+  /// No description provided for @mapWindTileWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Some wind tiles failed to load.'**
+  String get mapWindTileWarning;
+
+  /// No description provided for @mapWindRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get mapWindRetry;
 
   /// No description provided for @weatherLoading.
   ///
@@ -939,6 +1071,9 @@ abstract class AppLocalizations {
   String get socialFeedLoadFailed;
 
   /// No description provided for @socialFeedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — showing saved posts'**
   String get socialFeedOffline;
 
   /// No description provided for @socialShareFlyCheck.
@@ -1180,6 +1315,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in to see your profile, posts, and saved alerts.'**
   String get profileSignInPrompt;
+
+  /// No description provided for @socialFlyCheckMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing fly-check data.'**
+  String get socialFlyCheckMissing;
+
+  /// No description provided for @socialReelBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'REEL'**
+  String get socialReelBadge;
+
+  /// No description provided for @socialReelRetryVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry video'**
+  String get socialReelRetryVideo;
 }
 
 class _AppLocalizationsDelegate

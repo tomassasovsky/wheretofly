@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 
 /// One shared [Player] for the reels feed — avoids multiple textures in
 /// [PageView] and swaps the active URL when the user scrolls.
@@ -122,7 +123,7 @@ class _ReelVideoBackgroundState extends State<ReelVideoBackground> {
           if (_hasError)
             Center(
               child: IconButton(
-                tooltip: 'Retry video',
+                tooltip: AppLocalizations.of(context).socialReelRetryVideo,
                 icon:
                     const Icon(Icons.refresh, color: Colors.white70, size: 32),
                 onPressed: _retry,

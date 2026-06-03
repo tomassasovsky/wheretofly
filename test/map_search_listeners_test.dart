@@ -9,8 +9,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/map/cubit/map_cubit.dart';
 import 'package:where_to_fly/map/cubit/map_search_cubit.dart';
+import 'package:where_to_fly/map/map_camera_controller.dart';
 import 'package:where_to_fly/map/view/map_search_listeners.dart';
-import 'package:where_to_fly/map/view/widgets/map_google_layer.dart';
 
 class _MockGeocodingRepository extends Mock implements GeocodingRepository {}
 
@@ -21,7 +21,7 @@ void main() {
   late _MockLocationRepository location;
   late TextEditingController searchController;
   late FocusNode searchFocusNode;
-  late MapGoogleLayerController mapController;
+  late MapCameraController mapController;
   late MapSearchCubit searchCubit;
   late MapCubit mapCubit;
 
@@ -34,7 +34,7 @@ void main() {
     location = _MockLocationRepository();
     searchController = TextEditingController();
     searchFocusNode = FocusNode();
-    mapController = MapGoogleLayerController();
+    mapController = MapCameraController();
     searchCubit = MapSearchCubit(
       geocodingRepository: geocoding,
       locationRepository: location,

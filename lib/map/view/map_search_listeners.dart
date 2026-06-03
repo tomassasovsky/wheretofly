@@ -7,7 +7,7 @@ import 'package:location_repository/location_repository.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/map/cubit/map_cubit.dart';
 import 'package:where_to_fly/map/cubit/map_search_cubit.dart';
-import 'package:where_to_fly/map/view/widgets/map_google_layer.dart';
+import 'package:where_to_fly/map/map_camera_controller.dart';
 
 /// Side effects for [MapSearchCubit]: address labels, camera focus, snackbars.
 class MapSearchListeners extends StatelessWidget {
@@ -22,7 +22,7 @@ class MapSearchListeners extends StatelessWidget {
 
   final TextEditingController searchController;
   final FocusNode searchFocusNode;
-  final MapGoogleLayerController mapController;
+  final MapCameraController mapController;
   final ValueChanged<LatLng> onCheckPoint;
   final Widget child;
 

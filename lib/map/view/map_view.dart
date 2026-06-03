@@ -7,16 +7,21 @@ import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/map/cubit/map_cubit.dart';
 import 'package:where_to_fly/map/cubit/map_search_cubit.dart';
 import 'package:where_to_fly/map/cubit/map_weather_cubit.dart';
+import 'package:where_to_fly/map/map_camera_controller.dart';
 import 'package:where_to_fly/map/map_initializer.dart';
 import 'package:where_to_fly/map/map_layout.dart';
+import 'package:where_to_fly/map/map_wind_camera_coordinator.dart';
 import 'package:where_to_fly/map/map_zone_sync.dart';
 import 'package:where_to_fly/map/view/map_search_listeners.dart';
 import 'package:where_to_fly/map/view/widgets/config_bar.dart';
+import 'package:where_to_fly/map/view/widgets/flutter_map_layer.dart';
 import 'package:where_to_fly/map/view/widgets/map_fab_column.dart';
-import 'package:where_to_fly/map/view/widgets/map_google_layer.dart';
 import 'package:where_to_fly/map/view/widgets/map_search_header.dart';
 import 'package:where_to_fly/map/view/widgets/map_zone_detail_overlay.dart';
+import 'package:where_to_fly/map/view/widgets/wind_map_gesture_proxy.dart';
+import 'package:where_to_fly/map/view/widgets/wind_map_web_view.dart';
 import 'package:where_to_fly/map/view/widgets/zone_stale_banner.dart';
+import 'package:where_to_fly/map/wind_map_config.dart';
 import 'package:where_to_fly/settings/settings_cubit.dart';
 import 'package:where_to_fly/zone_sync/zone_sync_service.dart';
 
@@ -29,14 +34,23 @@ class MapView extends StatefulWidget {
 }
 
 class _MapViewState extends State<MapView> {
-  final _mapController = MapGoogleLayerController();
+  final _mapController = MapCameraController();
+  final _windMapController = WindMapController();
+  late final MapWindCameraCoordinator _cameras = MapWindCameraCoordinator(
+    map: _mapController,
+    wind: _windMapController,
+  );
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
   var _showLegend = false;
+  var _showWindOverlay = false;
 
   @override
   void initState() {
     super.initState();
+    if (WindMapConfig.enabled && WindMapConfig.autoOpen) {
+      _showWindOverlay = true;
+    }
     _searchFocusNode.addListener(_onSearchFocusChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -103,7 +117,25 @@ class _MapViewState extends State<MapView> {
   }
 
   Future<void> _zoomBy(double delta) async {
-    await _mapController.zoomBy(delta);
+    if (_showWindOverlay) {
+      await _cameras.zoomBy(delta);
+    } else {
+      await _mapController.zoomBy(delta);
+    }
+  }
+
+  void _syncWindCamera() {
+    if (!_showWindOverlay) return;
+    _cameras.syncWindToMap();
+  }
+
+  void _toggleWindOverlay() {
+    setState(() => _showWindOverlay = !_showWindOverlay);
+    if (_showWindOverlay) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _syncWindCamera();
+      });
+    }
   }
 
   @override
@@ -119,30 +151,51 @@ class _MapViewState extends State<MapView> {
             context,
             settings.themeMode,
           );
-          final isDarkMap = mapBrightness == Brightness.dark;
+          const mapPadding = EdgeInsets.only(
+            top: MapLayout.topOverlayInset,
+            left: 12,
+            bottom: MapLayout.bottomOverlayInset,
+            right: 12,
+          );
+          final camera = _mapController.readCamera();
 
           return Scaffold(
-            backgroundColor:
-                isDarkMap ? MapInitializer.darkPlaceholderColor : null,
+            backgroundColor: MapInitializer.placeholderColorFor(mapBrightness),
             body: BlocBuilder<MapCubit, MapState>(
               builder: (context, state) {
                 final assessment = state.assessment;
+
                 return Stack(
                   children: [
                     Positioned.fill(
-                      child: MapGoogleLayer(
+                      child: FlutterMapLayer(
                         controller: _mapController,
                         brightness: mapBrightness,
                         state: state,
                         onTap: _checkPoint,
-                        padding: const EdgeInsets.only(
-                          top: MapLayout.topOverlayInset,
-                          left: 12,
-                          bottom: MapLayout.bottomOverlayInset,
-                          right: 12,
-                        ),
+                        padding: mapPadding,
+                        onCameraMove: _syncWindCamera,
+                        onCameraIdle: _syncWindCamera,
                       ),
                     ),
+                    if (WindMapConfig.enabled && _showWindOverlay) ...[
+                      Positioned.fill(
+                        child: WindMapWebView(
+                          key: const ValueKey('wind_map_overlay'),
+                          controller: _windMapController,
+                          brightness: mapBrightness,
+                          overlayMode: true,
+                          initialCamera: camera,
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: WindMapGestureProxy(
+                          mapController: _mapController,
+                          onCheckPoint: _checkPoint,
+                          onCameraMove: _syncWindCamera,
+                        ),
+                      ),
+                    ],
                     Positioned(
                       top: 0,
                       left: 0,
@@ -155,6 +208,8 @@ class _MapViewState extends State<MapView> {
                             searchController: _searchController,
                             focusNode: _searchFocusNode,
                             showLegend: _showLegend,
+                            showWindLegend:
+                                WindMapConfig.enabled && _showWindOverlay,
                             onQueryChanged: _onSearchQueryChanged,
                             onSubmitSearch: _submitSearch,
                           ),
@@ -170,6 +225,9 @@ class _MapViewState extends State<MapView> {
                         builder: (context, searchState) {
                           return MapFabColumn(
                             locating: searchState.locating,
+                            showWindOverlay: _showWindOverlay,
+                            windOverlayEnabled: WindMapConfig.enabled,
+                            onToggleWind: _toggleWindOverlay,
                             onToggleLegend: () =>
                                 setState(() => _showLegend = !_showLegend),
                             onLocate: () => unawaited(

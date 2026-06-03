@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flight_rules_repository/flight_rules_repository.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
+import 'package:where_to_fly/map/map_visible_bounds.dart';
 
 /// Filters and styles map overlays so dense urban areas stay readable.
 abstract final class MapZoneDisplay {
@@ -14,7 +14,7 @@ abstract final class MapZoneDisplay {
   /// Zones to draw for the current camera. Assessment uses the full dataset.
   static List<FlyZone> visibleZones({
     required List<FlyZone> zones,
-    required gmaps.LatLngBounds? bounds,
+    required MapVisibleBounds? bounds,
     required double zoom,
     Set<String> highlightIds = const {},
   }) {
@@ -93,11 +93,12 @@ abstract final class MapZoneDisplay {
   }
 
   static double strokeAlpha({required bool isDark, required bool highlighted}) {
-    if (highlighted) return isDark ? 0.95 : 0.85;
-    return isDark ? 0.30 : 0.22;
+    if (highlighted) return isDark ? 0.95 : 0.90;
+    // Light basemap: stronger strokes so rings read on pale land.
+    return isDark ? 0.50 : 0.58;
   }
 
-  static int strokeWidth({required bool highlighted}) => highlighted ? 3 : 1;
+  static int strokeWidth({required bool highlighted}) => highlighted ? 3 : 2;
 
   static int _severity(FlyZone zone) {
     if (zone.permissionsThatAllowFlight.isEmpty) return 100;
@@ -111,9 +112,9 @@ abstract final class MapZoneDisplay {
     };
   }
 
-  static bool _intersectsBounds(FlyZone zone, gmaps.LatLngBounds bounds) {
-    final sw = bounds.southwest;
-    final ne = bounds.northeast;
+  static bool _intersectsBounds(FlyZone zone, MapVisibleBounds bounds) {
+    final sw = bounds.southWest;
+    final ne = bounds.northEast;
     final latMargin = zone.radiusMeters / 111000;
     final lonMargin = zone.radiusMeters /
         (111000 * math.cos(zone.center.latitude * math.pi / 180));

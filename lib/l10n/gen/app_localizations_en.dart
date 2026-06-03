@@ -437,6 +437,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not log in. Check your credentials and connection.';
 
   @override
+  String get authContinueWithoutAccount => 'Continue without account';
+
+  @override
+  String get splashLoading => 'Checking your session…';
+
+  @override
   String get weatherAdvisoryTitle => 'Weather advisory';
 
   @override
@@ -447,6 +453,74 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get weatherDisclaimer =>
       'Advisory only — pilot responsibility under RAAC 100.';
+
+  @override
+  String get mapLayerZones => 'Zones';
+
+  @override
+  String get mapLayerWind => 'Wind';
+
+  @override
+  String get mapWindOverlayToggle => 'Show wind gusts';
+
+  @override
+  String get mapWindLegendTitle => 'Wind gusts (10 m)';
+
+  @override
+  String get mapWindLegendUnit => 'm/s';
+
+  @override
+  String get openMeteoAttribution => '© Open-Meteo · DWD ICON';
+
+  @override
+  String get mapWindLoadFailed =>
+      'Wind map unavailable. Check your connection and try again.';
+
+  @override
+  String get mapWindErrorOpenOverlay => 'Could not open wind overlay.';
+
+  @override
+  String get mapWindErrorReachTiles => 'Could not reach Open-Meteo wind tiles.';
+
+  @override
+  String get mapWindScriptsNotLoaded =>
+      'Wind overlay scripts did not load. Try a full app restart.';
+
+  @override
+  String get mapWindBridgeError => 'Wind map bridge error.';
+
+  @override
+  String get mapWindBasemapTimeout =>
+      'Basemap style timed out. Check your internet connection.';
+
+  @override
+  String get mapWindTilesTimeout =>
+      'Wind overlay did not load. Open-Meteo tiles need internet.';
+
+  @override
+  String get mapWindMaplibreMissing => 'MapLibre GL script missing.';
+
+  @override
+  String get mapWindOmLayerMissing =>
+      'Open-Meteo weather map layer script missing.';
+
+  @override
+  String get mapWindOverlayPartialFailed => 'Wind overlay could not load.';
+
+  @override
+  String mapWindMetadataFailed(int statusCode) {
+    return 'Open-Meteo metadata failed ($statusCode).';
+  }
+
+  @override
+  String get mapWindVariableNotInFeed =>
+      'Wind data is not available from Open-Meteo for this field.';
+
+  @override
+  String get mapWindTileWarning => 'Some wind tiles failed to load.';
+
+  @override
+  String get mapWindRetry => 'Retry';
 
   @override
   String get weatherLoading => 'Loading weather…';
@@ -623,4 +697,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileSignInPrompt =>
       'Sign in to see your profile, posts, and saved alerts.';
+
+  @override
+  String get socialFlyCheckMissing => 'Missing fly-check data.';
+
+  @override
+  String get socialReelBadge => 'REEL';
+
+  @override
+  String get socialReelRetryVideo => 'Retry video';
 }

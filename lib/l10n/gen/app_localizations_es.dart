@@ -437,6 +437,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo iniciar sesión. Revisá tus datos y la conexión.';
 
   @override
+  String get authContinueWithoutAccount => 'Continuar sin cuenta';
+
+  @override
+  String get splashLoading => 'Comprobando tu sesión…';
+
+  @override
   String get weatherAdvisoryTitle => 'Alerta meteorológica';
 
   @override
@@ -447,6 +453,76 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get weatherDisclaimer =>
       'Solo orientativo — responsabilidad del piloto según RAAC 100.';
+
+  @override
+  String get mapLayerZones => 'Zonas';
+
+  @override
+  String get mapLayerWind => 'Viento';
+
+  @override
+  String get mapWindOverlayToggle => 'Mostrar ráfagas de viento';
+
+  @override
+  String get mapWindLegendTitle => 'Ráfagas de viento (10 m)';
+
+  @override
+  String get mapWindLegendUnit => 'm/s';
+
+  @override
+  String get openMeteoAttribution => '© Open-Meteo · DWD ICON';
+
+  @override
+  String get mapWindLoadFailed =>
+      'Mapa de viento no disponible. Revisá tu conexión e intentá de nuevo.';
+
+  @override
+  String get mapWindErrorOpenOverlay => 'No se pudo abrir la capa de viento.';
+
+  @override
+  String get mapWindErrorReachTiles =>
+      'No se pudieron cargar los tiles de viento de Open-Meteo.';
+
+  @override
+  String get mapWindScriptsNotLoaded =>
+      'No se cargaron los scripts del mapa de viento. Probá reiniciar la app.';
+
+  @override
+  String get mapWindBridgeError => 'Error del puente del mapa de viento.';
+
+  @override
+  String get mapWindBasemapTimeout =>
+      'El estilo base expiró. Revisá tu conexión a internet.';
+
+  @override
+  String get mapWindTilesTimeout =>
+      'La capa de viento no cargó. Los tiles de Open-Meteo requieren internet.';
+
+  @override
+  String get mapWindMaplibreMissing => 'Falta el script de MapLibre GL.';
+
+  @override
+  String get mapWindOmLayerMissing =>
+      'Falta el script de capa meteorológica de Open-Meteo.';
+
+  @override
+  String get mapWindOverlayPartialFailed =>
+      'No se pudo cargar la capa de viento.';
+
+  @override
+  String mapWindMetadataFailed(int statusCode) {
+    return 'Falló la metadata de Open-Meteo ($statusCode).';
+  }
+
+  @override
+  String get mapWindVariableNotInFeed =>
+      'Los datos de viento no están disponibles en Open-Meteo para este campo.';
+
+  @override
+  String get mapWindTileWarning => 'Algunos tiles de viento no se cargaron.';
+
+  @override
+  String get mapWindRetry => 'Reintentar';
 
   @override
   String get weatherLoading => 'Cargando clima…';
@@ -499,7 +575,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get socialFeedLoadFailed => 'No se pudo cargar el feed.';
 
   @override
-  String get socialFeedOffline => 'Sin conexión — mostrando publicaciones guardadas';
+  String get socialFeedOffline =>
+      'Sin conexión — mostrando publicaciones guardadas';
 
   @override
   String get socialShareFlyCheck => 'Compartir consulta';
@@ -624,4 +701,13 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get profileSignInPrompt =>
       'Iniciá sesión para ver tu perfil, publicaciones y alertas.';
+
+  @override
+  String get socialFlyCheckMissing => 'Faltan datos de la consulta de vuelo.';
+
+  @override
+  String get socialReelBadge => 'REEL';
+
+  @override
+  String get socialReelRetryVideo => 'Reintentar video';
 }

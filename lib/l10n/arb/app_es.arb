@@ -123,6 +123,8 @@
   "authLogOut": "Cerrar sesión",
   "authLogIn": "Iniciar sesión",
   "authLoginFailed": "No se pudo iniciar sesión. Revisá tus datos y la conexión.",
+  "authContinueWithoutAccount": "Continuar sin cuenta",
+  "splashLoading": "Comprobando tu sesión…",
   "weatherAdvisoryTitle": "Alerta meteorológica",
   "weatherWind": "Viento {speed} m/s · ráfagas {gust} m/s",
   "@weatherWind": {
@@ -133,6 +135,29 @@
     "placeholders": { "version": {} }
   },
   "weatherDisclaimer": "Solo orientativo — responsabilidad del piloto según RAAC 100.",
+  "mapLayerZones": "Zonas",
+  "mapLayerWind": "Viento",
+  "mapWindOverlayToggle": "Mostrar ráfagas de viento",
+  "mapWindLegendTitle": "Ráfagas de viento (10 m)",
+  "mapWindLegendUnit": "m/s",
+  "openMeteoAttribution": "© Open-Meteo · DWD ICON",
+  "mapWindLoadFailed": "Mapa de viento no disponible. Revisá tu conexión e intentá de nuevo.",
+  "mapWindErrorOpenOverlay": "No se pudo abrir la capa de viento.",
+  "mapWindErrorReachTiles": "No se pudieron cargar los tiles de viento de Open-Meteo.",
+  "mapWindScriptsNotLoaded": "No se cargaron los scripts del mapa de viento. Probá reiniciar la app.",
+  "mapWindBridgeError": "Error del puente del mapa de viento.",
+  "mapWindBasemapTimeout": "El estilo base expiró. Revisá tu conexión a internet.",
+  "mapWindTilesTimeout": "La capa de viento no cargó. Los tiles de Open-Meteo requieren internet.",
+  "mapWindMaplibreMissing": "Falta el script de MapLibre GL.",
+  "mapWindOmLayerMissing": "Falta el script de capa meteorológica de Open-Meteo.",
+  "mapWindOverlayPartialFailed": "No se pudo cargar la capa de viento.",
+  "mapWindMetadataFailed": "Falló la metadata de Open-Meteo ({statusCode}).",
+  "@mapWindMetadataFailed": {
+    "placeholders": { "statusCode": { "type": "int" } }
+  },
+  "mapWindVariableNotInFeed": "Los datos de viento no están disponibles en Open-Meteo para este campo.",
+  "mapWindTileWarning": "Algunos tiles de viento no se cargaron.",
+  "mapWindRetry": "Reintentar",
   "weatherLoading": "Cargando clima…",
   "weatherRequiresAuth": "Iniciá sesión para ver el clima en este punto.",
   "weatherFetchFailed": "Clima no disponible. La verificación de zona sigue vigente.",
@@ -189,5 +214,8 @@
   "notificationPrefsComments": "Comentarios en tus publicaciones",
   "notificationPrefsWeather": "Alertas meteorológicas",
   "notificationPrefsLoadFailed": "No se pudieron cargar las preferencias de notificación.",
-  "profileSignInPrompt": "Iniciá sesión para ver tu perfil, publicaciones y alertas."
+  "profileSignInPrompt": "Iniciá sesión para ver tu perfil, publicaciones y alertas.",
+  "socialFlyCheckMissing": "Faltan datos de la consulta de vuelo.",
+  "socialReelBadge": "REEL",
+  "socialReelRetryVideo": "Reintentar video"
 }

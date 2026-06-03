@@ -1,14 +1,15 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 import 'package:latlong2/latlong.dart';
 import 'package:where_to_fly/map/cubit/map_cubit.dart';
+import 'package:where_to_fly/map/map_visible_bounds.dart';
+import 'package:where_to_fly/map/map_zone_circle_style.dart';
 import 'package:where_to_fly/map/map_zone_display.dart';
 import 'package:where_to_fly/theme/app_theme.dart';
 
-/// Builds Google Maps circles and markers from [MapState].
+/// Builds platform-neutral zone circle styles from [MapState].
 abstract final class MapZoneOverlayBuilder {
-  static Set<gmaps.Circle> circles(
+  static List<MapZoneCircleStyle> circles(
     MapState state, {
-    required gmaps.LatLngBounds? visibleBounds,
+    required MapVisibleBounds? visibleBounds,
     required double zoom,
     required bool isDark,
   }) {
@@ -35,28 +36,16 @@ abstract final class MapZoneOverlayBuilder {
         isDark: isDark,
         highlighted: highlighted,
       );
-      return gmaps.Circle(
-        circleId: gmaps.CircleId(zone.id),
-        center: _toGoogle(zone.center),
-        radius: zone.radiusMeters,
+      return MapZoneCircleStyle(
+        id: zone.id,
+        center: zone.center,
+        radiusMeters: zone.radiusMeters,
         fillColor: color.withValues(alpha: fillAlpha),
         strokeColor: color.withValues(alpha: strokeAlpha),
         strokeWidth: MapZoneDisplay.strokeWidth(highlighted: highlighted),
       );
-    }).toSet();
+    }).toList();
   }
 
-  static Set<gmaps.Marker> markers(MapState state) {
-    final point = state.selectedPoint;
-    if (point == null) return const {};
-    return {
-      gmaps.Marker(
-        markerId: const gmaps.MarkerId('selected'),
-        position: _toGoogle(point),
-      ),
-    };
-  }
-
-  static gmaps.LatLng _toGoogle(LatLng point) =>
-      gmaps.LatLng(point.latitude, point.longitude);
+  static LatLng? selectedPoint(MapState state) => state.selectedPoint;
 }

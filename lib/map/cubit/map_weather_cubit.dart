@@ -4,7 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:weather_api_client/weather_api_client.dart';
 import 'package:weather_repository/weather_repository.dart';
 
-enum MapWeatherStatus { idle, loading, loaded, error, requiresAuth }
+enum MapWeatherStatus { idle, loading, loaded, error }
 
 class MapWeatherState extends Equatable {
   const MapWeatherState({
@@ -35,26 +35,15 @@ class MapWeatherState extends Equatable {
   List<Object?> get props => [status, snapshot, errorMessage];
 }
 
-/// Fetches weather for the selected map point when the user is authenticated.
+/// Fetches weather for the selected map point via the backend proxy.
 class MapWeatherCubit extends Cubit<MapWeatherState> {
-  MapWeatherCubit({
-    required WeatherRepository weatherRepository,
-    required Future<bool> Function() isAuthenticated,
-  })  : _weatherRepository = weatherRepository,
-        _isAuthenticated = isAuthenticated,
+  MapWeatherCubit({required WeatherRepository weatherRepository})
+      : _weatherRepository = weatherRepository,
         super(const MapWeatherState());
 
   final WeatherRepository _weatherRepository;
-  final Future<bool> Function() _isAuthenticated;
 
   Future<void> fetchFor(LatLng point) async {
-    if (!await _isAuthenticated()) {
-      emit(
-        const MapWeatherState(status: MapWeatherStatus.requiresAuth),
-      );
-      return;
-    }
-
     emit(
       state.copyWith(
         status: MapWeatherStatus.loading,
@@ -72,10 +61,6 @@ class MapWeatherCubit extends Cubit<MapWeatherState> {
         ),
       );
     } on WeatherApiException catch (e) {
-      if (e.statusCode == 401) {
-        emit(const MapWeatherState(status: MapWeatherStatus.requiresAuth));
-        return;
-      }
       emit(
         MapWeatherState(
           status: MapWeatherStatus.error,

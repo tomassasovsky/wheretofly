@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:auth_repository/auth_repository.dart';
 import 'package:flight_rules_repository/flight_rules_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geocoding_repository/geocoding_repository.dart';
+import 'package:location_repository/location_repository.dart';
 import 'package:settings_repository/settings_repository.dart';
 import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
@@ -29,19 +30,14 @@ class MapPage extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => MapSearchCubit(
-            geocodingRepository: context.read(),
-            locationRepository: context.read(),
+            geocodingRepository: context.read<GeocodingRepository>(),
+            locationRepository: context.read<LocationRepository>(),
           ),
         ),
         BlocProvider(
-          create: (context) {
-            final authRepository = context.read<AuthRepository>();
-            return MapWeatherCubit(
-              weatherRepository: context.read<WeatherRepository>(),
-              isAuthenticated: () async =>
-                  (await authRepository.currentSession()) != null,
-            );
-          },
+          create: (context) => MapWeatherCubit(
+            weatherRepository: context.read<WeatherRepository>(),
+          ),
         ),
       ],
       child: MultiBlocListener(

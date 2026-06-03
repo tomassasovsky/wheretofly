@@ -4,6 +4,7 @@ import 'package:where_to_fly/map/cubit/map_search_cubit.dart';
 import 'package:where_to_fly/map/view/widgets/map_legend.dart';
 import 'package:where_to_fly/map/view/widgets/map_search_bar.dart';
 import 'package:where_to_fly/map/view/widgets/search_results_overlay.dart';
+import 'package:where_to_fly/map/view/widgets/wind_speed_legend.dart';
 
 /// Search bar, results overlay, and optional legend column.
 class MapSearchHeader extends StatelessWidget {
@@ -13,12 +14,14 @@ class MapSearchHeader extends StatelessWidget {
     required this.showLegend,
     required this.onQueryChanged,
     required this.onSubmitSearch,
+    this.showWindLegend = false,
     super.key,
   });
 
   final TextEditingController searchController;
   final FocusNode focusNode;
   final bool showLegend;
+  final bool showWindLegend;
   final ValueChanged<String> onQueryChanged;
   final VoidCallback onSubmitSearch;
 
@@ -51,6 +54,13 @@ class MapSearchHeader extends StatelessWidget {
               const Align(
                 alignment: Alignment.centerRight,
                 child: MapLegend(),
+              ),
+            ],
+            if (showWindLegend) ...[
+              const SizedBox(height: 8),
+              const Align(
+                alignment: Alignment.centerRight,
+                child: WindSpeedLegend(),
               ),
             ],
           ],

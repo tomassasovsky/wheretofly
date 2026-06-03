@@ -266,9 +266,11 @@ class _WeatherSection extends StatelessWidget {
       case MapWeatherStatus.loaded:
         final snapshot = state.snapshot;
         if (snapshot == null) return const SizedBox.shrink();
-        return WeatherAdvisoryCard(snapshot: snapshot, showSaveAlert: true);
-      case MapWeatherStatus.requiresAuth:
-        return _InfoBanner(text: l10n.weatherRequiresAuth);
+        final isAuthenticated = context.read<AuthCubit>().state.isAuthenticated;
+        return WeatherAdvisoryCard(
+          snapshot: snapshot,
+          showSaveAlert: isAuthenticated,
+        );
       case MapWeatherStatus.error:
         return _InfoBanner(
           text: state.errorMessage == 'weather_fetch_failed'
