@@ -1,5 +1,5 @@
 name: geocoding_api_client
-description: Data client for OpenStreetMap Nominatim geocoding (Argentina).
+description: Data client for map geocoding via the Dónde Volar backend.
 version: 1.0.0
 publish_to: "none"
 

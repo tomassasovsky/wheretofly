@@ -152,16 +152,16 @@
       "languageVersion": "3.4"
     },
     {
-      "name": "csslib",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/csslib-1.0.2",
-      "packageUri": "lib/",
-      "languageVersion": "3.1"
-    },
-    {
       "name": "cupertino_icons",
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/cupertino_icons-1.0.9",
       "packageUri": "lib/",
       "languageVersion": "3.9"
+    },
+    {
+      "name": "dart_earcut",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/dart_earcut-1.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
     },
     {
       "name": "dart_style",
@@ -236,16 +236,22 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "flutter_driver",
+      "rootUri": "file:///Users/Tomas/development/flutter/packages/flutter_driver",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
       "name": "flutter_localizations",
       "rootUri": "file:///Users/Tomas/development/flutter/packages/flutter_localizations",
       "packageUri": "lib/",
       "languageVersion": "3.10"
     },
     {
-      "name": "flutter_plugin_android_lifecycle",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.34",
+      "name": "flutter_map",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/flutter_map-7.0.2",
       "packageUri": "lib/",
-      "languageVersion": "3.9"
+      "languageVersion": "3.0"
     },
     {
       "name": "flutter_test",
@@ -264,6 +270,12 @@
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/frontend_server_client-4.0.0",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "fuchsia_remote_debug_protocol",
+      "rootUri": "file:///Users/Tomas/development/flutter/packages/fuchsia_remote_debug_protocol",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
     },
     {
       "name": "geocoding_api_client",
@@ -338,52 +350,10 @@
       "languageVersion": "3.5"
     },
     {
-      "name": "google_maps",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/google_maps-8.2.0",
-      "packageUri": "lib/",
-      "languageVersion": "3.4"
-    },
-    {
-      "name": "google_maps_flutter",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/google_maps_flutter-2.17.1",
-      "packageUri": "lib/",
-      "languageVersion": "3.10"
-    },
-    {
-      "name": "google_maps_flutter_android",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/google_maps_flutter_android-2.19.10",
-      "packageUri": "lib/",
-      "languageVersion": "3.10"
-    },
-    {
-      "name": "google_maps_flutter_ios",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/google_maps_flutter_ios-2.18.3",
-      "packageUri": "lib/",
-      "languageVersion": "3.10"
-    },
-    {
-      "name": "google_maps_flutter_platform_interface",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/google_maps_flutter_platform_interface-2.15.0",
-      "packageUri": "lib/",
-      "languageVersion": "3.9"
-    },
-    {
-      "name": "google_maps_flutter_web",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/google_maps_flutter_web-0.6.2+3",
-      "packageUri": "lib/",
-      "languageVersion": "3.10"
-    },
-    {
       "name": "graphs",
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/graphs-2.3.2",
       "packageUri": "lib/",
       "languageVersion": "3.4"
-    },
-    {
-      "name": "html",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/html-0.15.6",
-      "packageUri": "lib/",
-      "languageVersion": "3.2"
     },
     {
       "name": "http",
@@ -408,6 +378,12 @@
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/image-4.9.1",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "integration_test",
+      "rootUri": "file:///Users/Tomas/development/flutter/packages/integration_test",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
     },
     {
       "name": "intl",
@@ -452,6 +428,12 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "lists",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/lists-1.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "location_client",
       "rootUri": "../packages/location_client",
       "packageUri": "lib/",
@@ -462,6 +444,12 @@
       "rootUri": "../packages/location_repository",
       "packageUri": "lib/",
       "languageVersion": "3.6"
+    },
+    {
+      "name": "logger",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/logger-2.7.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "logging",
@@ -548,6 +536,12 @@
       "languageVersion": "3.5"
     },
     {
+      "name": "mgrs_dart",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/mgrs_dart-2.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "mime",
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/mime-2.0.0",
       "packageUri": "lib/",
@@ -632,6 +626,36 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "pointer_interceptor",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/pointer_interceptor-0.10.1+2",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "pointer_interceptor_ios",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/pointer_interceptor_ios-0.10.1+1",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
+      "name": "pointer_interceptor_platform_interface",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/pointer_interceptor_platform_interface-0.10.0+1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "pointer_interceptor_web",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/pointer_interceptor_web-0.10.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "polylabel",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/polylabel-1.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.13"
+    },
+    {
       "name": "pool",
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/pool-1.5.2",
       "packageUri": "lib/",
@@ -642,6 +666,18 @@
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/posix-6.5.0",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "process",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/process-5.0.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "proj4dart",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/proj4dart-2.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "provider",
@@ -666,12 +702,6 @@
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/safe_local_storage-2.0.3",
       "packageUri": "lib/",
       "languageVersion": "2.16"
-    },
-    {
-      "name": "sanitize_html",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/sanitize_html-2.1.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
     },
     {
       "name": "settings_repository",
@@ -824,6 +854,12 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "sync_http",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/sync_http-0.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "synchronized",
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/synchronized-3.4.1",
       "packageUri": "lib/",
@@ -858,6 +894,12 @@
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/typed_data-1.4.0",
       "packageUri": "lib/",
       "languageVersion": "3.5"
+    },
+    {
+      "name": "unicode",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/unicode-0.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "universal_platform",
@@ -992,16 +1034,52 @@
       "languageVersion": "3.3"
     },
     {
+      "name": "webdriver",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/webdriver-3.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "webkit_inspection_protocol",
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/webkit_inspection_protocol-1.2.1",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
     {
+      "name": "webview_flutter",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/webview_flutter-4.13.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "webview_flutter_android",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/webview_flutter_android-4.12.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.12"
+    },
+    {
+      "name": "webview_flutter_platform_interface",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/webview_flutter_platform_interface-2.15.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
+      "name": "webview_flutter_wkwebview",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.25.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
       "name": "win32",
       "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/win32-6.3.0",
       "packageUri": "lib/",
       "languageVersion": "3.10"
+    },
+    {
+      "name": "wkt_parser",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/wkt_parser-2.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "xdg_directories",

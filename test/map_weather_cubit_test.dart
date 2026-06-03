@@ -16,28 +16,7 @@ void main() {
   });
 
   blocTest<MapWeatherCubit, MapWeatherState>(
-    'requires auth when not signed in',
-    build: () => MapWeatherCubit(
-      weatherRepository: repository,
-      isAuthenticated: () async => false,
-    ),
-    act: (cubit) => cubit.fetchFor(const LatLng(-34.6, -58.4)),
-    expect: () => [
-      isA<MapWeatherState>().having(
-        (s) => s.status,
-        'status',
-        MapWeatherStatus.requiresAuth,
-      ),
-    ],
-    verify: (_) {
-      verifyNever(
-        () => repository.getWeather(any()),
-      );
-    },
-  );
-
-  blocTest<MapWeatherCubit, MapWeatherState>(
-    'loads weather snapshot when authenticated',
+    'loads weather snapshot for guests',
     build: () {
       when(() => repository.getWeather(any())).thenAnswer(
         (_) async => WeatherSnapshot.fromJson({
@@ -52,10 +31,7 @@ void main() {
           },
         }),
       );
-      return MapWeatherCubit(
-        weatherRepository: repository,
-        isAuthenticated: () async => true,
-      );
+      return MapWeatherCubit(weatherRepository: repository);
     },
     act: (cubit) => cubit.fetchFor(const LatLng(-34.6, -58.4)),
     expect: () => [

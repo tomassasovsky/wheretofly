@@ -20,26 +20,12 @@ class _SignUpPageState extends State<SignUpPage> {
   var _navigatedAfterAuth = false;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _leaveIfAlreadyAuthenticated();
-    });
-  }
-
-  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _handleController.dispose();
     _displayNameController.dispose();
     super.dispose();
-  }
-
-  void _leaveIfAlreadyAuthenticated() {
-    if (!mounted || _navigatedAfterAuth) return;
-    if (!context.read<AuthCubit>().state.isAuthenticated) return;
-    _navigateAway();
   }
 
   void _navigateAway() {

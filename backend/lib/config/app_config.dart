@@ -7,7 +7,8 @@ class AppConfig {
     required this.databaseUrl,
     required this.redisUrl,
     required this.jwtSecret,
-    required this.openWeatherApiKey,
+    required this.openAipApiKey,
+    required this.photonBaseUrl,
     required this.minioEndpoint,
     required this.minioAccessKey,
     required this.minioSecretKey,
@@ -28,7 +29,9 @@ class AppConfig {
           'postgresql://dondevolar:dondevolar@localhost:5432/dondevolar',
       redisUrl: Platform.environment['REDIS_URL'] ?? 'redis://localhost:6379',
       jwtSecret: Platform.environment['JWT_SECRET'] ?? 'dev-secret-change-me',
-      openWeatherApiKey: Platform.environment['OPENWEATHER_API_KEY'] ?? '',
+      openAipApiKey: Platform.environment['OPENAIP_API_KEY'] ?? '',
+      photonBaseUrl:
+          Platform.environment['PHOTON_BASE_URL'] ?? 'http://localhost:2322',
       minioEndpoint: Platform.environment['MINIO_ENDPOINT'] ?? 'localhost:9000',
       minioAccessKey: Platform.environment['MINIO_ACCESS_KEY'] ?? 'minioadmin',
       minioSecretKey: Platform.environment['MINIO_SECRET_KEY'] ?? 'minioadmin',
@@ -50,8 +53,11 @@ class AppConfig {
   /// Secret used to sign JWT access tokens.
   final String jwtSecret;
 
-  /// OpenWeather One Call API key (empty uses mock weather).
-  final String openWeatherApiKey;
+  /// OpenAIP airspace API key (empty skips live airspace during zone ingest).
+  final String openAipApiKey;
+
+  /// Base URL for the self-hosted Photon geocoder (no trailing slash).
+  final String photonBaseUrl;
 
   /// MinIO/S3-compatible object storage host.
   final String minioEndpoint;

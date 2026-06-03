@@ -12,6 +12,7 @@ void main() {
     expect(topLevelPaths, isNot(contains('/explore')));
     expect(topLevelPaths, isNot(contains('/messages')));
     expect(topLevelPaths, isNot(contains('/me')));
+    expect(topLevelPaths, contains('/splash'));
     expect(topLevelPaths, contains('/settings'));
     expect(topLevelPaths, contains('/auth/login'));
   });

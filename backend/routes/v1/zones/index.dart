@@ -7,8 +7,6 @@ Future<Response> onRequest(RequestContext context) async {
     return Response(statusCode: 405);
   }
   await ensureContainer();
-  final userId = authenticatedUserId(context);
-  if (userId == null) return unauthorized();
 
   final ifNoneMatch =
       context.request.headers['If-None-Match'] ??

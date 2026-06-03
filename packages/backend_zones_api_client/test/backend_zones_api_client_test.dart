@@ -21,6 +21,47 @@ void main() {
     when(() => storage.write(any(), any())).thenAnswer((_) async {});
   });
 
+  test('fetchZones works without auth token', () async {
+    final geojson = jsonEncode({
+      'type': 'FeatureCollection',
+      'features': [
+        {
+          'type': 'Feature',
+          'properties': {
+            'id': 'zone_1',
+            'name': 'Test',
+            'categoryId': 'restricted',
+            'radiusMeters': 1000,
+            'allowedPermissionIds': ['recreational'],
+            'details': 'x',
+          },
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [-58.4, -34.6],
+          },
+        },
+      ],
+    });
+
+    when(
+      () => httpClient.get(
+        any(),
+        headers: any(named: 'headers'),
+      ),
+    ).thenAnswer(
+      (_) async => http.Response(geojson, 200, headers: {'etag': '"v1"'}),
+    );
+
+    final client = BackendZonesApiClient(
+      baseUrl: Uri.parse('http://localhost:8080'),
+      storage: storage,
+      httpClient: httpClient,
+    );
+
+    final zones = await client.fetchZones();
+    expect(zones, hasLength(1));
+  });
+
   test('fetchZones stores etag and parses features', () async {
     final geojson = jsonEncode({
       'type': 'FeatureCollection',

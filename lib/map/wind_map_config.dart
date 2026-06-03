@@ -6,6 +6,9 @@ abstract final class WindMapConfig {
     defaultValue: true,
   );
 
+  /// Use flutter_map TileLayer instead of the WebView gust overlay (WIP).
+  static const nativeLayer = bool.fromEnvironment('WIND_MAP_NATIVE');
+
   /// QA only: open the map tab directly in wind mode (simulator screenshots).
   static const autoOpen = bool.fromEnvironment('WIND_MAP_AUTO_OPEN');
 

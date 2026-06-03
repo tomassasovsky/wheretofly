@@ -5,10 +5,7 @@
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart",
-      "args": [
-        // "--dart-define=ZONES_FEED_URL=https://raw.githubusercontent.com/aquiles-codes/where-to-fly/main/feed/zones.geojson",
-        "--dart-define=OPENAIP_API_KEY=a8a3fb56bc906a055b53a56810897f8e"
-      ]
+      "args": []
     }
   ]
 }

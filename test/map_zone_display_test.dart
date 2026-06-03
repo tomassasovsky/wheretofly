@@ -1,7 +1,7 @@
 import 'package:flight_rules_repository/flight_rules_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 import 'package:latlong2/latlong.dart';
+import 'package:where_to_fly/map/map_visible_bounds.dart';
 import 'package:where_to_fly/map/map_zone_display.dart';
 
 void main() {
@@ -51,22 +51,24 @@ void main() {
     });
 
     test('filters zones outside visible bounds', () {
+      const bounds = MapVisibleBounds(
+        southWest: LatLng(-34.7, -58.5),
+        northEast: LatLng(-34.55, -58.3),
+      );
       final visible = MapZoneDisplay.visibleZones(
         zones: [smallControlled],
-        bounds: gmaps.LatLngBounds(
-          southwest: const gmaps.LatLng(-34.7, -58.5),
-          northeast: const gmaps.LatLng(-34.55, -58.3),
-        ),
+        bounds: bounds,
         zoom: 14,
       );
       expect(visible, hasLength(1));
 
+      const outsideBounds = MapVisibleBounds(
+        southWest: LatLng(-40, -65),
+        northEast: LatLng(-39, -64),
+      );
       final outside = MapZoneDisplay.visibleZones(
         zones: [smallControlled],
-        bounds: gmaps.LatLngBounds(
-          southwest: const gmaps.LatLng(-40, -65),
-          northeast: const gmaps.LatLng(-39, -64),
-        ),
+        bounds: outsideBounds,
         zoom: 14,
       );
       expect(outside, isEmpty);

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:backend/config/app_config.dart';
 import 'package:backend/db/database.dart';
 import 'package:backend/services/auth_service.dart';
+import 'package:backend/services/geocoding_service.dart';
 import 'package:backend/services/jwt_service.dart';
 import 'package:backend/services/messaging_service.dart';
 import 'package:backend/services/notification_service.dart';
@@ -9,6 +12,7 @@ import 'package:backend/services/weather_alert_service.dart';
 import 'package:backend/services/weather_service.dart';
 import 'package:backend/services/zone_ingest_service.dart';
 import 'package:backend/services/zone_service.dart';
+import 'package:zones_api_client/zones_api_client.dart';
 
 /// Application-wide dependency container.
 class AppContainer {
@@ -19,6 +23,7 @@ class AppContainer {
     required this.authService,
     required this.weatherService,
     required this.weatherAlertService,
+    required this.geocodingService,
     required this.zoneService,
     required this.zoneIngestService,
     required this.postService,
@@ -40,11 +45,14 @@ class AppContainer {
   /// Email/password auth and account lifecycle.
   final AuthService authService;
 
-  /// OpenWeather and SMN weather proxy.
+  /// Open-Meteo and SMN weather proxy.
   final WeatherService weatherService;
 
   /// Saved weather alert subscriptions and worker.
   final WeatherAlertService weatherAlertService;
+
+  /// Self-hosted Photon geocoding proxy for map search.
+  final GeocodingService geocodingService;
 
   /// Zone GeoJSON feed with versioning.
   final ZoneService zoneService;
@@ -78,12 +86,18 @@ class AppContainer {
     await database.runMigrations();
     final jwtService = JwtService(config);
     final authService = AuthService(database: database, config: config);
-    final weatherService = WeatherService(config: config);
+    final weatherService = WeatherService();
+    final geocodingService = GeocodingService(config: config);
     final zoneService = ZoneService(database: database, config: config);
+    final openAip = config.openAipApiKey.isEmpty
+        ? null
+        : OpenAipZonesApiClient(apiKey: config.openAipApiKey);
     final zoneIngestService = ZoneIngestService(
       database: database,
       zoneService: zoneService,
+      openaip: openAip,
     );
+    await _ensureZoneFeedPublished(config, zoneIngestService);
     final notificationService = NotificationService(database: database);
     final weatherAlertService = WeatherAlertService(
       database: database,
@@ -99,6 +113,7 @@ class AppContainer {
       authService: authService,
       weatherService: weatherService,
       weatherAlertService: weatherAlertService,
+      geocodingService: geocodingService,
       zoneService: zoneService,
       zoneIngestService: zoneIngestService,
       postService: postService,
@@ -106,6 +121,15 @@ class AppContainer {
       notificationService: notificationService,
     );
     return _instance!;
+  }
+
+  static Future<void> _ensureZoneFeedPublished(
+    AppConfig config,
+    ZoneIngestService zoneIngestService,
+  ) async {
+    final feedFile = File(config.zoneFeedPath);
+    if (feedFile.existsSync() && feedFile.lengthSync() > 2) return;
+    await zoneIngestService.ingestAndPublish(outputPath: config.zoneFeedPath);
   }
 
   /// Closes the database connection and clears the singleton.

@@ -5,13 +5,13 @@ import 'package:http/http.dart' as http;
 import 'package:storage/storage.dart';
 import 'package:zones_api_client/zones_api_client.dart';
 
-/// Loads zones from the Dónde Volar backend (`GET /v1/zones`) with auth,
-/// ETag caching, and offline fallback to the last cached GeoJSON body.
+/// Loads zones from the Dónde Volar backend (`GET /v1/zones`) with ETag
+/// caching and offline fallback to the last cached GeoJSON body.
 class BackendZonesApiClient implements ZonesFeedClient {
   BackendZonesApiClient({
     required this.baseUrl,
-    required this.accessTokenProvider,
     required this.storage,
+    this.accessTokenProvider,
     http.Client? httpClient,
   }) : _httpClient = httpClient ?? http.Client();
 
@@ -21,7 +21,7 @@ class BackendZonesApiClient implements ZonesFeedClient {
   static const _updatedAtKey = 'zone_feed_updated_at';
 
   final Uri baseUrl;
-  final Future<String?> Function() accessTokenProvider;
+  final Future<String?> Function()? accessTokenProvider;
   final Storage storage;
   final http.Client _httpClient;
 
@@ -38,15 +38,13 @@ class BackendZonesApiClient implements ZonesFeedClient {
 
   @override
   Future<List<ZoneData>> fetchZones() async {
-    final token = await accessTokenProvider();
-    if (token == null) {
-      return _parseCachedBody();
-    }
+    final token =
+        accessTokenProvider == null ? null : await accessTokenProvider!();
 
     final uri = baseUrl.replace(path: '/v1/zones');
     final etag = storage.read(_etagKey);
     final headers = <String, String>{
-      'Authorization': 'Bearer $token',
+      if (token != null) 'Authorization': 'Bearer $token',
       if (etag != null) 'If-None-Match': etag,
     };
 

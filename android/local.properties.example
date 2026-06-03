@@ -1,0 +1,4 @@
+# Copy to local.properties (gitignored).
+#
+# sdk.dir is normally written by Android Studio / Flutter tooling.
+# sdk.dir=/path/to/Android/sdk

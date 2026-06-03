@@ -8,6 +8,8 @@ import 'package:where_to_fly/map/map_initializer.dart';
 import 'package:where_to_fly/map/map_theme.dart';
 import 'package:where_to_fly/map/map_visible_bounds.dart';
 import 'package:where_to_fly/map/map_zone_flutter_map_markers.dart';
+import 'package:where_to_fly/map/wind/open_meteo_wind_tile_provider.dart';
+import 'package:where_to_fly/map/wind_map_config.dart';
 
 /// Full-screen [FlutterMap] with zone overlays and camera tracking.
 class FlutterMapLayer extends StatefulWidget {
@@ -19,6 +21,7 @@ class FlutterMapLayer extends StatefulWidget {
     required this.padding,
     this.onCameraIdle,
     this.onCameraMove,
+    this.showWindLayer = false,
     super.key,
   });
 
@@ -30,6 +33,9 @@ class FlutterMapLayer extends StatefulWidget {
   final VoidCallback? onCameraIdle;
   final VoidCallback? onCameraMove;
 
+  /// When true and [WindMapConfig.nativeLayer], draws gust tiles on the map.
+  final bool showWindLayer;
+
   @override
   State<FlutterMapLayer> createState() => _FlutterMapLayerState();
 }
@@ -40,6 +46,8 @@ class _FlutterMapLayerState extends State<FlutterMapLayer>
   var _zoom = MapInitializer.initialZoom;
   MapVisibleBounds? _visibleBounds;
   var _tileUrlTemplate = '';
+  late final OpenMeteoWindTileProvider _windTileProvider =
+      OpenMeteoWindTileProvider();
 
   @override
   void initState() {
@@ -103,6 +111,12 @@ class _FlutterMapLayerState extends State<FlutterMapLayer>
             subdomains: MapConfig.cartoSubdomains,
             userAgentPackageName: MapConfig.tileUserAgentPackageName,
           ),
+          if (widget.showWindLayer && WindMapConfig.nativeLayer)
+            TileLayer(
+              tileProvider: _windTileProvider,
+              maxZoom: 12,
+              tileDisplay: const TileDisplay.instantaneous(opacity: 0.85),
+            ),
           CircleLayer(
             circles: MapZoneFlutterMapMarkers.build(
               state: widget.state,

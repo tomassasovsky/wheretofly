@@ -174,11 +174,14 @@ class _MapViewState extends State<MapView> {
                         state: state,
                         onTap: _checkPoint,
                         padding: mapPadding,
+                        showWindLayer: _showWindOverlay,
                         onCameraMove: _syncWindCamera,
                         onCameraIdle: _syncWindCamera,
                       ),
                     ),
-                    if (WindMapConfig.enabled && _showWindOverlay) ...[
+                    if (WindMapConfig.enabled &&
+                        _showWindOverlay &&
+                        !WindMapConfig.nativeLayer) ...[
                       Positioned.fill(
                         child: WindMapWebView(
                           key: const ValueKey('wind_map_overlay'),

@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/app/view/app_shell.dart';
 
-const _returnToQueryKey = 'returnTo';
+/// Query parameter used when redirecting unauthenticated users to login.
+const returnToQueryKey = 'returnTo';
 
 const _shellTabPaths = {
   '/feed',
@@ -37,11 +38,11 @@ String loginReturnDestination(BuildContext context) {
 void openLogin(BuildContext context) {
   final router = GoRouter.of(context);
   final currentPath = router.state.uri.path;
-  final returnTo = router.state.uri.queryParameters[_returnToQueryKey] ??
+  final returnTo = router.state.uri.queryParameters[returnToQueryKey] ??
       loginReturnDestination(context);
   final loginLocation = Uri(
     path: '/auth/login',
-    queryParameters: {_returnToQueryKey: returnTo},
+    queryParameters: {returnToQueryKey: returnTo},
   ).toString();
 
   if (currentPath.startsWith('/auth/')) {
@@ -54,23 +55,27 @@ void openLogin(BuildContext context) {
 /// Opens sign-up, preserving any login returnTo query parameter.
 void openSignUp(BuildContext context) {
   final router = GoRouter.of(context);
-  final returnTo = router.state.uri.queryParameters[_returnToQueryKey];
+  final returnTo = router.state.uri.queryParameters[returnToQueryKey];
   final from = returnTo ?? loginReturnDestination(context);
   router.pushReplacement(
     Uri(
       path: '/auth/signup',
-      queryParameters: {_returnToQueryKey: from},
+      queryParameters: {returnToQueryKey: from},
     ).toString(),
   );
 }
 
-String authReturnDestination(GoRouter router) {
-  final returnTo = router.state.uri.queryParameters[_returnToQueryKey];
+/// Resolves where to send an already-authenticated user leaving auth screens.
+String resolveAuthReturnPath(Uri uri) {
+  final returnTo = uri.queryParameters[returnToQueryKey];
   if (returnTo != null && _shellTabPaths.contains(returnTo)) {
     return returnTo;
   }
   return const MapTabRoute().location;
 }
+
+String authReturnDestination(GoRouter router) =>
+    resolveAuthReturnPath(router.state.uri);
 
 /// Navigates away from auth screens after a successful sign-in or sign-up.
 ///
