@@ -2,6 +2,7 @@ import 'package:flight_rules_repository/flight_rules_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_router_guards/go_router_guards.dart';
+import 'package:where_to_fly/app/router/root_navigator_key.dart';
 import 'package:where_to_fly/app/view/app_shell.dart';
 import 'package:where_to_fly/auth/view/login_page.dart';
 import 'package:where_to_fly/auth/view/signup_page.dart';
@@ -115,6 +116,8 @@ class MeTabRoute extends GoRouteData with $MeTabRoute, GuardedRoute {
 class SettingsRoute extends GoRouteData with $SettingsRoute, GuardedRoute {
   const SettingsRoute();
 
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const SettingsPage();
@@ -127,6 +130,8 @@ class SettingsRoute extends GoRouteData with $SettingsRoute, GuardedRoute {
 )
 class ResourcesRoute extends GoRouteData with $ResourcesRoute, GuardedRoute {
   const ResourcesRoute({this.highlight});
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
   final String? highlight;
 
@@ -146,6 +151,8 @@ class ResourcesRoute extends GoRouteData with $ResourcesRoute, GuardedRoute {
 class LoginRoute extends GoRouteData with $LoginRoute, GuardedRoute {
   const LoginRoute();
 
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const LoginPage();
@@ -159,6 +166,8 @@ class LoginRoute extends GoRouteData with $LoginRoute, GuardedRoute {
 class SignUpRoute extends GoRouteData with $SignUpRoute, GuardedRoute {
   const SignUpRoute();
 
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const SignUpPage();
@@ -171,6 +180,8 @@ class SignUpRoute extends GoRouteData with $SignUpRoute, GuardedRoute {
 )
 class ProfileRoute extends GoRouteData with $ProfileRoute, GuardedRoute {
   const ProfileRoute({required this.handle});
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
   final String handle;
 
@@ -186,6 +197,8 @@ class ProfileRoute extends GoRouteData with $ProfileRoute, GuardedRoute {
 )
 class ThreadRoute extends GoRouteData with $ThreadRoute, GuardedRoute {
   const ThreadRoute({required this.threadId, this.$extra});
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
   final String threadId;
   final String? $extra;
@@ -205,6 +218,8 @@ class ThreadRoute extends GoRouteData with $ThreadRoute, GuardedRoute {
 )
 class CreatePostRoute extends GoRouteData with $CreatePostRoute, GuardedRoute {
   const CreatePostRoute({this.$extra});
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
   final CreatePostDraft? $extra;
 
@@ -226,6 +241,8 @@ class CreatePostRoute extends GoRouteData with $CreatePostRoute, GuardedRoute {
 )
 class PostRoute extends GoRouteData with $PostRoute, GuardedRoute {
   const PostRoute({required this.postId});
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
   final String postId;
 
