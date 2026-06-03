@@ -1,0 +1,117 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:location_repository/location_repository.dart';
+import 'package:where_to_fly/l10n/gen/app_localizations.dart';
+import 'package:where_to_fly/map/cubit/map_cubit.dart';
+import 'package:where_to_fly/map/cubit/map_search_cubit.dart';
+import 'package:where_to_fly/map/view/widgets/map_google_layer.dart';
+
+/// Side effects for [MapSearchCubit]: address labels, camera focus, snackbars.
+class MapSearchListeners extends StatelessWidget {
+  const MapSearchListeners({
+    required this.searchController,
+    required this.searchFocusNode,
+    required this.mapController,
+    required this.onCheckPoint,
+    required this.child,
+    super.key,
+  });
+
+  final TextEditingController searchController;
+  final FocusNode searchFocusNode;
+  final MapGoogleLayerController mapController;
+  final ValueChanged<LatLng> onCheckPoint;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<MapSearchCubit, MapSearchState>(
+          listenWhen: (prev, next) =>
+              prev.resolvedAddressLabel != next.resolvedAddressLabel,
+          listener: (context, state) {
+            final label = state.resolvedAddressLabel;
+            if (label == null) return;
+            searchController.text = label;
+            context.read<MapSearchCubit>().clearResolvedLabel();
+          },
+        ),
+        BlocListener<MapSearchCubit, MapSearchState>(
+          listenWhen: (prev, next) => prev.focusPoint != next.focusPoint,
+          listener: (context, state) async {
+            final point = state.focusPoint;
+            if (point == null) return;
+            final searchCubit = context.read<MapSearchCubit>();
+            final zoom = searchCubit.state.outsideArgentina ? 5.0 : 12.0;
+            final resolve = state.resolvedAddressLabel == null;
+            await _goToPoint(
+              context,
+              point,
+              resolveAddress: resolve,
+              zoom: zoom,
+            );
+            searchCubit.clearFocusPoint();
+          },
+        ),
+        BlocListener<MapSearchCubit, MapSearchState>(
+          listenWhen: (prev, next) =>
+              prev.locationFailure != next.locationFailure ||
+              prev.outsideArgentina != next.outsideArgentina,
+          listener: (context, state) {
+            final messenger = ScaffoldMessenger.of(context);
+            if (state.locationFailure != null) {
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _locationErrorMessage(l10n, state.locationFailure!),
+                  ),
+                ),
+              );
+            } else if (state.outsideArgentina) {
+              messenger.showSnackBar(
+                SnackBar(content: Text(l10n.outsideArgentina)),
+              );
+            }
+            context.read<MapSearchCubit>().clearLocationMessages();
+          },
+        ),
+      ],
+      child: child,
+    );
+  }
+
+  Future<void> _goToPoint(
+    BuildContext context,
+    LatLng point, {
+    required bool resolveAddress,
+    required double zoom,
+  }) async {
+    if (resolveAddress) {
+      onCheckPoint(point);
+    } else {
+      context.read<MapSearchCubit>().dismissResults();
+      searchFocusNode.unfocus();
+      context.read<MapCubit>().checkPoint(point);
+    }
+    await mapController.moveTo(point, zoom: zoom);
+  }
+
+  static String _locationErrorMessage(
+    AppLocalizations l10n,
+    LocationFailure reason,
+  ) {
+    return switch (reason) {
+      LocationFailure.serviceDisabled => l10n.locationServiceDisabled,
+      LocationFailure.permissionDenied => l10n.locationPermissionDenied,
+      LocationFailure.permissionDeniedForever =>
+        l10n.locationPermissionDeniedForever,
+      LocationFailure.unavailable => l10n.locationUnavailable,
+    };
+  }
+}
