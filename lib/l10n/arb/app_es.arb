@@ -149,6 +149,7 @@
   "socialFeedEmpty": "Todavía no hay reels. Seguí pilotos para ver sus fotos y videos de consultas de vuelo.",
   "socialCreatePostMediaHint": "Se adjuntará una imagen de tu consulta de vuelo al publicar.",
   "socialFeedLoadFailed": "No se pudo cargar el feed.",
+  "socialFeedOffline": "Sin conexión — mostrando publicaciones guardadas",
   "socialShareFlyCheck": "Compartir consulta",
   "socialCreatePostTitle": "Compartir consulta",
   "socialCreatePostHint": "Agregá un comentario para tus seguidores (opcional).",

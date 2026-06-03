@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 /// Social posts, comments, follows, and flight logs.
 class PostService {
+  /// Creates a post service with optional test [uuid].
   PostService({required Database database, Uuid? uuid})
     : _db = database,
       _uuid = uuid ?? const Uuid();
@@ -15,6 +16,7 @@ class PostService {
   final Database _db;
   final Uuid _uuid;
 
+  /// Creates a media post with optional location and fly-check snapshot.
   Future<Map<String, dynamic>> createPost({
     required String authorId,
     required String caption,
@@ -92,6 +94,7 @@ class PostService {
     return (await getPost(postId)) ?? {'id': postId};
   }
 
+  /// Loads a single post by id, including attached media.
   Future<Map<String, dynamic>?> getPost(String postId) async {
     final result = await _db.connection.execute(
       Sql.named('''
@@ -116,6 +119,7 @@ class PostService {
           )
   ''';
 
+  /// Returns media posts from pilots [userId] follows, newest first.
   Future<List<Map<String, dynamic>>> getFeed({
     required String userId,
     String? cursor,
@@ -164,6 +168,7 @@ class PostService {
     return posts;
   }
 
+  /// Returns media posts authored by @handle, newest first.
   Future<List<Map<String, dynamic>>> getPostsByHandle({
     required String handle,
     String? cursor,
@@ -214,6 +219,7 @@ class PostService {
     return posts;
   }
 
+  /// Lists comments on [postId] in chronological order.
   Future<List<Map<String, dynamic>>> getComments(String postId) async {
     final result = await _db.connection.execute(
       Sql.named('''
@@ -242,6 +248,7 @@ class PostService {
         .toList();
   }
 
+  /// Follows [targetId] or creates a pending request when approval is required.
   Future<void> follow({
     required String followerId,
     required String targetId,
@@ -280,6 +287,7 @@ class PostService {
     );
   }
 
+  /// Accepts or declines a pending follow request for [targetId].
   Future<void> respondFollowRequest({
     required String targetId,
     required String requestId,
@@ -317,6 +325,7 @@ class PostService {
     }
   }
 
+  /// Adds a comment to [postId] and returns the created payload.
   Future<Map<String, dynamic>> addComment({
     required String postId,
     required String authorId,
@@ -356,6 +365,7 @@ class PostService {
     };
   }
 
+  /// Persists a flight log entry with verdict and optional weather data.
   Future<Map<String, dynamic>> createFlightLog({
     required String userId,
     required double lat,
@@ -391,6 +401,7 @@ class PostService {
     return {'id': id};
   }
 
+  /// Records a moderation report against a post, comment, or user.
   Future<void> reportContent({
     required String reporterId,
     required String targetType,
@@ -473,8 +484,14 @@ class PostService {
   }
 }
 
+/// Thrown when social/post operations fail with an HTTP status.
 class PostServiceException implements Exception {
+  /// Creates a post service error with [message] and [statusCode].
   PostServiceException(this.message, this.statusCode);
+
+  /// Human-readable error returned to the client.
   final String message;
+
+  /// Suggested HTTP status for API responses.
   final int statusCode;
 }

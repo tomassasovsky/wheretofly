@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 /// Device token registration and notification dispatch (FCM stub for v1).
 class NotificationService {
+  /// Creates a notification service with optional test [uuid].
   NotificationService({required Database database, Uuid? uuid})
     : _db = database,
       _uuid = uuid ?? const Uuid();
@@ -12,6 +13,7 @@ class NotificationService {
   final Database _db;
   final Uuid _uuid;
 
+  /// Stores or updates a push [token] for [userId] on [platform].
   Future<void> registerDeviceToken({
     required String userId,
     required String token,
@@ -47,6 +49,7 @@ class NotificationService {
     );
   }
 
+  /// Removes a registered device [token] for [userId].
   Future<void> unregisterDeviceToken({
     required String userId,
     required String token,
@@ -60,6 +63,7 @@ class NotificationService {
     );
   }
 
+  /// Returns all registered push tokens for [userId].
   Future<List<String>> tokensForUser(String userId) async {
     final result = await _db.connection.execute(
       Sql.named('SELECT token FROM device_tokens WHERE user_id = @userId'),
@@ -103,6 +107,7 @@ class NotificationService {
     print('Push [$category] to ${tokens.length} device(s): $title — $body');
   }
 
+  /// Reads notification category toggles for [userId].
   Future<Map<String, bool>> getNotificationPreferences(String userId) async {
     final result = await _db.connection.execute(
       Sql.named('''
@@ -129,6 +134,7 @@ class NotificationService {
     };
   }
 
+  /// Updates one or more notification toggles and returns the new state.
   Future<Map<String, bool>> updateNotificationPreferences({
     required String userId,
     bool? follows,
@@ -158,8 +164,14 @@ class NotificationService {
   }
 }
 
+/// Thrown when notification operations fail with an HTTP status.
 class NotificationException implements Exception {
+  /// Creates a notification error with [message] and [statusCode].
   NotificationException(this.message, this.statusCode);
+
+  /// Human-readable error returned to the client.
   final String message;
+
+  /// Suggested HTTP status for API responses.
   final int statusCode;
 }

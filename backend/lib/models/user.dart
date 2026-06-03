@@ -2,6 +2,7 @@ import 'package:postgres/postgres.dart';
 
 /// Authenticated user profile returned by the API.
 class UserProfile {
+  /// Creates a profile from explicit field values.
   const UserProfile({
     required this.id,
     required this.email,
@@ -14,6 +15,7 @@ class UserProfile {
     required this.createdAt,
   });
 
+  /// Maps a `users` table row to a [UserProfile].
   factory UserProfile.fromRow(ResultRow row) {
     return UserProfile(
       id: row[0]! as String,
@@ -28,16 +30,34 @@ class UserProfile {
     );
   }
 
+  /// Primary key UUID.
   final String id;
+
+  /// Login email address.
   final String email;
+
+  /// Unique @handle slug.
   final String handle;
+
+  /// Display name shown in the UI.
   final String displayName;
+
+  /// Profile biography text.
   final String bio;
+
+  /// Avatar image URL, if set.
   final String? avatarUrl;
+
+  /// Whether the user has verified their email.
   final bool emailVerified;
+
+  /// Follow policy: `open` or `approval`.
   final String followMode;
+
+  /// Account creation timestamp.
   final DateTime createdAt;
 
+  /// JSON safe for public profile endpoints.
   Map<String, dynamic> toPublicJson({bool includeEmail = false}) {
     return {
       'id': id,

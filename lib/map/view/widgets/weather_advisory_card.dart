@@ -51,13 +51,19 @@ class WeatherAdvisoryCard extends StatelessWidget {
           ),
           if (wind != null) ...[
             const SizedBox(height: 4),
-            Text(l10n.weatherWind(
-                wind.toStringAsFixed(1), gust?.toStringAsFixed(1) ?? '—',),),
+            Text(
+              l10n.weatherWind(
+                wind.toStringAsFixed(1),
+                gust?.toStringAsFixed(1) ?? '—',
+              ),
+            ),
           ],
           if (snapshot.advisoryReasons.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text(snapshot.advisoryReasons.first,
-                style: theme.textTheme.bodySmall,),
+            Text(
+              snapshot.advisoryReasons.first,
+              style: theme.textTheme.bodySmall,
+            ),
           ],
           const SizedBox(height: 4),
           Text(l10n.weatherDisclaimer, style: theme.textTheme.labelSmall),
@@ -76,8 +82,9 @@ class WeatherAdvisoryCard extends StatelessWidget {
 
   Future<void> _saveAlert(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
-    final defaultLabel =
-        '${snapshot.lat.toStringAsFixed(3)}, ${snapshot.lon.toStringAsFixed(3)}';
+    final lat = snapshot.lat.toStringAsFixed(3);
+    final lon = snapshot.lon.toStringAsFixed(3);
+    final defaultLabel = '$lat, $lon';
     final label = await showDialog<String>(
       context: context,
       builder: (context) => _WeatherAlertLabelDialog(

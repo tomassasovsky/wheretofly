@@ -5,10 +5,12 @@ import 'package:postgres/postgres.dart';
 
 /// PostgreSQL access and migration runner.
 class Database {
+  /// Wraps an open [Connection].
   Database(this._connection);
 
   final Connection _connection;
 
+  /// Opens a Postgres connection using the configured database URL.
   static Future<Database> connect(AppConfig config) async {
     final uri = Uri.parse(config.databaseUrl);
     final connection = await Connection.open(
@@ -28,8 +30,10 @@ class Database {
     return Database(connection);
   }
 
+  /// Underlying postgres driver connection for raw SQL.
   Connection get connection => _connection;
 
+  /// Applies bundled SQL migrations when the migration file is found.
   Future<void> runMigrations() async {
     const relativePath = 'lib/db/migrations/001_initial.sql';
     final migrationFile = _findMigrationFile(relativePath);
@@ -63,5 +67,6 @@ class Database {
     return null;
   }
 
+  /// Closes the Postgres connection.
   Future<void> close() => _connection.close();
 }

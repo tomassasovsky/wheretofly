@@ -6,6 +6,7 @@ import 'package:postgres/postgres.dart';
 
 /// Serves the zone GeoJSON feed with versioning metadata.
 class ZoneService {
+  /// Creates a zone feed service bound to [database] and [config].
   ZoneService({required Database database, required AppConfig config})
     : _db = database,
       _config = config;
@@ -13,6 +14,7 @@ class ZoneService {
   final Database _db;
   final AppConfig _config;
 
+  /// Returns the zone feed or a 304-style not-modified response.
   Future<ZoneFeedResponse> getFeed({String? ifNoneMatch}) async {
     final meta = await _db.connection.execute(
       'SELECT version, updated_at FROM zone_feed_meta WHERE id = 1',
@@ -39,6 +41,7 @@ class ZoneService {
     );
   }
 
+  /// Persists a new feed [version] after ingest or manual publish.
   Future<void> updateFeedVersion(String version) async {
     await _db.connection.execute(
       Sql.named('''
@@ -51,7 +54,9 @@ class ZoneService {
   }
 }
 
+/// Result of a zone feed read, including conditional GET metadata.
 class ZoneFeedResponse {
+  /// Creates a full feed response with GeoJSON body.
   const ZoneFeedResponse({
     required this.etag,
     required this.version,
@@ -60,6 +65,7 @@ class ZoneFeedResponse {
     required this.notModified,
   });
 
+  /// Builds a not-modified response when ETags match.
   factory ZoneFeedResponse.notModified({
     required String etag,
     required String version,
@@ -73,6 +79,7 @@ class ZoneFeedResponse {
     );
   }
 
+  /// Builds an empty feature collection when the feed file is missing.
   factory ZoneFeedResponse.empty({
     required String etag,
     required String version,
@@ -86,9 +93,18 @@ class ZoneFeedResponse {
     );
   }
 
+  /// ETag value clients may send as `If-None-Match`.
   final String etag;
+
+  /// Published feed version string.
   final String version;
+
+  /// Last time the feed metadata was updated.
   final DateTime updatedAt;
+
+  /// GeoJSON feature collection body (empty when not modified).
   final String geojson;
+
+  /// True when the client already has the current feed.
   final bool notModified;
 }

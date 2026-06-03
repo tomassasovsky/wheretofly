@@ -499,6 +499,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get socialFeedLoadFailed => 'No se pudo cargar el feed.';
 
   @override
+  String get socialFeedOffline => 'Sin conexión — mostrando publicaciones guardadas';
+
+  @override
   String get socialShareFlyCheck => 'Compartir consulta';
 
   @override

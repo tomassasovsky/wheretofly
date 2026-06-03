@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 /// Manages saved weather alert locations and evaluates thresholds.
 class WeatherAlertService {
+  /// Creates a weather alert service with injected dependencies.
   WeatherAlertService({
     required Database database,
     required WeatherService weatherService,
@@ -21,6 +22,7 @@ class WeatherAlertService {
   final NotificationService _notifications;
   final Uuid _uuid;
 
+  /// Saves a wind-threshold alert at [lat]/[lon] with a human [label].
   Future<Map<String, dynamic>> createSubscription({
     required String userId,
     required String label,
@@ -49,6 +51,7 @@ class WeatherAlertService {
     return {'id': id, 'label': label, 'lat': lat, 'lon': lon};
   }
 
+  /// Returns all alert subscriptions owned by [userId].
   Future<List<Map<String, dynamic>>> listSubscriptions(String userId) async {
     final result = await _db.connection.execute(
       Sql.named('''
@@ -73,6 +76,7 @@ class WeatherAlertService {
         .toList();
   }
 
+  /// Removes [subscriptionId] when owned by [userId].
   Future<void> deleteSubscription({
     required String userId,
     required String subscriptionId,

@@ -17,11 +17,13 @@ String? authenticatedUserId(RequestContext context) {
   return context.read<JwtService>().userIdFromToken(token);
 }
 
+/// Standard 401 JSON response for missing or invalid auth.
 Response unauthorized() => Response.json(
   statusCode: 401,
   body: {'error': 'Unauthorized'},
 );
 
+/// Adds CORS headers and handles OPTIONS preflight requests.
 Handler corsMiddleware(Handler handler) {
   return (context) async {
     if (context.request.method == HttpMethod.options) {
@@ -41,4 +43,5 @@ const _corsHeaders = {
   'Access-Control-Allow-Headers': 'Authorization, Content-Type, If-None-Match',
 };
 
+/// Ensures [AppContainer] is initialized before route handlers run.
 Future<void> ensureContainer() => AppContainer.initialize();

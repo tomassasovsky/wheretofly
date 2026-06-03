@@ -2,6 +2,7 @@ import 'dart:io';
 
 /// Runtime configuration loaded from environment variables.
 class AppConfig {
+  /// Creates config from explicit values (used in tests and fromEnvironment).
   const AppConfig({
     required this.databaseUrl,
     required this.redisUrl,
@@ -19,6 +20,7 @@ class AppConfig {
     this.refreshTokenTtl = const Duration(days: 30),
   });
 
+  /// Loads configuration from process environment with dev-friendly defaults.
   factory AppConfig.fromEnvironment() {
     return AppConfig(
       databaseUrl:
@@ -39,21 +41,51 @@ class AppConfig {
     );
   }
 
+  /// PostgreSQL connection URI.
   final String databaseUrl;
+
+  /// Redis connection URI for caching and queues.
   final String redisUrl;
+
+  /// Secret used to sign JWT access tokens.
   final String jwtSecret;
+
+  /// OpenWeather One Call API key (empty uses mock weather).
   final String openWeatherApiKey;
+
+  /// MinIO/S3-compatible object storage host.
   final String minioEndpoint;
+
+  /// MinIO access key.
   final String minioAccessKey;
+
+  /// MinIO secret key.
   final String minioSecretKey;
+
+  /// Default bucket for uploaded media.
   final String minioBucket;
+
+  /// Google OAuth client ID for social sign-in.
   final String googleClientId;
+
+  /// Apple OAuth client ID for social sign-in.
   final String appleClientId;
+
+  /// Filesystem path to the published zone GeoJSON feed.
   final String zoneFeedPath;
+
+  /// HTTP port the Dart Frog server binds to.
   final int port;
+
+  /// Lifetime of issued access tokens.
   final Duration accessTokenTtl;
+
+  /// Lifetime of refresh-token sessions.
   final Duration refreshTokenTtl;
 
+  /// Current API version string exposed to clients.
   static const version = '1.0.0';
+
+  /// Minimum supported client app version.
   static const minClientVersion = '1.0.0';
 }

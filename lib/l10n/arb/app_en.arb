@@ -186,6 +186,7 @@
   "socialFeedEmpty": "No reels yet. Follow pilots to see their fly-check photos and videos here.",
   "socialCreatePostMediaHint": "A snapshot from your fly check will be attached when you publish.",
   "socialFeedLoadFailed": "Could not load the feed.",
+  "socialFeedOffline": "Offline — showing saved posts",
   "socialShareFlyCheck": "Share fly check",
   "socialCreatePostTitle": "Share fly check",
   "socialCreatePostHint": "Add a caption for your followers (optional).",

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
-import 'package:where_to_fly/auth/auth_navigation.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
+import 'package:where_to_fly/auth/auth_navigation.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/social/view/profile_page.dart';
 

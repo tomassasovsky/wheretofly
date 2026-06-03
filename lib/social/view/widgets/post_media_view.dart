@@ -180,10 +180,12 @@ class _PostMediaViewState extends State<PostMediaView> {
   Widget build(BuildContext context) {
     if (widget.media.isVideo) {
       if (_initFailed) {
-        return _VideoUnavailable(onRetry: () {
-          _disposeVideo();
-          _scheduleInitVideo();
-        });
+        return _VideoUnavailable(
+          onRetry: () {
+            _disposeVideo();
+            _scheduleInitVideo();
+          },
+        );
       }
 
       final videoController = _videoController;

@@ -29,7 +29,11 @@ Future<Response> onRequest(RequestContext context) async {
       } on AuthException catch (e) {
         return jsonError(e.statusCode, e.message);
       }
-    default:
+    case HttpMethod.delete:
+    case HttpMethod.get:
+    case HttpMethod.head:
+    case HttpMethod.options:
+    case HttpMethod.patch:
       return Response(statusCode: 405);
   }
 }

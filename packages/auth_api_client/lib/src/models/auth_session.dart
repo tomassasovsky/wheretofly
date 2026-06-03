@@ -48,9 +48,11 @@ class AuthSession {
       final parts = accessToken.split('.');
       if (parts.length != 3) return null;
       var payload = parts[1];
-      while (payload.length % 4 != 0) {
-        payload += '=';
+      final padding = StringBuffer(payload);
+      while (padding.length % 4 != 0) {
+        padding.write('=');
       }
+      payload = padding.toString();
       final decoded = utf8.decode(base64Url.decode(payload));
       return jsonDecode(decoded) as Map<String, dynamic>;
     } on Object {

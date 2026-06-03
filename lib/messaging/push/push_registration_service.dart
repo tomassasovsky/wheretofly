@@ -14,7 +14,9 @@ String devicePlatformForPush() {
   };
 }
 
-/// Registers a device token with the backend (FCM stub until Firebase is wired).
+/// Registers a device token with the backend.
+///
+/// FCM stub until Firebase is wired.
 class PushRegistrationService {
   PushRegistrationService({
     required MessagingRepository messagingRepository,

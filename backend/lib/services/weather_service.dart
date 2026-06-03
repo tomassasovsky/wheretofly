@@ -5,10 +5,24 @@ import 'package:backend/util/json_codec.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 
-enum WeatherAdvisoryLevel { good, caution, highCaution, notRecommended }
+/// Drone flight advisory level derived from wind and SMN alerts.
+enum WeatherAdvisoryLevel {
+  /// Conditions are favorable for flight.
+  good,
+
+  /// Moderate wind — exercise caution.
+  caution,
+
+  /// Elevated wind — high caution advised.
+  highCaution,
+
+  /// Active alerts or strong wind — not recommended.
+  notRecommended,
+}
 
 /// Weather snapshot returned by the API proxy.
 class WeatherSnapshot {
+  /// Creates an immutable weather payload for API responses.
   const WeatherSnapshot({
     required this.lat,
     required this.lon,
@@ -19,14 +33,28 @@ class WeatherSnapshot {
     required this.advisory,
   });
 
+  /// Query latitude in decimal degrees.
   final double lat;
+
+  /// Query longitude in decimal degrees.
   final double lon;
+
+  /// Timestamp when upstream data was fetched.
   final DateTime fetchedAt;
+
+  /// OpenWeather current conditions block.
   final Map<String, dynamic> current;
+
+  /// Hourly forecast entries (up to 24).
   final List<Map<String, dynamic>> hourly;
+
+  /// Active SMN/OpenWeather alert payloads.
   final List<Map<String, dynamic>> alerts;
+
+  /// Computed advisory level and human-readable reasons.
   final Map<String, dynamic> advisory;
 
+  /// Serializes the snapshot for JSON API responses.
   Map<String, dynamic> toJson() => {
     'location': {'lat': lat, 'lon': lon},
     'fetchedAt': fetchedAt.toUtc().toIso8601String(),
@@ -39,6 +67,7 @@ class WeatherSnapshot {
 
 /// Proxies OpenWeather One Call 3.0 and SMN CAP alerts with advisory scoring.
 class WeatherService {
+  /// Creates a weather proxy with optional HTTP client for tests.
   WeatherService({
     required AppConfig config,
     http.Client? httpClient,
@@ -52,6 +81,7 @@ class WeatherService {
   static const _smnCapUrl =
       'http://www.smn.gov.ar/feeds/CAP/avisocortoplazo/rss_acpCAP.xml';
 
+  /// Fetches (or returns cached) weather for [lat]/[lon].
   Future<WeatherSnapshot> getWeather({
     required double lat,
     required double lon,
@@ -176,8 +206,12 @@ class WeatherService {
   }
 }
 
+/// Thrown when the weather upstream fails or returns an error.
 class WeatherServiceException implements Exception {
+  /// Creates an exception with a diagnostic [message].
   WeatherServiceException(this.message);
+
+  /// Human-readable failure description.
   final String message;
 }
 

@@ -28,18 +28,40 @@ class AppContainer {
 
   static AppContainer? _instance;
 
+  /// Runtime configuration loaded from the environment.
   final AppConfig config;
+
+  /// PostgreSQL connection and migration runner.
   final Database database;
+
+  /// JWT access-token issuer and verifier.
   final JwtService jwtService;
+
+  /// Email/password auth and account lifecycle.
   final AuthService authService;
+
+  /// OpenWeather and SMN weather proxy.
   final WeatherService weatherService;
+
+  /// Saved weather alert subscriptions and worker.
   final WeatherAlertService weatherAlertService;
+
+  /// Zone GeoJSON feed with versioning.
   final ZoneService zoneService;
+
+  /// Bundled + live zone ingest pipeline.
   final ZoneIngestService zoneIngestService;
+
+  /// Social posts, comments, and follows.
   final PostService postService;
+
+  /// Direct and group messaging.
   final MessagingService messagingService;
+
+  /// Device tokens and push dispatch.
   final NotificationService notificationService;
 
+  /// Returns the initialized container or throws if not yet set up.
   static AppContainer get instance {
     final value = _instance;
     if (value == null) {
@@ -48,6 +70,7 @@ class AppContainer {
     return value;
   }
 
+  /// Connects to Postgres, runs migrations, and wires all services.
   static Future<AppContainer> initialize() async {
     if (_instance != null) return _instance!;
     final config = AppConfig.fromEnvironment();
@@ -85,6 +108,7 @@ class AppContainer {
     return _instance!;
   }
 
+  /// Closes the database connection and clears the singleton.
   static Future<void> dispose() async {
     await _instance?.database.close();
     _instance = null;

@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 /// Direct and group messaging.
 class MessagingService {
+  /// Creates a messaging service with optional test [uuid].
   MessagingService({required Database database, Uuid? uuid})
     : _db = database,
       _uuid = uuid ?? const Uuid();
@@ -11,6 +12,7 @@ class MessagingService {
   final Database _db;
   final Uuid _uuid;
 
+  /// Opens or reuses a 1:1 thread between [userId] and [otherUserId].
   Future<Map<String, dynamic>> createDirectThread({
     required String userId,
     required String otherUserId,
@@ -38,6 +40,7 @@ class MessagingService {
     return {'id': threadId};
   }
 
+  /// Creates a named group thread with [memberIds] plus [creatorId].
   Future<Map<String, dynamic>> createGroup({
     required String creatorId,
     required String name,
@@ -68,6 +71,7 @@ class MessagingService {
     return {'id': threadId, 'name': name};
   }
 
+  /// Appends a message to [threadId] on behalf of [senderId].
   Future<Map<String, dynamic>> sendMessage({
     required String threadId,
     required String senderId,
@@ -99,6 +103,7 @@ class MessagingService {
     };
   }
 
+  /// Lists messages in [threadId] for [userId], optionally after [cursor].
   Future<List<Map<String, dynamic>>> listMessages({
     required String threadId,
     required String userId,
@@ -148,6 +153,7 @@ class MessagingService {
         .toList();
   }
 
+  /// Returns inbox summaries for all threads [userId] belongs to.
   Future<List<Map<String, dynamic>>> listThreads({
     required String userId,
   }) async {
@@ -196,6 +202,7 @@ class MessagingService {
         .toList();
   }
 
+  /// Returns member ids in [threadId] excluding [userId].
   Future<List<String>> otherMemberIds({
     required String threadId,
     required String userId,
@@ -242,8 +249,14 @@ class MessagingService {
   }
 }
 
+/// Thrown when messaging operations fail with an HTTP status.
 class MessagingException implements Exception {
+  /// Creates a messaging error with [message] and [statusCode].
   MessagingException(this.message, this.statusCode);
+
+  /// Human-readable error returned to the client.
   final String message;
+
+  /// Suggested HTTP status for API responses.
   final int statusCode;
 }

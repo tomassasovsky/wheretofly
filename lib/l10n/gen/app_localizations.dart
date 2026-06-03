@@ -938,6 +938,9 @@ abstract class AppLocalizations {
   /// **'Could not load the feed.'**
   String get socialFeedLoadFailed;
 
+  /// No description provided for @socialFeedOffline.
+  String get socialFeedOffline;
+
   /// No description provided for @socialShareFlyCheck.
   ///
   /// In en, this message translates to:

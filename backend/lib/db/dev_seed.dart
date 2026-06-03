@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 
 /// Populates the dev database with pilots, posts, follows, DMs, and comments.
 class DevSeed {
+  /// Creates a seeder with optional test doubles.
   DevSeed({
     required Database database,
     PasswordHasher? passwordHasher,
@@ -19,8 +20,13 @@ class DevSeed {
        _uuid = uuid ?? const Uuid(),
        _random = random ?? Random(42);
 
+  /// Demo account email used in local development.
   static const demoEmail = 'pilot@dev.local';
+
+  /// Demo account password used in local development.
   static const demoPassword = 'password123';
+
+  /// Demo account @handle used in local development.
   static const demoHandle = 'pilot';
 
   final Database _db;
@@ -151,6 +157,9 @@ class DevSeed {
     'Perfecto, quedamos en contacto',
   ];
 
+  /// Inserts demo pilots, social graph, and sample content.
+  ///
+  /// When [reset] is true, existing dev data is cleared first.
   Future<void> run({required bool reset}) async {
     if (reset) {
       await _clearDevData();
@@ -201,8 +210,9 @@ class DevSeed {
 
     // Random follow graph among other pilots.
     for (final entry in others) {
-      final targets = [...others]..remove(entry);
-      targets.shuffle(_random);
+      final targets = [...others]
+        ..remove(entry)
+        ..shuffle(_random);
       for (final target in targets.take(_random.nextInt(6) + 3)) {
         await _insertFollow(
           followerId: entry.value,
@@ -250,7 +260,7 @@ class DevSeed {
     // Extra threads between random pairs (not involving pilot).
     for (var i = 0; i < 8; i++) {
       final a = others[_random.nextInt(others.length)];
-      var b = others[_random.nextInt(others.length)];
+      final b = others[_random.nextInt(others.length)];
       if (a.key == b.key) continue;
       await _insertDirectThread(
         userA: a.value,
@@ -467,6 +477,7 @@ class DevSeed {
     );
   }
 
+  /// Connects from environment config and runs [DevSeed.run].
   static Future<void> fromEnvironment({required bool reset}) async {
     final config = AppConfig.fromEnvironment();
     final database = await Database.connect(config);

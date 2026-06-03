@@ -12,9 +12,13 @@ import 'package:uuid/uuid.dart';
 
 /// Thrown when auth operations fail with a client-facing message.
 class AuthException implements Exception {
+  /// Creates an auth error with optional HTTP [statusCode].
   const AuthException(this.message, {this.statusCode = 400});
 
+  /// Human-readable error returned to the client.
   final String message;
+
+  /// Suggested HTTP status for API responses.
   final int statusCode;
 
   @override
@@ -23,6 +27,7 @@ class AuthException implements Exception {
 
 /// Email/password auth, sessions, and account lifecycle.
 class AuthService {
+  /// Creates an auth service with optional test doubles.
   AuthService({
     required Database database,
     required AppConfig config,
@@ -41,6 +46,7 @@ class AuthService {
   final JwtService _jwt;
   final Uuid _uuid;
 
+  /// Registers a new user and returns access + refresh tokens.
   Future<AuthTokens> signUp({
     required String email,
     required String password,
@@ -89,6 +95,7 @@ class AuthService {
     return _issueTokens(userId: userId, handle: handle.toLowerCase());
   }
 
+  /// Validates credentials and issues a new token pair.
   Future<AuthTokens> login({
     required String email,
     required String password,
@@ -115,6 +122,7 @@ class AuthService {
     );
   }
 
+  /// Rotates refresh token and returns a new access + refresh pair.
   Future<AuthTokens> refresh({required String refreshToken}) async {
     final hash = _hashRefreshToken(refreshToken);
     final result = await _db.connection.execute(
@@ -153,6 +161,7 @@ class AuthService {
     return result.isNotEmpty;
   }
 
+  /// Marks a user's email as verified using a one-time token.
   Future<void> verifyEmail({required String token}) async {
     final result = await _db.connection.execute(
       Sql.named('''
@@ -177,6 +186,7 @@ class AuthService {
     );
   }
 
+  /// Creates a password-reset token when [email] matches a user.
   Future<void> requestPasswordReset({required String email}) async {
     final result = await _db.connection.execute(
       Sql.named('SELECT id FROM users WHERE email = @email'),
@@ -201,6 +211,7 @@ class AuthService {
     print('Password reset token for $email: $token');
   }
 
+  /// Sets a new password from a valid reset [token].
   Future<void> confirmPasswordReset({
     required String token,
     required String newPassword,
@@ -237,6 +248,7 @@ class AuthService {
     );
   }
 
+  /// Loads a profile by primary key, or null when hidden/missing.
   Future<UserProfile?> getUserById(String userId) async {
     final result = await _db.connection.execute(
       Sql.named('''
@@ -251,6 +263,7 @@ class AuthService {
     return UserProfile.fromRow(result.first);
   }
 
+  /// Loads a profile by @handle, or null when hidden/missing.
   Future<UserProfile?> getUserByHandle(String handle) async {
     final result = await _db.connection.execute(
       Sql.named('''
@@ -265,6 +278,7 @@ class AuthService {
     return UserProfile.fromRow(result.first);
   }
 
+  /// Permanently deletes the user and cascaded related rows.
   Future<void> deleteAccount(String userId) async {
     await _db.connection.execute(
       Sql.named('DELETE FROM users WHERE id = @id'),

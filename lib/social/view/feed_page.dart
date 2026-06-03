@@ -158,7 +158,7 @@ class _FeedViewState extends State<_FeedView> {
               }
               final activeMedia = state.posts[_currentIndex].primaryMedia;
               final activeVideoUrl =
-                  activeMedia?.isVideo == true ? activeMedia!.url : null;
+                  (activeMedia?.isVideo ?? false) ? activeMedia!.url : null;
 
               return Stack(
                 fit: StackFit.expand,
@@ -180,12 +180,62 @@ class _FeedViewState extends State<_FeedView> {
                       );
                     },
                   ),
+                  if (state.isStale)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: SafeArea(
+                        bottom: false,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: kToolbarHeight),
+                          child: _OfflineFeedBanner(
+                            label: l10n.socialFeedOffline,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               );
             case FeedStatus.initial:
               return const SizedBox.shrink();
           }
         },
+      ),
+    );
+  }
+}
+
+/// A compact pill shown over the reels when the feed is showing cached content
+/// after a failed refresh (offline / backend unreachable).
+class _OfflineFeedBanner extends StatelessWidget {
+  const _OfflineFeedBanner({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.55),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.cloud_off, size: 16, color: Colors.white),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

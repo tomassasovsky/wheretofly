@@ -8,6 +8,7 @@ import 'package:zones_api_client/zones_api_client.dart';
 
 /// Refreshes the published zone GeoJSON feed from bundled + live MADHEL data.
 class ZoneIngestService {
+  /// Creates an ingest pipeline with optional zone source clients.
   ZoneIngestService({
     required Database database,
     required ZoneService zoneService,
@@ -23,6 +24,7 @@ class ZoneIngestService {
   final BundledZonesApiClient _bundled;
   final MadhelZonesApiClient _madhel;
 
+  /// Merges bundled and live zones, writes [outputPath], and bumps version.
   Future<String> ingestAndPublish({required String outputPath}) async {
     final bundledZones = await _bundled.fetchZones();
     final liveMadhel = await _safeMadhel();
