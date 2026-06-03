@@ -62,10 +62,6 @@ class AppShellRoute extends StatefulShellRouteData {
   }
 }
 
-@TypedGoRoute<FeedTabRoute>(
-  path: '/feed',
-  name: 'feed',
-)
 class FeedTabRoute extends GoRouteData with $FeedTabRoute, GuardedRoute {
   const FeedTabRoute();
 
@@ -75,10 +71,6 @@ class FeedTabRoute extends GoRouteData with $FeedTabRoute, GuardedRoute {
   }
 }
 
-@TypedGoRoute<ExploreTabRoute>(
-  path: '/explore',
-  name: 'explore',
-)
 class ExploreTabRoute extends GoRouteData with $ExploreTabRoute, GuardedRoute {
   const ExploreTabRoute();
 
@@ -88,10 +80,6 @@ class ExploreTabRoute extends GoRouteData with $ExploreTabRoute, GuardedRoute {
   }
 }
 
-@TypedGoRoute<MapTabRoute>(
-  path: '/map',
-  name: 'map',
-)
 class MapTabRoute extends GoRouteData with $MapTabRoute, GuardedRoute {
   const MapTabRoute();
 
@@ -101,10 +89,6 @@ class MapTabRoute extends GoRouteData with $MapTabRoute, GuardedRoute {
   }
 }
 
-@TypedGoRoute<MessagesTabRoute>(
-  path: '/messages',
-  name: 'messages',
-)
 class MessagesTabRoute extends GoRouteData
     with $MessagesTabRoute, GuardedRoute {
   const MessagesTabRoute();
@@ -115,10 +99,6 @@ class MessagesTabRoute extends GoRouteData
   }
 }
 
-@TypedGoRoute<MeTabRoute>(
-  path: '/me',
-  name: 'me',
-)
 class MeTabRoute extends GoRouteData with $MeTabRoute, GuardedRoute {
   const MeTabRoute();
 

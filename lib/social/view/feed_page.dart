@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:social_repository/social_repository.dart';
-import 'package:where_to_fly/app/router/app_routes.dart';
+import 'package:where_to_fly/app/view/app_shell.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/auth/auth_navigation.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
@@ -74,7 +74,7 @@ class _FeedViewState extends State<_FeedView> {
           IconButton(
             tooltip: l10n.socialCreatePostTitle,
             icon: const Icon(Icons.add_box_outlined, color: Colors.white),
-            onPressed: () => const MapTabRoute().go(context),
+            onPressed: () => AppShellTab.goTo(context, AppShellTab.map),
           ),
         ],
       ),

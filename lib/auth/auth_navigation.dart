@@ -74,23 +74,20 @@ String authReturnDestination(GoRouter router) {
 
 /// Navigates away from auth screens after a successful sign-in or sign-up.
 ///
-/// Prefer [GoRouter.pop] so the shell (map, feed videos) stays mounted.
-/// Fall back to [GoRouter.go] only when login was opened without a back stack
-/// or a single pop did not leave the auth flow (legacy stacked auth routes).
+/// Uses a single [GoRouter.pop] when auth was pushed on top of the shell so
+/// tab state stays mounted. Uses [GoRouter.go] only for deep-linked auth with
+/// no back stack. Never chains pop and go — that completes the same imperative
+/// route future twice and triggers "Future already completed".
 void navigateAfterAuthentication(BuildContext context) {
   final router = GoRouter.of(context);
   final fallback = authReturnDestination(router);
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!context.mounted) return;
     if (!router.state.uri.path.startsWith('/auth/')) return;
 
     if (router.canPop()) {
       router.pop();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (router.state.uri.path.startsWith('/auth/')) {
-          router.go(fallback);
-        }
-      });
       return;
     }
 

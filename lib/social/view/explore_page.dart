@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
+import 'package:where_to_fly/app/view/app_shell.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 
 /// Discover pilots, permits, and map shortcuts.
@@ -69,7 +70,7 @@ class _ExplorePageState extends State<ExplorePage> {
             icon: Icons.map_outlined,
             title: l10n.navMap,
             subtitle: l10n.exploreMapSubtitle,
-            onTap: () => const MapTabRoute().go(context),
+            onTap: () => AppShellTab.goTo(context, AppShellTab.map),
           ),
         ],
       ),

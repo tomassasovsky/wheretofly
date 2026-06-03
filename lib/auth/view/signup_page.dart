@@ -54,14 +54,10 @@ class _SignUpPageState extends State<SignUpPage> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.authSignUpTitle)),
       body: BlocConsumer<AuthCubit, AuthState>(
-        listenWhen: (previous, current) => current.isAuthenticated,
+        listenWhen: (previous, current) =>
+            current.isAuthenticated && !previous.isAuthenticated,
         listener: (context, state) => _navigateAway(),
         builder: (context, state) {
-          if (state.isAuthenticated) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _navigateAway();
-            });
-          }
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [

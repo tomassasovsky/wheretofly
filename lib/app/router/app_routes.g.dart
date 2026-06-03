@@ -8,11 +8,6 @@ part of 'app_routes.dart';
 
 List<RouteBase> get $appRoutes => [
       $appShellRoute,
-      $feedTabRoute,
-      $exploreTabRoute,
-      $mapTabRoute,
-      $messagesTabRoute,
-      $meTabRoute,
       $settingsRoute,
       $resourcesRoute,
       $loginRoute,
@@ -184,36 +179,6 @@ mixin $MeTabRoute on GoRouteData {
   @override
   void replace(BuildContext context) => context.replace(location);
 }
-
-RouteBase get $feedTabRoute => GoRouteData.$route(
-      path: '/feed',
-      name: 'feed',
-      factory: $FeedTabRoute._fromState,
-    );
-
-RouteBase get $exploreTabRoute => GoRouteData.$route(
-      path: '/explore',
-      name: 'explore',
-      factory: $ExploreTabRoute._fromState,
-    );
-
-RouteBase get $mapTabRoute => GoRouteData.$route(
-      path: '/map',
-      name: 'map',
-      factory: $MapTabRoute._fromState,
-    );
-
-RouteBase get $messagesTabRoute => GoRouteData.$route(
-      path: '/messages',
-      name: 'messages',
-      factory: $MessagesTabRoute._fromState,
-    );
-
-RouteBase get $meTabRoute => GoRouteData.$route(
-      path: '/me',
-      name: 'me',
-      factory: $MeTabRoute._fromState,
-    );
 
 RouteBase get $settingsRoute => GoRouteData.$route(
       path: '/settings',
