@@ -53,12 +53,12 @@ void main() {
       expect(endpoint.password, password);
     });
 
-    test('mis-parses DATABASE_URL when password contains raw @', () {
+    test('rejects DATABASE_URL when password contains raw @', () {
       final url = 'postgresql://dondevolar:p@ss@postgres:5432/dondevolar';
-      final endpoint = postgresEndpointFor(_config(databaseUrl: url));
-
-      expect(endpoint.password, isNot('p@ss'));
-      expect(endpoint.host, isNot('postgres'));
+      expect(
+        () => postgresEndpointFor(_config(databaseUrl: url)),
+        throwsA(isA<FormatException>()),
+      );
     });
   });
 }

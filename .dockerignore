@@ -18,5 +18,5 @@ test
 docs
 deploy
 tooling
-feed
 lib
+# feed/zones.geojson is required by backend/Dockerfile (zone API snapshot)

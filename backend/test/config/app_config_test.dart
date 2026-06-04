@@ -1,9 +1,10 @@
 import 'package:backend/config/app_config.dart';
+import 'package:backend/db/postgres_endpoint.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('AppConfig', () {
-    test('prefers POSTGRES_HOST over DATABASE_URL for connections', () {
+    test('postgresEndpointFor uses POSTGRES_HOST when host is set', () {
       const config = AppConfig(
         databaseUrl: 'postgresql://ignored:ignored@wrong:5432/ignored',
         postgresHost: 'postgres',
@@ -21,9 +22,11 @@ void main() {
         zoneFeedPath: '/app/data/zones.geojson',
       );
 
-      expect(config.postgresHost, 'postgres');
-      expect(config.postgresPassword, 'from-env');
-      expect(config.databaseUrl, isEmpty);
+      final endpoint = postgresEndpointFor(config);
+
+      expect(endpoint.host, 'postgres');
+      expect(endpoint.password, 'from-env');
+      expect(endpoint.username, 'dondevolar');
     });
   });
 }
