@@ -1,0 +1,22 @@
+# API image build (context = repo root, dockerfile = backend/Dockerfile)
+.git
+.github
+**/.dart_tool
+**/build
+backend/build
+backend/.dart_frog
+**/.env
+**/.env.*
+
+android
+ios
+macos
+windows
+linux
+web
+test
+docs
+deploy
+tooling
+feed
+lib
