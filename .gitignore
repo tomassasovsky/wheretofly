@@ -26,6 +26,9 @@ migrate_working_dir/
 # Local secrets and IDE overrides (never commit real keys).
 .vscode/launch.local.json
 ios/Secrets.xcconfig
+backend/.env
+**/.env
+!**/.env.example
 
 # Flutter/Dart/Pub related
 **/doc/api/
