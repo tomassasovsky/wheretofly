@@ -1,7 +1,6 @@
 import 'package:auth_repository/auth_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:settings_repository/settings_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,8 +49,8 @@ void main() {
   tearDown(() async {
     AppMode.mapOnlyOverride = null;
     WindMapConfig.enabledOverride = null;
-    authCubit.close();
-    settingsCubit.close();
+    await authCubit.close();
+    await settingsCubit.close();
   });
 
   test('settings route uses the root navigator for shell overlays', () {
@@ -69,7 +68,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    // Do not await [GoRouter.push]: its Future completes when the route is popped.
+    // Do not await [GoRouter.push]: its Future completes when the route is
+    // popped.
     // ignore: unawaited_futures
     router.push(const SettingsRoute().location);
     await pumpRouterFrames(tester, frames: 5);

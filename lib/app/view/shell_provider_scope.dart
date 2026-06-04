@@ -2,6 +2,7 @@ import 'package:flight_rules_repository/flight_rules_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding_repository/geocoding_repository.dart';
+import 'package:go_router/go_router.dart';
 import 'package:location_repository/location_repository.dart';
 import 'package:settings_repository/settings_repository.dart';
 import 'package:weather_repository/weather_repository.dart';

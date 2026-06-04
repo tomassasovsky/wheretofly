@@ -21,9 +21,7 @@ Future<void> main(List<String> args) async {
     wasmPath: '$repoRoot/assets/om/om_reader_wasm.wasm',
   );
 
-  final omUrl = await OmSpatialUrlResolver().resolveOmFileUrl(
-    
-  );
+  final omUrl = await OmSpatialUrlResolver().resolveOmFileUrl();
   print('om url: $omUrl');
 
   const z = 5;

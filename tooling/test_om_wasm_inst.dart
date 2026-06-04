@@ -29,14 +29,20 @@ Future<void> main() async {
     ..addImport(
       'a',
       'e',
-      WasmFunction((int which, double ms) => 0,
-          params: const [ValueTy.i32, ValueTy.f64], results: const [ValueTy.i32],),
+      WasmFunction(
+        (int which, double ms) => 0,
+        params: const [ValueTy.i32, ValueTy.f64],
+        results: const [ValueTy.i32],
+      ),
     )
     ..addImport(
       'a',
       'f',
-      WasmFunction((int size) => 0,
-          params: const [ValueTy.i32], results: const [ValueTy.i32],),
+      WasmFunction(
+        (int size) => 0,
+        params: const [ValueTy.i32],
+        results: const [ValueTy.i32],
+      ),
     );
   final instance = await builder.build();
 

@@ -17,10 +17,10 @@ import 'package:where_to_fly/app/router/app_router.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/app/router/router_auth_refresh.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
+import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/map/view/widgets/flutter_map_layer.dart';
 import 'package:where_to_fly/map/wind_map_config.dart';
 import 'package:where_to_fly/settings/settings_cubit.dart';
-import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/zone_sync/zone_sync_service.dart';
 import 'package:zones_api_client/zones_api_client.dart';
 

@@ -38,7 +38,7 @@ void main() {
       tester.element(find.text('Login')),
     );
     await tester.pump();
-    await pumpRouterFrames(tester, frames: 3);
+    await pumpRouterFrames(tester);
 
     expect(router.state.uri.path, '/map');
     expect(tester.takeException(), isNull);

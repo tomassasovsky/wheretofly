@@ -6,7 +6,8 @@ Future<void> main() async {
   final bytes = await File('assets/om/om_reader_wasm_wasmi.wasm').readAsBytes();
   final features = await wasmRuntimeFeatures();
   stdout.writeln(
-      'runtime ${features.name} simd=${features.supportedFeatures.simd}',);
+    'runtime ${features.name} simd=${features.supportedFeatures.simd}',
+  );
   final module = await compileWasmModule(bytes);
   final builder = module.builder()
     ..addImport(

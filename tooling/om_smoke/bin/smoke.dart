@@ -29,9 +29,7 @@ Future<void> main(List<String> args) async {
     wasmPath: wasmFile,
     forceWasmi: wasmFile.contains('wasmi'),
   );
-  final omUrl = await OmSpatialUrlResolver().resolveOmFileUrl(
-    
-  );
+  final omUrl = await OmSpatialUrlResolver().resolveOmFileUrl();
   print('om url: $omUrl');
 
   final root = await OmFileReader.open(

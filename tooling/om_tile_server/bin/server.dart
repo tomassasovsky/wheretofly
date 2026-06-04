@@ -25,9 +25,7 @@ Future<void> main(List<String> args) async {
 
   await ensureWasmRunCliLibrary();
   await OmWasmModule.ensureInitialized(wasmPath: wasmPath);
-  final omUrl = await OmSpatialUrlResolver().resolveOmFileUrl(
-    
-  );
+  final omUrl = await OmSpatialUrlResolver().resolveOmFileUrl();
   print('OM file: $omUrl');
   final backend = OmHttpBackend();
   final readers = await openWindReaders(Uri.parse(omUrl), backend);

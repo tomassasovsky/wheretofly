@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 
 /// Open-Meteo wind field configuration.
 abstract final class WindMapConfig {
-  /// Overrides [enabled] in widget tests (avoids wind tile HTTP during map tests).
+  /// Overrides [enabled] in widget tests (avoids wind tile HTTP during map
+  /// tests).
   @visibleForTesting
   static bool? enabledOverride;
 

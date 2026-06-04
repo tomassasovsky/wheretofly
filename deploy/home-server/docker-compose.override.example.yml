@@ -1,0 +1,13 @@
+# Copy to docker-compose.override.yml when nginx runs in Docker on a shared network.
+# Portainer: add this as a second compose file in the stack, or paste into override.
+
+services:
+  api:
+    networks:
+      - default
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: your-nginx-network-name

@@ -83,7 +83,7 @@ void main() {
     await pumpSettingsPage(tester);
 
     await tester.tap(find.text('Dark'));
-    await pumpRouterFrames(tester, frames: 3);
+    await pumpRouterFrames(tester);
 
     expect(settingsCubit.state.themeMode, ThemeMode.dark);
   });
@@ -93,7 +93,7 @@ void main() {
     await pumpSettingsPage(tester);
 
     await tester.tap(find.text('Español'));
-    await pumpRouterFrames(tester, frames: 3);
+    await pumpRouterFrames(tester);
 
     expect(settingsCubit.state.locale?.languageCode, 'es');
   });

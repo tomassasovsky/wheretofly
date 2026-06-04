@@ -9,9 +9,7 @@ import 'package:where_to_fly/map/wind_map_config.dart';
 
 Future<void> main() async {
   await OmWasmModule.ensureInitialized();
-  final omUrl = await OmSpatialUrlResolver().resolveOmFileUrl(
-    
-  );
+  final omUrl = await OmSpatialUrlResolver().resolveOmFileUrl();
   print('om: $omUrl');
   final root = await OmFileReader.open(
     Uri.parse(omUrl),

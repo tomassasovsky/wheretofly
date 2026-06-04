@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' show Point;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -18,10 +17,6 @@ import 'package:where_to_fly/map/wind_map_config.dart';
 
 /// Full-screen [FlutterMap] with zone overlays and camera tracking.
 class FlutterMapLayer extends StatefulWidget {
-  /// When true, skips network [TileLayer] loads (widget tests).
-  @visibleForTesting
-  static bool debugSkipNetworkTiles = false;
-
   const FlutterMapLayer({
     required this.controller,
     required this.brightness,
@@ -33,6 +28,10 @@ class FlutterMapLayer extends StatefulWidget {
     this.showWindLayer = false,
     super.key,
   });
+
+  /// When true, skips network [TileLayer] loads (widget tests).
+  @visibleForTesting
+  static bool debugSkipNetworkTiles = false;
 
   final MapCameraController controller;
   final Brightness brightness;

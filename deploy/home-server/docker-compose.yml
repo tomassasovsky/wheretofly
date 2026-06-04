@@ -1,0 +1,88 @@
+# Dónde Volar — home server stack (Portainer)
+#
+# Public HTTPS: your existing nginx → API (see nginx/dondevolar.aquiles.dev.conf).
+# Default publish: 127.0.0.1:18080 for host/nginx host-network proxying.
+# Optional: docker-compose.override.yml to join your nginx Docker network.
+
+name: dondevolar
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dondevolar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-dondevolar}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-dondevolar} -d ${POSTGRES_DB:-dondevolar}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:?Set MINIO_ACCESS_KEY in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?Set MINIO_SECRET_KEY in .env}
+    volumes:
+      - minio_data:/data
+
+  photon:
+    image: ghcr.io/rtuszik/photon-docker:latest
+    restart: unless-stopped
+    environment:
+      REGION: argentina
+      UPDATE_STRATEGY: SEQUENTIAL
+      UPDATE_INTERVAL: 720h
+    volumes:
+      - photon_data:/photon/data
+
+  api:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: dondevolar-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+      photon:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      PHOTON_BASE_URL: http://photon:2322
+      MINIO_ENDPOINT: minio:9000
+      REDIS_URL: redis://redis:6379
+      ZONE_FEED_PATH: /app/data/zones.geojson
+    volumes:
+      - ../../feed/zones.geojson:/app/data/zones.geojson:ro
+    ports:
+      - "${API_HOST_PORT:-127.0.0.1:18080}:8080"
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  photon_data:

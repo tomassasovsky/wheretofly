@@ -1,6 +1,5 @@
 import 'package:auth_repository/auth_repository.dart';
 import 'package:flight_rules_repository/flight_rules_repository.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding_repository/geocoding_repository.dart';
@@ -17,7 +16,6 @@ import 'package:where_to_fly/zone_sync/zone_sync_service.dart';
 import 'package:zones_api_client/zones_api_client.dart';
 
 import 'auth_router_test_helper.dart';
-import 'map_test_flutter_errors.dart';
 
 Future<void> initMapTestDependencies() async {
   registerFallbackValue(const LatLng(0, 0));

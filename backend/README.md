@@ -47,12 +47,15 @@ the `photon_data` volume.
 
 Health check: `GET http://localhost:8080/health`
 
-## Production (home server)
+## Production (home server / Portainer)
 
-1. Set `JWT_SECRET`, `OPENAIP_API_KEY` (optional), `PHOTON_BASE_URL`, and OAuth
-   client IDs in `.env`
-2. Point a domain at your server and configure `Caddyfile`
-3. Run `docker compose up -d`
+Use the Portainer stack under [`deploy/home-server/`](../deploy/home-server/README.md):
+
+- Public API: **`https://dondevolar.aquiles.dev`** (your nginx → Dart Frog; see `deploy/home-server/nginx/`)
+- Photon, Postgres, Redis, and MinIO stay internal to Docker (no extra subdomains)
+- Copy `deploy/home-server/.env.example` → `.env`, set strong secrets, deploy stack
+
+The Flutter app uses that URL in **release** builds by default (`lib/config/api_config.dart`).
 
 ## API overview
 

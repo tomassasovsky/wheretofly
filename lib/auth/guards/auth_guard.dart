@@ -9,7 +9,7 @@ import 'package:where_to_fly/app/router/root_navigator_key.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/auth/auth_navigation.dart';
 
-/// Requires an authenticated session; redirects guests to login with 
+/// Requires an authenticated session; redirects guests to login with
 /// [returnToQueryKey].
 class AuthGuard extends RouteGuard {
   const AuthGuard();

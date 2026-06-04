@@ -1,3 +1,6 @@
+# Local dev with backend/docker-compose.yaml (no TLS).
 :8080 {
   reverse_proxy api:8080
 }
+
+# Production TLS: use your nginx + deploy/home-server/nginx/dondevolar.aquiles.dev.conf

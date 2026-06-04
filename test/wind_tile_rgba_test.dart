@@ -8,7 +8,8 @@ void main() {
   test('buildWindTileRgba produces visible pixels for finite gust field', () {
     final tileRead = DwdIconTileRead.forTile(5, 8, 12);
     final values = Float32List(
-        tileRead.totalNx * (tileRead.yRange.end - tileRead.yRange.start),);
+      tileRead.totalNx * (tileRead.yRange.end - tileRead.yRange.start),
+    );
     for (var i = 0; i < values.length; i++) {
       values[i] = 8.0;
     }
