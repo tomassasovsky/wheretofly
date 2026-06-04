@@ -85,8 +85,10 @@ services:
       ZONE_FEED_PATH: /app/data/zones.geojson
     volumes:
       - ../../feed/zones.geojson:/app/data/zones.geojson:ro
+    # Omit ports when NPM uses the shared Docker network (dondevolar-api:9080).
+    # For NPM via host LAN IP, publish on all interfaces (not 127.0.0.1).
     ports:
-      - "${API_BIND:-127.0.0.1}:${API_PORT:-9080}:${API_PORT:-9080}"
+      - "${API_BIND:-0.0.0.0}:${API_PORT:-9080}:${API_PORT:-9080}"
 
 volumes:
   postgres_data:
