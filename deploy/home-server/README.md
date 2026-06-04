@@ -1,4 +1,4 @@
-# Home server deployment (Portainer + nginx + aquiles.dev)
+# Home server deployment (Portainer + Nginx Proxy Manager + aquiles.dev)
 
 This stack runs **one public backend** for the Flutter app. Auth, weather, zones,
 geocoding, social, and messaging all go through the Dart Frog API on a single
@@ -6,14 +6,14 @@ hostname. [Photon](https://github.com/komoot/photon), PostgreSQL, Redis, and
 MinIO are sidecars on the Docker network — they are **not** exposed on separate
 subdomains.
 
-**TLS and port 80/443** are handled by your existing **nginx** container, not by
-this compose file.
+**TLS and ports 80/443** are handled by **[Nginx Proxy Manager](https://nginxproxymanager.com/)**
+(NPM), not by this compose file. You do not need to edit raw nginx configs.
 
 ## Subdomains
 
 | Host | Role |
 |------|------|
-| `dondevolar.aquiles.dev` | Public HTTPS API (nginx → `dondevolar-api:8080`) |
+| `dondevolar.aquiles.dev` | Public HTTPS API (NPM → `dondevolar-api:9080`) |
 
 Internal only (no DNS records):
 
@@ -24,35 +24,70 @@ Internal only (no DNS records):
 | Redis | `redis:6379` |
 | MinIO | `minio:9000` |
 
-## nginx
+## Nginx Proxy Manager
 
-1. Copy or include [`nginx/dondevolar.aquiles.dev.conf`](nginx/dondevolar.aquiles.dev.conf) in your nginx config.
-2. Point `ssl_certificate` / `ssl_certificate_key` at your existing certs for
-   `dondevolar.aquiles.dev` (or a wildcard `*.aquiles.dev`).
-3. Reload nginx after the stack is up.
+### 1. Join the NPM Docker network
 
-### Wiring the API upstream
+NPM must reach the API container by name. Attach this stack to the **same network**
+as your NPM container.
 
-**Option A — nginx container on a shared Docker network (recommended)**
+Find NPM’s network:
 
-1. Find the network your nginx container uses:
+```bash
+docker inspect nginx-proxy-manager --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}'
+```
 
-   ```bash
-   docker inspect <nginx-container-name> --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}'
-   ```
+(Replace `nginx-proxy-manager` with your NPM container name if different.)
 
-2. Copy `docker-compose.override.example.yml` → `docker-compose.override.yml` and set
-   the external network name to match nginx.
+Copy `docker-compose.override.example.yml` → `docker-compose.override.yml` and set
+the external network name (often `npm_default`, `nginx-proxy-manager_default`, or
+a custom `proxy` network from your NPM stack).
 
-3. In `nginx/dondevolar.aquiles.dev.conf`, use the **A)** upstream (`dondevolar-api:8080`).
-   The stack sets `container_name: dondevolar-api`.
+Redeploy the Dónde Volar stack after adding the override.
 
-**Option B — nginx on the host (or host network)**
+### 2. Add a Proxy Host in the NPM UI
 
-1. Leave `API_HOST_PORT` at the default `127.0.0.1:18080` (published by the stack).
-2. In the nginx config, uncomment the **B)** upstream (`127.0.0.1:18080`).
-3. If nginx runs in Docker with `network_mode: host`, it can use the same loopback
-   upstream.
+**Hosts → Proxy Hosts → Add Proxy Host**
+
+| Field | Value |
+|-------|--------|
+| Domain Names | `dondevolar.aquiles.dev` |
+| Scheme | `http` |
+| Forward Hostname / IP | `dondevolar-api` |
+| Forward Port | `9080` |
+| Cache Assets | Off |
+| Block Common Exploits | On (optional) |
+| Websockets Support | On (safe default for future routes) |
+
+**SSL** tab:
+
+- SSL Certificate: **Request a new SSL Certificate** (Let’s Encrypt), or use an
+  existing wildcard for `*.aquiles.dev`
+- Force SSL, HTTP/2, and HSTS — per your preference
+
+Save. NPM terminates HTTPS; the API stays on plain HTTP inside Docker.
+
+### 3. Verify
+
+```bash
+curl -sS https://dondevolar.aquiles.dev/health | jq .
+```
+
+From the NPM container (optional):
+
+```bash
+docker exec nginx-proxy-manager curl -sS http://dondevolar-api:9080/health
+```
+
+### If you cannot share a Docker network
+
+Publishing `127.0.0.1:9080` is **not** reachable from NPM in another container
+(that loopback is inside each container). Either use the override network above, or:
+
+- Set `API_BIND=0.0.0.0` in `.env` and redeploy, then in NPM forward to your
+  **host LAN IP** (e.g. `192.168.1.x`) port `9080`, or
+- In Portainer, connect the `dondevolar-api` container to the NPM network manually
+  (**Networks** → connect container).
 
 Do not expose Postgres, Redis, MinIO, or Photon on the public internet.
 
@@ -62,30 +97,29 @@ Do not expose Postgres, Redis, MinIO, or Photon on the public internet.
 dondevolar.aquiles.dev  →  <your home public IP>
 ```
 
-Forward **TCP 80 and 443** to the machine where **nginx** listens (same as today).
+Forward **TCP 80 and 443** to the machine where **NPM** listens (unchanged from your
+current setup).
 
 ## Portainer
 
 1. Clone this repository on the server (or use Portainer “Git repository” deploy).
 2. **Stacks → Add stack** → `deploy/home-server/docker-compose.yml`
 3. Copy `.env.example` → `.env` and set `POSTGRES_PASSWORD`, `DATABASE_URL`,
-   `JWT_SECRET`, and MinIO keys. Add `docker-compose.override.yml` if using Option A.
-4. Deploy. First Photon start downloads ~3.9 GB Argentina index; geocoding works
-   after Photon logs `Listening on http://0.0.0.0:2322/`.
+   `JWT_SECRET`, and MinIO keys.
+4. Add `docker-compose.override.yml` (NPM network) and redeploy.
+5. First Photon start downloads ~3.9 GB Argentina index; geocoding works after
+   Photon logs `Listening on http://0.0.0.0:2322/`.
 
-Verify from a machine that can reach your server:
+## API port
 
-```bash
-curl -sS https://dondevolar.aquiles.dev/health | jq .
-```
-
-Internal check before nginx:
+Default **`9080`** (avoids conflict with other services on `8080`). Change in `.env`:
 
 ```bash
-curl -sS http://127.0.0.1:18080/health
-# or, from the nginx container on the shared network:
-curl -sS http://dondevolar-api:8080/health
+API_PORT=9080
+PORT=9080
 ```
+
+Update the NPM **Forward Port** to match.
 
 ## Cron (zone feed + weather alerts)
 

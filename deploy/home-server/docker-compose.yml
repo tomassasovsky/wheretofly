@@ -1,7 +1,7 @@
 # Dónde Volar — home server stack (Portainer)
 #
-# Public HTTPS: your existing nginx → API (see nginx/dondevolar.aquiles.dev.conf).
-# Default publish: 127.0.0.1:18080 for host/nginx host-network proxying.
+# Public HTTPS: Nginx Proxy Manager → API (see README).
+# Default API port 9080 (host + container) — avoids conflict with other services on 8080.
 # Optional: docker-compose.override.yml to join your nginx Docker network.
 
 name: dondevolar
@@ -72,6 +72,7 @@ services:
       - .env
     environment:
       APP_ENV: production
+      PORT: ${API_PORT:-9080}
       PHOTON_BASE_URL: http://photon:2322
       MINIO_ENDPOINT: minio:9000
       REDIS_URL: redis://redis:6379
@@ -79,7 +80,7 @@ services:
     volumes:
       - ../../feed/zones.geojson:/app/data/zones.geojson:ro
     ports:
-      - "${API_HOST_PORT:-127.0.0.1:18080}:8080"
+      - "${API_BIND:-127.0.0.1}:${API_PORT:-9080}:${API_PORT:-9080}"
 
 volumes:
   postgres_data:

@@ -51,7 +51,7 @@ Health check: `GET http://localhost:8080/health`
 
 Use the Portainer stack under [`deploy/home-server/`](../deploy/home-server/README.md):
 
-- Public API: **`https://dondevolar.aquiles.dev`** (your nginx → Dart Frog; see `deploy/home-server/nginx/`)
+- Public API: **`https://dondevolar.aquiles.dev`** (Nginx Proxy Manager → Dart Frog; see `deploy/home-server/README.md`)
 - Photon, Postgres, Redis, and MinIO stay internal to Docker (no extra subdomains)
 - Copy `deploy/home-server/.env.example` → `.env`, set strong secrets, deploy stack
 

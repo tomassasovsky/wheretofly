@@ -3,4 +3,4 @@
   reverse_proxy api:8080
 }
 
-# Production TLS: use your nginx + deploy/home-server/nginx/dondevolar.aquiles.dev.conf
+# Production TLS: Nginx Proxy Manager — deploy/home-server/README.md
