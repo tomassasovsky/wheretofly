@@ -23,7 +23,6 @@ import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/app/app.dart';
 import 'package:where_to_fly/config/api_config.dart';
 import 'package:where_to_fly/legal/register_app_licenses.dart';
-import 'package:where_to_fly/map/store_screenshot_config.dart';
 import 'package:where_to_fly/map/wind/om/om_wasm_module.dart';
 import 'package:where_to_fly/map/wind/om/wind_decode_support.dart';
 import 'package:where_to_fly/map/wind_map_config.dart';
@@ -47,8 +46,19 @@ class AppBlocObserver extends BlocObserver {
   }
 }
 
-/// Wires up the layers (data clients -> repositories) and runs the app.
-Future<void> bootstrap() async {
+/// Root widget plus [SettingsRepository] after wiring dependencies.
+class AppDependencies {
+  const AppDependencies({
+    required this.app,
+    required this.settingsRepository,
+  });
+
+  final App app;
+  final SettingsRepository settingsRepository;
+}
+
+/// Licenses, WASM, and wind layer setup. Call before [buildApp] / [runApp].
+Future<void> initializeAppPlatform() async {
   WidgetsFlutterBinding.ensureInitialized();
   registerAppLicenses();
   WasmRunFlutterNative.registerWith();
@@ -77,23 +87,10 @@ Future<void> bootstrap() async {
       log('Open-Meteo om WASM init failed: $error', stackTrace: stackTrace);
     }
   }
-  // MediaKit.ensureInitialized();
+}
 
-  final previousFlutterOnError = FlutterError.onError;
-  FlutterError.onError = (details) {
-    if (StoreScreenshotConfig.captureMode &&
-        StoreScreenshotConfig.isBenignFlutterError(details)) {
-      return;
-    }
-    log(details.exceptionAsString(), stackTrace: details.stack);
-    previousFlutterOnError?.call(details);
-  };
-
-  if (kDebugMode) {
-    Bloc.observer = const AppBlocObserver();
-  }
-
-  // Data layer.
+/// Wires data clients and repositories; does not call [runApp].
+Future<AppDependencies> buildApp({WeatherRepository? weatherRepository}) async {
   final storage = await Storage.getInstance();
   final secureStorage = SecureStorage();
   final apiBaseUri = resolveApiBaseUri();
@@ -104,26 +101,20 @@ Future<void> bootstrap() async {
     }
   }
 
-  // Repository layer (each composes its data clients).
   final settingsRepository = SettingsRepository(storage);
-  if (StoreScreenshotConfig.captureMode) {
-    await settingsRepository.setThemeMode(AppThemeMode.light);
-    if (StoreScreenshotConfig.localeCode.isNotEmpty) {
-      await settingsRepository.setLocaleCode(StoreScreenshotConfig.localeCode);
-    }
-  }
   final authApiClient = AuthApiClient(baseUrl: apiBaseUri);
   final authRepository = AuthRepository(
     apiClient: authApiClient,
     secureStorage: secureStorage,
   );
   Future<String?> accessToken() => authRepository.accessToken();
-  final weatherRepository = WeatherRepository(
-    apiClient: WeatherApiClient(
-      baseUrl: apiBaseUri,
-      accessTokenProvider: accessToken,
-    ),
-  );
+  final weather = weatherRepository ??
+      WeatherRepository(
+        apiClient: WeatherApiClient(
+          baseUrl: apiBaseUri,
+          accessTokenProvider: accessToken,
+        ),
+      );
   final socialRepository = SocialRepository(
     apiClient: SocialApiClient(
       baseUrl: apiBaseUri,
@@ -158,18 +149,37 @@ Future<void> bootstrap() async {
     storage: storage,
   );
 
-  runApp(
-    App(
+  return AppDependencies(
+    settingsRepository: settingsRepository,
+    app: App(
       settingsRepository: settingsRepository,
       flightRulesRepository: flightRulesRepository,
       locationRepository: locationRepository,
       geocodingRepository: geocodingRepository,
       authRepository: authRepository,
-      weatherRepository: weatherRepository,
+      weatherRepository: weather,
       socialRepository: socialRepository,
       messagingRepository: messagingRepository,
       pushRegistrationService: pushRegistrationService,
       zoneSyncService: zoneSyncService,
     ),
   );
+}
+
+/// Wires up the layers (data clients -> repositories) and runs the app.
+Future<void> bootstrap() async {
+  await initializeAppPlatform();
+
+  final previousFlutterOnError = FlutterError.onError;
+  FlutterError.onError = (details) {
+    log(details.exceptionAsString(), stackTrace: details.stack);
+    previousFlutterOnError?.call(details);
+  };
+
+  if (kDebugMode) {
+    Bloc.observer = const AppBlocObserver();
+  }
+
+  final deps = await buildApp();
+  runApp(deps.app);
 }

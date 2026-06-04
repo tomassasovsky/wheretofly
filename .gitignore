@@ -50,3 +50,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# wasm_run 16 KB rebuild workspace (sources synced from pub cache; outputs go to jniLibs)
+/tooling/wasm_run_android_16k/target/
+/tooling/wasm_run_android_16k/jniLibs/
+/tooling/wasm_run_android_16k/Cargo.lock
+
+# Store asset composer (Pillow venv)
+/tooling/store_assets/.venv/

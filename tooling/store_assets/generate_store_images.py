@@ -17,6 +17,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 ASSETS_DIR = Path(__file__).resolve().parent
 FRAME_IPHONE = ASSETS_DIR / "device-frames" / "iphone-16-pro-max-black-titanium"
 FRAME_ANDROID = ASSETS_DIR / "device-frames" / "pixel-9-pro-obsidian"
+FRAME_PIXEL_TABLET = ASSETS_DIR / "device-frames" / "pixel-tablet-hazel"
+TABLET_SIZE_NAMES = frozenset({"android_tablet_7", "android_tablet_10"})
 RAW_DIRS: dict[str, Path] = {
     "en": REPO_ROOT / "docs" / "screenshots" / "en",
     "es": REPO_ROOT / "docs" / "screenshots" / "es",
@@ -111,6 +113,10 @@ CANVAS_SIZES: dict[str, tuple[int, int]] = {
     "ios_6.5": (1284, 2778),
     "ios_6.1": (1179, 2556),
     "android_phone": (1080, 1920),
+    # Play Console 7-inch tablet — 9:16 portrait (recommended 1200×1920).
+    "android_tablet_7": (1200, 1920),
+    # Play Console 10-inch tablet — 9:16 portrait (min 1080 short side; 1600×2560).
+    "android_tablet_10": (1600, 2560),
 }
 
 
@@ -130,7 +136,41 @@ _FRAME_CACHE: dict[Path, DeviceFrameSet] = {}
 
 
 def _frame_dir_for_size(size_name: str) -> Path:
-    return FRAME_ANDROID if size_name == "android_phone" else FRAME_IPHONE
+    if size_name in TABLET_SIZE_NAMES:
+        return FRAME_PIXEL_TABLET
+    if size_name.startswith("android_"):
+        return FRAME_ANDROID
+    return FRAME_IPHONE
+
+
+def _rotate_frame_set_cw(src: DeviceFrameSet) -> DeviceFrameSet:
+    """Return a copy of [src] rotated 90° clockwise (landscape → portrait)."""
+    frame = src.frame.rotate(-90, expand=True)
+    mask = src.mask.rotate(-90, expand=True)
+    # After 90° CW in a frame of size (W, H):
+    #   new frame size  = (H, W)
+    #   screen rect transforms as:
+    #     new_x = H - old_y - old_h
+    #     new_y = old_x
+    #     new_w = old_h   (dimensions swap)
+    #     new_h = old_w
+    return DeviceFrameSet(
+        frame=frame,
+        mask=mask,
+        screen_x=src.frame_h - src.screen_y - src.screen_h,
+        screen_y=src.screen_x,
+        screen_w=src.screen_h,
+        screen_h=src.screen_w,
+        frame_w=src.frame_h,
+        frame_h=src.frame_w,
+    )
+
+
+def _raw_dir_for(locale: str, size_name: str) -> Path:
+    base = RAW_DIRS[locale]
+    if size_name in TABLET_SIZE_NAMES:
+        return base / size_name
+    return base
 
 
 def _require_frames(frame_dir: Path) -> None:
@@ -191,6 +231,34 @@ def _load_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageF
             except OSError:
                 continue
     return ImageFont.load_default()
+
+
+def _aspect_ratio(size: tuple[int, int]) -> float:
+    w, h = size
+    return w / max(h, 1)
+
+
+def _fit_uniform(
+    src_size: tuple[int, int],
+    max_size: tuple[int, int],
+) -> tuple[int, int]:
+    sw, sh = src_size
+    max_w, max_h = max_size
+    scale = min(max_w / sw, max_h / sh)
+    return round(sw * scale), round(sh * scale)
+
+
+def _letterbox_to_canvas(
+    image: Image.Image,
+    canvas_size: tuple[int, int],
+) -> Image.Image:
+    """Scale uniformly to fit inside canvas_size; pad with the marketing gradient."""
+    tw, th = canvas_size
+    nw, nh = _fit_uniform(image.size, canvas_size)
+    resized = image.convert("RGBA").resize((nw, nh), Image.Resampling.LANCZOS)
+    canvas = _vertical_gradient(canvas_size).convert("RGBA")
+    canvas.paste(resized, ((tw - nw) // 2, (th - nh) // 2), resized)
+    return canvas.convert("RGB")
 
 
 def _vertical_gradient(size: tuple[int, int]) -> Image.Image:
@@ -338,6 +406,18 @@ def _compose_slide(
     return canvas.resize(canvas_size, Image.Resampling.LANCZOS).convert("RGB")
 
 
+
+def _compose_slide_tablet(
+    screenshot: Image.Image,
+    slide: Slide,
+    canvas_size: tuple[int, int],
+    *,
+    devices: DeviceFrameSet,
+) -> Image.Image:
+    """Tablet store slide: same composition as phone but with a tablet frame."""
+    return _compose_slide(screenshot, slide, canvas_size, devices=devices)
+
+
 def _feature_graphic(
     slides: tuple[Slide, ...],
     raw_dir: Path,
@@ -350,7 +430,8 @@ def _feature_graphic(
     draw = ImageDraw.Draw(base)
     title_font = _load_font(52, bold=True)
     sub_font = _load_font(22)
-    draw.text((48, 72), "Dónde Volar", fill=TITLE_COLOR, font=title_font)
+    title = "Dónde Vuelo" if locale == "es" else "Where To Fly"
+    draw.text((48, 72), title, fill=TITLE_COLOR, font=title_font)
     subtitle = (
         "Reglas de vuelo con drones en Argentina"
         if locale == "es"
@@ -379,24 +460,37 @@ def _feature_graphic(
     return base
 
 
-def _export_raw_screenshots(raw_dir: Path, store_dir: Path, locale: str) -> None:
-    """Copy raw captures sized for direct store upload."""
-    ios_dir = store_dir / "screenshots" / locale / "ios_6.7_raw"
-    android_dir = store_dir / "screenshots" / locale / "android_phone_raw"
-    ios_dir.mkdir(parents=True, exist_ok=True)
-    android_dir.mkdir(parents=True, exist_ok=True)
-
-    target_ios = (1290, 2796)
-    target_android = (1080, 1920)
-
+def _export_raw_bucket(
+    raw_dir: Path,
+    out_dir: Path,
+    target: tuple[int, int],
+) -> None:
+    if not raw_dir.is_dir():
+        return
+    out_dir.mkdir(parents=True, exist_ok=True)
+    target_ratio = _aspect_ratio(target)
     for path in sorted(raw_dir.glob("*.png")):
         img = Image.open(path)
-        for target, out_dir in (
-            (target_ios, ios_dir),
-            (target_android, android_dir),
-        ):
-            fitted = img.resize(target, Image.Resampling.LANCZOS)
-            fitted.save(out_dir / path.name, optimize=True)
+        src_ratio = _aspect_ratio(img.size)
+        if abs(src_ratio - target_ratio) > 0.02:
+            print(
+                f"warn {path.name}: capture aspect {src_ratio:.3f} != "
+                f"export {target_ratio:.3f} — letterboxing (re-capture at {target[0]}×{target[1]})"
+            )
+        _letterbox_to_canvas(img, target).save(
+            out_dir / path.name,
+            optimize=True,
+        )
+
+
+def _export_raw_screenshots(locale: str, store_dir: Path) -> None:
+    """Copy raw captures sized for direct store upload."""
+    base = RAW_DIRS[locale]
+    shots = store_dir / "screenshots" / locale
+    _export_raw_bucket(base, shots / "ios_6.7_raw", (1290, 2796))
+    _export_raw_bucket(base, shots / "android_phone_raw", (1080, 1920))
+    _export_raw_bucket(base / "android_tablet_7", shots / "android_tablet_7_raw", (1200, 1920))
+    _export_raw_bucket(base / "android_tablet_10", shots / "android_tablet_10_raw", (1600, 2560))
 
 
 # Legacy captures from wind_map_screenshot_test.dart
@@ -426,17 +520,35 @@ def generate(
 ) -> None:
     store_dir.mkdir(parents=True, exist_ok=True)
 
+    phone_raw = raw_dir
     for size_name, canvas_size in CANVAS_SIZES.items():
-        devices = _load_device_frame_set(_frame_dir_for_size(size_name))
+        size_raw = _raw_dir_for(locale, size_name)
         out_dir = store_dir / "marketing" / locale / size_name
         out_dir.mkdir(parents=True, exist_ok=True)
         for slide in slides:
-            raw_path = _resolve_raw(raw_dir, slide.raw_name)
+            raw_path = _resolve_raw(size_raw, slide.raw_name)
             if raw_path is None:
-                print(f"skip missing {raw_dir / slide.raw_name}.png")
+                print(f"skip missing {size_raw / slide.raw_name}.png")
                 continue
             shot = Image.open(raw_path)
-            composed = _compose_slide(shot, slide, canvas_size, devices=devices)
+            canvas_ratio = _aspect_ratio(canvas_size)
+            shot_ratio = _aspect_ratio(shot.size)
+            if size_name in TABLET_SIZE_NAMES and abs(shot_ratio - canvas_ratio) > 0.02:
+                print(
+                    f"warn {raw_path}: {shot.size[0]}×{shot.size[1]} aspect {shot_ratio:.3f} "
+                    f"≠ canvas {canvas_size[0]}×{canvas_size[1]} ({canvas_ratio:.3f}); "
+                    "re-run capture_android_tablets.sh for matching tablet UI"
+                )
+            devices = _load_device_frame_set(_frame_dir_for_size(size_name))
+            if size_name in TABLET_SIZE_NAMES:
+                # The Pixel Tablet frame is landscape; rotate it to portrait
+                # to match the portrait screenshots captured by the emulator.
+                devices = _rotate_frame_set_cw(devices)
+                composed = _compose_slide_tablet(
+                    shot, slide, canvas_size, devices=devices
+                )
+            else:
+                composed = _compose_slide(shot, slide, canvas_size, devices=devices)
             out_path = out_dir / f"{slide.output_name}.png"
             composed.save(out_path, optimize=True, compress_level=3)
             print(f"wrote {out_path}")
@@ -444,14 +556,14 @@ def generate(
     fg_dir = store_dir / "play"
     fg_dir.mkdir(parents=True, exist_ok=True)
     fg_path = fg_dir / f"feature_graphic_{locale}.png"
-    _feature_graphic(slides, raw_dir, locale=locale).save(
+    _feature_graphic(slides, phone_raw, locale=locale).save(
         fg_path,
         optimize=True,
         compress_level=3,
     )
     print(f"wrote {fg_path}")
 
-    _export_raw_screenshots(raw_dir, store_dir, locale)
+    _export_raw_screenshots(locale, store_dir)
 
 
 def main() -> None:

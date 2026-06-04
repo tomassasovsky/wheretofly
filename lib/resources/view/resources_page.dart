@@ -32,6 +32,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
     final highlight = widget.highlightPermission;
     if (highlight != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_guideKeys.keys.toList().indexOf(highlight) == 0) return;
         final context = _guideKeys[highlight]?.currentContext;
         if (context == null || !context.mounted) return;
         final reduce = MediaQuery.of(context).disableAnimations;

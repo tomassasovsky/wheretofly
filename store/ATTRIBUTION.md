@@ -10,6 +10,7 @@ vendored under `tooling/store_assets/device-frames/`:
 |----------|--------|---------|
 | iOS marketing (`ios_*`) | iPhone 16 Pro Max | Black Titanium |
 | Android marketing (`android_phone/`) | Pixel 9 Pro | Obsidian |
+| Android tablet marketing (optional frame asset) | Pixel Tablet | Hazel |
 
 Refresh vendored files:
 

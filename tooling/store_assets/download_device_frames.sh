@@ -20,5 +20,7 @@ download_set "Apple%20iPhone/16%20Pro%20Max/Black%20Titanium" \
   "iphone-16-pro-max-black-titanium"
 download_set "Android%20Phone/Pixel%209%20Pro/Obsidian" \
   "pixel-9-pro-obsidian"
+download_set "Android%20Tablet/Pixel%20Tablet/Hazel" \
+  "pixel-tablet-hazel"
 
 echo "Device frames ready under tooling/store_assets/device-frames/"

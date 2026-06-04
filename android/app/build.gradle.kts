@@ -20,6 +20,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "dev.aquiles.wheretofly"
     compileSdk = flutter.compileSdkVersion
+    // NDK r28+ (from Flutter) compiles 16 KB-aligned ELF by default; required for Play on Android 15+.
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -57,6 +58,40 @@ android {
                 signingConfigs.getByName("debug")
             }
         }
+    }
+
+    // AGP 8.5.1+ zip-aligns uncompressed JNI libs to 16 KB for app bundles.
+    packaging {
+        jniLibs {
+            // Prefer app-local libwasm_run_dart.so (see scripts/rebuild_wasm_run_android_16k.sh).
+            pickFirsts += listOf("**/libwasm_run_dart.so")
+        }
+    }
+}
+
+val wasmRun16kLibs =
+    listOf(
+        "src/main/jniLibs/arm64-v8a/libwasm_run_dart.so",
+        "src/main/jniLibs/x86_64/libwasm_run_dart.so",
+    )
+
+tasks.register("checkWasmRun16kJniLibs") {
+    group = "verification"
+    description = "Ensures 16 KB-aligned wasm_run JNI libraries are present before release builds."
+    doLast {
+        val missing = wasmRun16kLibs.filter { !file(it).isFile }
+        if (missing.isNotEmpty()) {
+            error(
+                "Missing 16 KB wasm_run libraries: ${missing.joinToString()}. " +
+                    "Run: ./scripts/rebuild_wasm_run_android_16k.sh",
+            )
+        }
+    }
+}
+
+tasks.configureEach {
+    if (name == "assembleRelease" || name == "bundleRelease") {
+        dependsOn("checkWasmRun16kJniLibs")
     }
 }
 

@@ -13,7 +13,6 @@ import 'package:where_to_fly/map/map_initializer.dart';
 import 'package:where_to_fly/map/map_layout.dart';
 import 'package:where_to_fly/map/map_overlay_policy.dart';
 import 'package:where_to_fly/map/map_zone_sync.dart';
-import 'package:where_to_fly/map/store_screenshot_config.dart';
 import 'package:where_to_fly/map/view/map_search_listeners.dart';
 import 'package:where_to_fly/map/view/widgets/config_bar.dart';
 import 'package:where_to_fly/map/view/widgets/flutter_map_layer.dart';
@@ -43,19 +42,9 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
-    if (WindMapConfig.enabled && WindMapConfig.autoOpen) {
-      _showWindOverlay = true;
-    }
     _searchFocusNode.addListener(_onSearchFocusChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (StoreScreenshotConfig.autoSelectVerdict) {
-        // After the integration test captures 01-map-zones (~10s).
-        Future<void>.delayed(const Duration(seconds: 11), () {
-          if (!mounted) return;
-          _checkPoint(StoreScreenshotConfig.verdictPoint);
-        });
-      }
       final authState = context.read<AuthCubit>().state;
       if (authState.isAuthenticated) {
         unawaited(syncMapZonesFromBackend(context));
@@ -128,7 +117,7 @@ class _MapViewState extends State<MapView> {
 
   void _toggleWindOverlay() {
     final enabling = !_showWindOverlay;
-    if (enabling && StoreScreenshotConfig.captureMode) {
+    if (enabling) {
       _clearSearchBar();
     }
     setState(() => _showWindOverlay = enabling);

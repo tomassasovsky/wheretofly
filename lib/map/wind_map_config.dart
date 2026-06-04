@@ -15,9 +15,6 @@ abstract final class WindMapConfig {
         defaultValue: true,
       );
 
-  /// QA only: open the map tab directly in wind mode (simulator screenshots).
-  static const autoOpen = bool.fromEnvironment('WIND_MAP_AUTO_OPEN');
-
   static const model = 'dwd_icon';
 
   /// Scalar gust field (≥ 0, uses the `wind` colorscale in weather-map-layer).

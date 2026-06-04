@@ -44,6 +44,7 @@ class _ConfigSheet extends StatelessWidget {
           minChildSize: 0.4,
           maxChildSize: 0.95,
           builder: (context, scrollController) => ListView(
+            key: const ValueKey('config_sheet_scroll'),
             controller: scrollController,
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
             children: [

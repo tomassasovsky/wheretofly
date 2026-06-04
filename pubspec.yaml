@@ -69,6 +69,7 @@ dependency_overrides:
   shared_preferences_android: 2.4.25
 
 dev_dependencies:
+  args: ^2.7.0
   bloc_test: ^9.1.7
   build_runner: ^2.15.0
   flutter_launcher_icons: ^0.14.4
@@ -78,6 +79,7 @@ dev_dependencies:
   go_router_builder: ^4.3.0
   integration_test:
     sdk: flutter
+  mason_logger: ^0.3.5
   mocktail: ^1.0.4
   shared_preferences: ^2.5.3
   very_good_analysis: ^6.0.0

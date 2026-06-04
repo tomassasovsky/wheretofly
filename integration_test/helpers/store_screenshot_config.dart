@@ -1,26 +1,31 @@
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:settings_repository/settings_repository.dart' show SettingsRepository;
+import 'package:weather_repository/weather_repository.dart';
 
-/// QA flags for automated store listing screenshots (integration_test).
+/// Store screenshot capture — integration_test only (flutter drive).
 abstract final class StoreScreenshotConfig {
-  /// Set via `--dart-define=STORE_SCREENSHOT_AUTO_SELECT=true` during capture.
-  static const captureMode = bool.fromEnvironment(
-    'STORE_SCREENSHOT_AUTO_SELECT',
-  );
-
-  /// `en` or `es` — forces [SettingsRepository] locale during capture.
+  /// `en` or `es` via `--dart-define=STORE_SCREENSHOT_LOCALE=…`.
   static const localeCode = String.fromEnvironment(
     'STORE_SCREENSHOT_LOCALE',
   );
 
-  /// Pre-select a Buenos Aires point so the verdict card is visible without
-  /// tapping the map in integration tests.
-  static bool get autoSelectVerdict => captureMode;
-
+  /// Buenos Aires — 02-map-verdict.
   static const verdictPoint = LatLng(-34.608, -58.37);
 
-  /// Map tile / geocoding failures while the simulator has network hiccups.
+  static WeatherSnapshot weatherFixtureFor(LatLng point) {
+    return WeatherSnapshot.fromJson({
+      'location': {'lat': point.latitude, 'lon': point.longitude},
+      'fetchedAt': DateTime.now().toUtc().toIso8601String(),
+      'current': {'wind_speed': 2.3, 'wind_gust': 4.9},
+      'hourly': <Map<String, dynamic>>[],
+      'alerts': <Map<String, dynamic>>[],
+      'advisory': {
+        'level': 'good',
+        'reasons': ['favorable'],
+      },
+    });
+  }
+
   static bool isBenignFlutterError(FlutterErrorDetails details) {
     final message = details.exceptionAsString();
     final library = details.library ?? '';
