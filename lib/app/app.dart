@@ -11,7 +11,11 @@ import 'package:messaging_repository/messaging_repository.dart';
 import 'package:settings_repository/settings_repository.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:weather_repository/weather_repository.dart';
+import 'package:where_to_fly/app/app_mode.dart';
 import 'package:where_to_fly/app/router/app_router.dart';
+import 'package:where_to_fly/app/router/app_routes.dart';
+import 'package:where_to_fly/app/router/root_navigator_key.dart';
+import 'package:where_to_fly/app/router/router_auth_refresh.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/messaging/cubit/notification_preferences_cubit.dart';
@@ -54,7 +58,18 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  late final GoRouter _router = createAppRouter();
+  late final AuthCubit _authCubit = AuthCubit(widget.authRepository)
+    ..checkSession();
+  late final RouterAuthRefresh _routerRefresh = RouterAuthRefresh(_authCubit);
+  late final GoRouter _router =
+      createAppRouter(refreshListenable: _routerRefresh);
+
+  @override
+  void dispose() {
+    _routerRefresh.dispose();
+    _authCubit.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,10 +86,10 @@ class _AppState extends State<App> {
         RepositoryProvider.value(value: widget.pushRegistrationService),
         RepositoryProvider.value(value: widget.zoneSyncService),
       ],
-      child: BlocProvider(
-        create: (_) => SettingsCubit(widget.settingsRepository),
+      child: BlocProvider.value(
+        value: _authCubit,
         child: BlocProvider(
-          create: (_) => AuthCubit(widget.authRepository)..checkSession(),
+          create: (_) => SettingsCubit(widget.settingsRepository),
           child: BlocProvider(
             create: (_) =>
                 WeatherAlertsCubit(weatherRepository: widget.weatherRepository),
@@ -104,6 +119,14 @@ class _AppState extends State<App> {
                       context.read<WeatherAlertsCubit>().reset();
                       context.read<NotificationPreferencesCubit>().reset();
                       unawaited(widget.pushRegistrationService.unregister());
+                      final navContext = rootNavigatorKey.currentContext;
+                      if (navContext != null) {
+                        if (AppMode.isMapOnly) {
+                          const MapTabRoute().go(navContext);
+                        } else {
+                          const LoginRoute().go(navContext);
+                        }
+                      }
                     },
                   ),
                 ],

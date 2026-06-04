@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/auth/auth_navigation.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
@@ -18,24 +19,10 @@ class _LoginPageState extends State<LoginPage> {
   var _navigatedAfterAuth = false;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _leaveIfAlreadyAuthenticated();
-    });
-  }
-
-  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  void _leaveIfAlreadyAuthenticated() {
-    if (!mounted || _navigatedAfterAuth) return;
-    if (!context.read<AuthCubit>().state.isAuthenticated) return;
-    _navigateAway();
   }
 
   void _navigateAway() {
@@ -50,14 +37,10 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.authLoginTitle)),
       body: BlocConsumer<AuthCubit, AuthState>(
-        listenWhen: (previous, current) => current.isAuthenticated,
+        listenWhen: (previous, current) =>
+            current.isAuthenticated && !previous.isAuthenticated,
         listener: (context, state) => _navigateAway(),
         builder: (context, state) {
-          if (state.isAuthenticated) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _navigateAway();
-            });
-          }
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -100,6 +83,11 @@ class _LoginPageState extends State<LoginPage> {
               TextButton(
                 onPressed: () => openSignUp(context),
                 child: Text(l10n.authSignUpPrompt),
+              ),
+              TextButton(
+                key: const ValueKey('auth_continue_without_account'),
+                onPressed: () => const MapTabRoute().replace(context),
+                child: Text(l10n.authContinueWithoutAccount),
               ),
             ],
           );

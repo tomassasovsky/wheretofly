@@ -227,13 +227,13 @@ abstract class AppLocalizations {
   /// No description provided for @outsideArgentina.
   ///
   /// In en, this message translates to:
-  /// **'Your location appears to be outside Argentina; the dataset only covers Argentine zones.'**
+  /// **'This location may be outside Argentina. Zone data may be incomplete or unavailable.'**
   String get outsideArgentina;
 
   /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:
-  /// **'Search a city or address in Argentina'**
+  /// **'City or address'**
   String get searchHint;
 
   /// No description provided for @searchNoResults.
@@ -277,6 +277,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
+
+  /// No description provided for @attributions.
+  ///
+  /// In en, this message translates to:
+  /// **'Licenses & attributions'**
+  String get attributions;
+
+  /// No description provided for @attributionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Map data, weather sources, and open-source packages'**
+  String get attributionsSubtitle;
 
   /// No description provided for @theme.
   ///
@@ -343,6 +355,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Support development on Cafecito.'**
   String get sponsorMeDescription;
+
+  /// No description provided for @creditsDevelopedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Developed by Tomás Sasovsky'**
+  String get creditsDevelopedBy;
+
+  /// No description provided for @creditsWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get creditsWebsite;
+
+  /// No description provided for @creditsGithub.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub'**
+  String get creditsGithub;
 
   /// No description provided for @permRecreational.
   ///
@@ -836,6 +866,18 @@ abstract class AppLocalizations {
   /// **'Could not log in. Check your credentials and connection.'**
   String get authLoginFailed;
 
+  /// No description provided for @authContinueWithoutAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue without account'**
+  String get authContinueWithoutAccount;
+
+  /// No description provided for @splashLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your session…'**
+  String get splashLoading;
+
   /// No description provided for @weatherAdvisoryTitle.
   ///
   /// In en, this message translates to:
@@ -853,6 +895,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Advisory only — pilot responsibility under RAAC 100.'**
   String get weatherDisclaimer;
+
+  /// No description provided for @weatherReasonSmnAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Active weather alert (SMN)'**
+  String get weatherReasonSmnAlert;
+
+  /// No description provided for @weatherReasonWindHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind too strong for safe flight'**
+  String get weatherReasonWindHigh;
+
+  /// No description provided for @weatherReasonWindElevated.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind elevated for light drones'**
+  String get weatherReasonWindElevated;
+
+  /// No description provided for @weatherReasonWindModerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Caution: moderate wind'**
+  String get weatherReasonWindModerate;
+
+  /// No description provided for @weatherReasonFavorable.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorable conditions'**
+  String get weatherReasonFavorable;
+
+  /// No description provided for @mapLayerZones.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones'**
+  String get mapLayerZones;
+
+  /// No description provided for @mapLayerWind.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind'**
+  String get mapLayerWind;
+
+  /// No description provided for @mapWindOverlayToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show wind gusts'**
+  String get mapWindOverlayToggle;
+
+  /// No description provided for @mapWindLegendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind gusts (10 m)'**
+  String get mapWindLegendTitle;
+
+  /// No description provided for @mapWindLegendUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'m/s'**
+  String get mapWindLegendUnit;
+
+  /// No description provided for @openMeteoAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'© Open-Meteo · DWD ICON'**
+  String get openMeteoAttribution;
 
   /// No description provided for @weatherLoading.
   ///
@@ -939,6 +1047,9 @@ abstract class AppLocalizations {
   String get socialFeedLoadFailed;
 
   /// No description provided for @socialFeedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — showing saved posts'**
   String get socialFeedOffline;
 
   /// No description provided for @socialShareFlyCheck.
@@ -1180,6 +1291,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in to see your profile, posts, and saved alerts.'**
   String get profileSignInPrompt;
+
+  /// No description provided for @socialFlyCheckMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing fly-check data.'**
+  String get socialFlyCheckMissing;
+
+  /// No description provided for @socialReelBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'REEL'**
+  String get socialReelBadge;
+
+  /// No description provided for @socialReelRetryVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry video'**
+  String get socialReelRetryVideo;
 }
 
 class _AppLocalizationsDelegate

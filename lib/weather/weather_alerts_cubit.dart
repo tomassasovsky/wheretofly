@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:weather_api_client/weather_api_client.dart';
 import 'package:weather_repository/weather_repository.dart';
 
 enum WeatherAlertsStatus { initial, loading, loaded, error }
@@ -93,14 +92,33 @@ class WeatherAlertsCubit extends Cubit<WeatherAlertsState> {
   }
 
   Future<void> remove(String id) async {
-    await _weatherRepository.deleteAlertSubscription(id);
+    final previous = state.subscriptions;
     emit(
       state.copyWith(
-        subscriptions: state.subscriptions
-            .where((s) => s.id != id)
-            .toList(growable: false),
+        subscriptions:
+            previous.where((s) => s.id != id).toList(growable: false),
+        clearError: true,
       ),
     );
+    try {
+      await _weatherRepository.deleteAlertSubscription(id);
+    } on WeatherApiException catch (e) {
+      emit(
+        state.copyWith(
+          status: WeatherAlertsStatus.error,
+          subscriptions: previous,
+          errorMessage: e.message,
+        ),
+      );
+    } catch (_) {
+      emit(
+        state.copyWith(
+          status: WeatherAlertsStatus.error,
+          subscriptions: previous,
+          errorMessage: 'weather_alerts_remove_failed',
+        ),
+      );
+    }
   }
 
   void reset() => emit(const WeatherAlertsState());

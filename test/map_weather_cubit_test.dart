@@ -2,7 +2,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:weather_api_client/weather_api_client.dart';
 import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/map/cubit/map_weather_cubit.dart';
 
@@ -11,33 +10,16 @@ class _MockWeatherRepository extends Mock implements WeatherRepository {}
 void main() {
   late WeatherRepository repository;
 
+  setUpAll(() {
+    registerFallbackValue(const LatLng(0, 0));
+  });
+
   setUp(() {
     repository = _MockWeatherRepository();
   });
 
   blocTest<MapWeatherCubit, MapWeatherState>(
-    'requires auth when not signed in',
-    build: () => MapWeatherCubit(
-      weatherRepository: repository,
-      isAuthenticated: () async => false,
-    ),
-    act: (cubit) => cubit.fetchFor(const LatLng(-34.6, -58.4)),
-    expect: () => [
-      isA<MapWeatherState>().having(
-        (s) => s.status,
-        'status',
-        MapWeatherStatus.requiresAuth,
-      ),
-    ],
-    verify: (_) {
-      verifyNever(
-        () => repository.getWeather(any()),
-      );
-    },
-  );
-
-  blocTest<MapWeatherCubit, MapWeatherState>(
-    'loads weather snapshot when authenticated',
+    'loads weather snapshot for guests',
     build: () {
       when(() => repository.getWeather(any())).thenAnswer(
         (_) async => WeatherSnapshot.fromJson({
@@ -52,10 +34,7 @@ void main() {
           },
         }),
       );
-      return MapWeatherCubit(
-        weatherRepository: repository,
-        isAuthenticated: () async => true,
-      );
+      return MapWeatherCubit(weatherRepository: repository);
     },
     act: (cubit) => cubit.fetchFor(const LatLng(-34.6, -58.4)),
     expect: () => [

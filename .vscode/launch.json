@@ -1,13 +1,20 @@
 {
+  "version": "0.2.0",
   "configurations": [
     {
       "name": "Flutter",
       "type": "dart",
       "request": "launch",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "Flutter (iOS + wind tile server)",
+      "type": "dart",
+      "request": "launch",
       "program": "lib/main.dart",
-      "args": [
-        // "--dart-define=ZONES_FEED_URL=https://raw.githubusercontent.com/aquiles-codes/where-to-fly/main/feed/zones.geojson",
-        "--dart-define=OPENAIP_API_KEY=a8a3fb56bc906a055b53a56810897f8e"
+      "toolArgs": [
+        "--dart-define=API_BASE_URL=http://127.0.0.1:8080",
+        "--dart-define=WIND_TILE_BASE_URL=http://127.0.0.1:8765"
       ]
     }
   ]

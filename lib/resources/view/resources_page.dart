@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/l10n/localized_labels.dart';
 import 'package:where_to_fly/resources/view/permit_resources.dart';
+import 'package:where_to_fly/theme/app_snack_bar.dart';
 
 /// Screen listing how to obtain each permission level, with links to the
 /// official ANAC / government resources to request them.
@@ -91,8 +92,9 @@ class _GuideCard extends StatelessWidget {
     final uri = Uri.parse(url);
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).couldNotOpen(url))),
+      context.showAppSnackBar(
+        AppLocalizations.of(context).couldNotOpen(url),
+        intent: AppSnackBarIntent.error,
       );
     }
   }

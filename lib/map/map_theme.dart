@@ -1,0 +1,21 @@
+import 'package:flutter/material.dart';
+
+/// Map basemap and overlay styling aligned with the app Material theme.
+abstract final class MapTheme {
+  /// Shown behind the map while the style loads (matches basemap land color).
+  static const lightPlaceholder = Color(0xFFF4F1EC);
+
+  /// Matches CARTO Dark Matter background.
+  static const darkPlaceholder = Color(0xFF0D0D0D);
+
+  static Color placeholderFor(Brightness brightness) =>
+      brightness == Brightness.dark ? darkPlaceholder : lightPlaceholder;
+
+  /// Tap / search selection marker (app seed purple / light blue on dark).
+  static Color selectionFillFor(Brightness brightness) =>
+      brightness == Brightness.dark
+          ? const Color(0xFF5E9EFF)
+          : const Color(0xFF3B0297);
+
+  static const Color selectionStroke = Colors.white;
+}

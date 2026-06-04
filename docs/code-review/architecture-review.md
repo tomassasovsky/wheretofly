@@ -1,298 +1,149 @@
-# Architecture Review
+# Architecture Review — `where_to_fly`
 
-**Project:** where_to_fly (Dónde Volar)  
-**Scope:** `lib/`, `packages/*/lib/`, `packages/*/test/`, `test/`  
-**Date:** 2026-06-02  
-**Stack:** Flutter, Bloc/Cubit, layered monorepo (data clients → repositories → presentation)
+**Reviewer:** Architecture Review Agent (VGV layered-architecture standards)
+**Scope:** Full project — `lib/` (presentation + business logic), `packages/*/` (data + repository layers), and `backend/` (Dart Frog API) as a separate package.
+**Excluded:** generated files (`**/*.g.dart`, `lib/l10n/gen/**`), `tooling/**`, vendored assets, `docs/**`.
 
----
+## Summary
 
-## Executive Summary
+The project follows the VGV layered architecture quite faithfully at the **package** level: the dependency graph is clean and one-directional, there are no circular dependencies, every package has a proper manifest/lints/tests, and state management is textbook (immutable `Equatable` states, `copyWith`, business logic in cubits, providers wired at a single composition root).
 
-The project follows VGV's layered monorepo pattern well at a high level: data clients are isolated in `packages/`, repositories compose them, and `bootstrap.dart` wires dependencies before `runApp`. Cubits (`MapCubit`, `SettingsCubit`) hold map and app-settings business logic with immutable Equatable state.
+The weak point is the **layer boundary between presentation and data**. Several repositories pass data-layer models and exceptions straight through instead of exposing domain types or re-exporting them, which forces the presentation layer — including pure UI widgets — to `import 'package:*_api_client/...'` directly. The data *flow* still goes through repositories (so behavior is correct), but the *type/exception coupling* repeatedly crosses the layer boundary, and in the worst cases UI widgets depend on the data layer with no repository in between.
 
-However, there is a **critical safety regression** in zone loading: when any live feed returns data, the bundled offline snapshot is discarded entirely rather than merged. Configuring only OpenAIP (`--dart-define=OPENAIP_API_KEY=…`) silently removes national parks, government prohibited zones, and critical infrastructure from the map. For a drone-restriction app, this is a merge-blocking defect.
-
-Additional important issues include a presentation-layer import of the data client, substantial search/location orchestration living in `MapView` instead of a cubit, weak test coverage outside `flight_rules_repository`, and several behavioral gaps in persistence and UI gating.
-
-**Verdict:** Fix 2 critical issues before merging; address important layer and test gaps in the same PR or immediately after.
-
----
-
-## Architecture Overview
-
-```
-Presentation (lib/)
-  ├── app/app.dart          — RepositoryProvider + SettingsCubit
-  ├── map/cubit/            — MapCubit (flight assessment)
-  ├── map/view/             — MapPage, widgets
-  └── settings/             — SettingsCubit
-
-Domain / Repository (packages/*_repository)
-  ├── flight_rules_repository  — zone mapping + assess()
-  ├── geocoding_repository     — search/reverse + cache
-  ├── settings_repository      — persisted prefs
-  └── location_repository      — device location
-
-Data (packages/*_client, storage)
-  ├── zones_api_client         — bundled, remote GeoJSON, OpenAIP
-  ├── geocoding_api_client     — Photon API
-  ├── location_client          — geolocator wrapper
-  └── storage                  — SharedPreferences
-```
-
-Intended dependency direction: **Presentation → Repository → Data**. Composition root (`bootstrap.dart`) may import data clients directly — that is correct.
+The backend is cleanly layered (`routes → services → db`) with a singleton DI container.
 
 ---
 
 ## Layer Separation
 
-**Violations found: 1**
+VGV layers in this project: **data** (`*_api_client`, `storage`, `location_client`) ← **repository** (`*_repository`) ← **business logic** (`lib/**/cubit`, `lib/**/*_cubit.dart`) ← **presentation** (`lib/**/view`). Per the README, repository packages "never import Flutter" and each layer talks only to the one beneath it.
 
-| Location | Violation |
-|----------|-----------|
-| `lib/map/view/widgets/search_results_overlay.dart:2` | Presentation imports `package:geocoding_api_client/geocoding_api_client.dart` directly instead of `package:geocoding_repository/geocoding_repository.dart`, which already re-exports `GeocodeResult`, `GeocodingFailure`, and `GeocodingException`. |
+### Violations
 
-**Clean files (checked):**
+#### 1. Presentation UI widgets import the data layer directly (Critical)
 
-- `lib/app/app.dart` — imports repositories only
-- `lib/map/cubit/map_cubit.dart` — imports `flight_rules_repository`, `settings_repository`
-- `lib/map/view/map_page.dart` — imports repositories (not api clients), though see State Management for logic placement
-- All `packages/*_repository/lib/**` — depend on data layer, not Flutter/presentation
-- All `packages/*_client/lib/**` — no Flutter or repository imports
+These files live in the presentation layer (`view/`) yet import `*_api_client` packages, skipping both the repository and business-logic layers:
 
-**Composition root (acceptable):**
+- `lib/map/view/widgets/zone_stale_banner.dart:3` — imports `package:zones_api_client` for `ZoneFeedMetadata`
+- `lib/social/view/widgets/post_card.dart:2` — imports `package:social_api_client`
+- `lib/social/view/widgets/post_media_view.dart:6` — imports `package:social_api_client`
+- `lib/social/view/widgets/profile_media_grid.dart:2` — imports `package:social_api_client`
+- `lib/social/view/widgets/reel_feed_item.dart:2` — imports `package:social_api_client`
+- `lib/social/view/profile_page.dart:4` — imports `package:social_api_client`
+- `lib/social/view/messages_page.dart:3` — imports `package:messaging_api_client`
+- `lib/map/view/widgets/weather_advisory_card.dart:4` — imports `package:weather_api_client`
 
-- `lib/bootstrap.dart:7–13` imports `geocoding_api_client` and `zones_api_client` to construct repositories. This is the correct place for data-layer wiring.
+A widget rendering a `SocialPost` or `ZoneFeedMetadata` is reaching two layers down. This is the clearest cross-layer violation in the codebase.
 
-**Internal domain smell (not a cross-layer violation):**
+#### 2. Business-logic cubits import the data layer for model/exception types (Important)
 
-- `packages/flight_rules_repository/lib/src/models/permission_level.dart:1` imports `flight_assessment.dart`, while `flight_assessment.dart:5` imports `permission_level.dart`. Dart resolves this cycle, but `PermissionLevel.maxPlannedAltitudeMetersAgl` depends on constants defined on `FlightAssessment`, coupling two domain models. Move altitude ceiling constants to `altitude_range.dart` or a dedicated constants file.
+These cubits correctly call repositories for data access, but still import `*_api_client` directly to reference the model/exception types the repository returns:
+
+- `lib/auth/auth_cubit.dart:1` (`AuthSession`, `AuthApiException`)
+- `lib/social/cubit/feed_cubit.dart:3` (`SocialPost`, `SocialApiException`)
+- `lib/social/cubit/create_post_cubit.dart:3` (`SocialPost`, `SocialApiException`)
+- `lib/social/cubit/profile_cubit.dart:3`
+- `lib/social/cubit/post_detail_cubit.dart:3`
+- `lib/messaging/cubit/chat_cubit.dart:4` (`ChatMessage`, `MessagingApiException`)
+- `lib/messaging/cubit/threads_cubit.dart:3`
+- `lib/messaging/cubit/notification_preferences_cubit.dart:3`
+- `lib/map/cubit/map_weather_cubit.dart:4` (`weather_api_client`)
+- `lib/weather/weather_alerts_cubit.dart:4` (`WeatherAlertSubscription`, `WeatherApiException`)
+
+**Root cause:** the repositories pass data-layer types through unchanged and do not re-export them. For example `SocialRepository.feed()` returns `List<SocialPost>` where `SocialPost` is defined in `social_api_client`, and `social_repository.dart` exports only `src/social_repository.dart` — not the model. So any consumer must import the data package to name the return type.
+
+Contrast with the repositories that get this right:
+- `packages/geocoding_repository/lib/geocoding_repository.dart:5` — `export 'package:geocoding_api_client/...' show GeocodeResult, GeocodingException, GeocodingFailure;` so consumers import only the repository.
+- `packages/settings_repository` defines its own domain enum `AppThemeMode`; `SettingsCubit` maps it to Flutter's `ThemeMode` (`lib/settings/settings_cubit.dart:61`). This is the model layer-separation pattern.
+- `packages/flight_rules_repository` defines its own domain models (`FlyZone`, `PermissionLevel`, `FlightModality`, `AltitudeRange`, `FlightAssessment`); `MapCubit` depends only on the repository and stays Flutter-free.
+
+The inconsistency is the real issue: four repositories (`social_repository`, `messaging_repository`, `weather_repository`, `auth_repository`) neither define domain models nor re-export their data types, while their peers do.
+
+#### 3. `ZoneSyncService` performs repository composition in the presentation layer (Important)
+
+`lib/zone_sync/zone_sync_service.dart` lives in `lib/` but:
+- holds two **data** clients directly (`BackendZonesApiClient`, and imports `zones_api_client` at lines 1 & 3),
+- performs repository-layer composition (`FlightRulesRepository.load(feed: backendZonesClient)` at line 14),
+- exposes the data-layer type `ZoneFeedMetadata` (line 11).
+
+This is repository-layer wiring/ownership that has leaked into the presentation module. The composition (data client → repository) belongs in `bootstrap.dart` (which already does exactly this for the initial load) or behind the repository.
+
+### Clean files
+
+- `lib/bootstrap.dart` — correct composition root; importing data clients here to assemble repositories is expected and correct.
+- `lib/app/app.dart` — provides only repositories/cubits; no data-layer imports.
+- `lib/map/cubit/map_cubit.dart` — depends only on `flight_rules_repository` + `settings_repository`; no Flutter import in business logic.
+- `lib/settings/settings_cubit.dart` — exemplary domain→Flutter mapping at the boundary.
 
 ---
 
 ## State Management Assessment
 
-### MapCubit — **Issues found**
+State management is **Bloc/Cubit**, wired via `flutter_bloc` providers. Overall: correct.
 
-| Check | Status | Detail |
-|-------|--------|--------|
-| Naming | ✅ | Descriptive cubit and state names |
-| Immutability | ✅ | `MapState` uses `copyWith`, Equatable |
-| Business logic location | ✅ | Permission/modality/altitude selection and `assess()` calls live in cubit |
-| Data access | ✅ | Calls `FlightRulesRepository` and `SettingsRepository`, not api clients |
-| Provider lifecycle | ✅ | Created in `MapPage` via `BlocProvider` |
-| Persistence | ⚠️ | `selectPermission`, `selectModality`, `_persistAltitude` call `_settings?.setPermissionId(...)` / `setModalityId` / `setFlightAltitudeRangeAgl` without `await`. Writes are fire-and-forget; a fast app kill can lose the last selection. |
+- **Immutability:** All inspected states (`MapState`, `AuthState`, `FeedState`, `ChatState`, `WeatherAlertsState`, `CreatePostState`, `SettingsState`) extend `Equatable`, use `final` fields, and expose `copyWith`. No mutable state fields found. ✔
+- **Business logic location:** Logic lives in cubits, not widgets (e.g. `MapCubit._reassessed`, `AuthCubit.checkSession`). ✔
+- **Data access:** Cubits call repositories, never data sources, for behavior. ✔ (The remaining coupling is type-level — see Layer Separation #2.)
+- **Provider/injection & lifecycle:** Repositories provided via `MultiRepositoryProvider` in `app.dart`; the app-scoped `AuthCubit` is created in `_AppState` and correctly `close()`d in `dispose()` (`lib/app/app.dart:67`). `RouterAuthRefresh` is disposed too. ✔
+- **Naming:** Descriptive (`MapCubit`, `WeatherAlertsCubit`, `NotificationPreferencesCubit`); no generic `Manager`/`Handler`. ✔
+- **Complexity match:** Cubits (not full Blocs) for these flows is appropriate. ✔
 
-**Files:** `lib/map/cubit/map_cubit.dart:41–43`, `54–55`, `86–90`
-
-### SettingsCubit — **Correct**
-
-- Maps domain `AppThemeMode` ↔ Flutter `ThemeMode` at the presentation boundary (good separation).
-- Persists via `SettingsRepository` with awaited writes.
-- Immutable `SettingsState` with Equatable.
-
-**File:** `lib/settings/settings_cubit.dart`
-
-### MapView (_MapViewState) — **Issues found**
-
-A large amount of orchestration lives in the UI layer rather than a cubit:
-
-| Concern | Location | Issue |
-|---------|----------|-------|
-| Search debounce + query | `map_page.dart:203–235` | 250 ms debounce, min-length guard, stale-request cancellation |
-| Geocoding search/reverse | `map_page.dart:136–159`, `237–258` | Direct `GeocodingRepository` reads from widget state |
-| Location fetch | `map_page.dart:280–299` | Direct `LocationRepository` read, snackbar error mapping |
-| Local UI state | `map_page.dart:74–83` | `_searchResults`, `_searchError`, `_searching`, `_showSearchResults` |
-
-This makes the search/location flows untestable with `blocTest`, duplicates error-mapping logic in the widget, and violates the VGV convention that presentation widgets render state and dispatch events — not call repositories directly.
-
-**Recommendation:** Extract a `MapSearchCubit` (or extend `MapCubit`) for search query, results, loading, and reverse-geocode label resolution. Keep `_MapViewState` limited to `GoogleMapController` and focus/animation concerns.
-
-### Config sheet locked modalities — **Behavioral bug**
-
-`lib/map/view/widgets/config_sheet.dart:65–67` sets `locked: state.permission.rank < modality.minimumPermission.rank` but still passes `onTap: () => cubit.selectModality(modality)`. The lock icon is decorative; users can select modalities their permission does not support. The assessment correctly returns `notAllowed`, but the UI implies the option is blocked.
-
-**Fix:** `onTap: locked ? null : () => cubit.selectModality(modality)` (and optionally mute tile styling).
+Minor nit: `ChatState.copyWith` is defined in a private `extension on ChatState` (`lib/messaging/cubit/chat_cubit.dart:102`) while every other state defines `copyWith` as an instance method. Cosmetic inconsistency only.
 
 ---
 
 ## Dependency Direction
 
-**Direction violations: 0 cross-package cycles affecting build**
+The package dependency graph is clean and one-directional. Verified from every `pubspec.yaml`:
 
-| Edge | Status |
-|------|--------|
-| Presentation → Repository | ✅ Clean (except one data-client import noted above) |
-| Repository → Data | ✅ Clean |
-| Data → Presentation/Repository | ✅ None found |
-| `bootstrap.dart` → Data + App | ✅ Composition root |
+- **Repositories depend only on data clients**, never on each other and never on `lib/`:
+  - `auth_repository → auth_api_client, storage`
+  - `social_repository → social_api_client`
+  - `weather_repository → weather_api_client`
+  - `messaging_repository → messaging_api_client`
+  - `flight_rules_repository → zones_api_client`
+  - `geocoding_repository → geocoding_api_client, storage`
+  - `location_repository → location_client`
+  - `settings_repository → storage`
+- **Data-to-data composition** (acceptable): `backend_zones_api_client → zones_api_client + storage`.
+- **No circular dependencies** detected.
+- **Backend** reuses the shared data packages `zones_api_client` and `argentina_bounds` — sensible code reuse of pure-Dart models/logic across app and server.
 
-**Minor internal coupling in `zones_api_client`:**
+### Repository layer transitively depends on Flutter (Important)
 
-- `bundled_zones_api_client.dart:2–5` and `remote_zones_api_client.dart:4–8` cross-import each other (doc references + `show` re-exports). No runtime circular dependency, but the imports exist only for documentation. Prefer referencing types in doc comments without importing.
-
-**SDK constraint mismatch:**
-
-| Package | SDK constraint |
-|---------|----------------|
-| Root `pubspec.yaml` | `>=3.5.0 <4.0.0` |
-| All `packages/*/pubspec.yaml` | `>=3.6.0 <4.0.0` |
-
-The app declares a lower floor than its path packages. Align root to `>=3.6.0 <4.0.0` to avoid resolution surprises.
-
----
-
-## Critical Bugs & Safety Issues
-
-### 1. Live feeds replace bundled zones instead of merging (CRITICAL)
-
-**File:** `packages/flight_rules_repository/lib/src/flight_rules_repository.dart:39–51`
-
-```dart
-final merged = <String, ZoneData>{};
-for (final zone in [...fromGeojson, ...fromOpenAip]) {
-  merged[zone.id] = zone;
-}
-final data =
-    merged.isNotEmpty ? merged.values.toList() : await bundled.fetchZones();
-```
-
-When **any** live source returns at least one zone, the bundled snapshot (~100+ airports, national parks, prohibited government sites, critical infrastructure) is **never included**.
-
-**Reproduction:** Build with `--dart-define=OPENAIP_API_KEY=<key>` and no `ZONES_FEED_URL`. OpenAIP returns airspaces only. All bundled prohibited zones (Plaza de Mayo, Casa Rosada, nuclear plants, 35 national parks) disappear from the map. A pilot tapping those locations sees "allowed" in open airspace.
-
-**Expected behavior:** Bundled zones should always form the baseline; live feeds should overlay/override by id. The bootstrap comment ("merged and become the source of truth") describes de-duplication among live feeds, not replacement of the offline safety net.
-
-**Severity:** Critical — incorrect flight verdicts in a safety-critical domain.
-
-### 2. Remote GeoJSON parser ignores vertical limits (CRITICAL for altitude-aware feeds)
-
-**File:** `packages/zones_api_client/lib/src/remote_zones_api_client.dart:90–99`
-
-`_parseFeature` reads `id`, `name`, `categoryId`, coordinates, `radiusMeters`, `allowedPermissionIds`, and `details` but **does not** map `lowerLimitMetersAgl`, `upperLimitMetersAgl`, `lowerLimitMetersMsl`, or `upperLimitMetersMsl` from properties — even though `ZoneData` supports them and `FlightRulesRepository.assess()` uses vertical overlap.
-
-OpenAIP parsing (`openaip_zones_api_client.dart:133–148`) correctly populates altitude fields. A self-hosted GeoJSON feed with vertical limits would be treated as applying at all altitudes, potentially blocking flights that should be allowed below a TMA floor.
-
-**Severity:** Critical when `ZONES_FEED_URL` is the authoritative source and includes altitude metadata.
-
-### 3. OpenAIP API key via `--dart-define` (IMPORTANT security note)
-
-**File:** `lib/bootstrap.dart:52`, `packages/zones_api_client/lib/src/openaip_zones_api_client.dart:82`
-
-`String.fromEnvironment('OPENAIP_API_KEY')` embeds the key in the compiled binary. Acceptable for development; for production, prefer a backend proxy or runtime secure storage. Document that the key is extractable via reverse engineering.
-
----
-
-## Behavioral Regressions & Logic Gaps
-
-| Issue | Location | Impact |
-|-------|----------|--------|
-| Geocoding `reverse()` not cached | `geocoding_repository.dart:38–41` | Search has offline cache fallback; reverse geocode on map tap always hits network. Offline tap shows coordinates only. |
-| Empty search maps to `noResults` error | `map_page.dart:248` | Empty API result sets `_searchError = GeocodingFailure.noResults` even when the request succeeded — semantically OK but conflates "no matches" with exception path. |
-| Duplicate repository tests | `test/map_cubit_test.dart:8–66` | Same scenarios already covered in `packages/flight_rules_repository/test/`. App-level test file should focus on cubit behavior only. |
-| Circular zone approximation | `openaip_zones_api_client.dart:123–127` | Polygon → centroid + max radius can include/exclude points incorrectly near complex airspace boundaries. Documented limitation; not a code bug but affects verdict accuracy. |
+The README states repository packages "never import Flutter." In code they don't `import 'package:flutter/...'`, but `storage` is a **Flutter** data client (depends on `flutter` + `shared_preferences`, `packages/storage/pubspec.yaml:11`). Therefore `auth_repository`, `geocoding_repository`, and `settings_repository` **transitively** pull Flutter into the repository layer. These repositories can no longer be tested or reused in a pure-Dart (e.g. CLI/server) context. To honor the stated invariant, `storage` would need a platform-agnostic key/value abstraction with the SharedPreferences implementation injected, or the README claim should be softened.
 
 ---
 
 ## Package Structure
 
-| Package | Status | Findings |
-|---------|--------|----------|
-| `flight_rules_repository` | ✅ Complete | Clear domain models, repository API, tests present. Fix zone merge logic. |
-| `zones_api_client` | ⚠️ Partial | Manifest, exports, altitude parser test. Missing tests for `RemoteZonesApiClient`, `OpenAipZonesApiClient`, `BundledZonesApiClient`. No `analysis_options.yaml`. |
-| `geocoding_api_client` | ⚠️ Partial | No tests. Description still says "Nominatim" but implementation uses Photon (`geocoding_api_client.dart:7–8`). |
-| `geocoding_repository` | ⚠️ Partial | Re-exports api types (good for layer boundary). No tests for cache hit/miss paths. |
-| `settings_repository` | ⚠️ Partial | No tests for altitude range migration (`_altitudeLegacyKey`). |
-| `location_repository` | ⚠️ Partial | Thin pass-through; no tests. |
-| `location_client` | ⚠️ Partial | No tests for permission flow mapping. |
-| `storage` | ⚠️ Partial | No tests. Flutter-dependent (acceptable for prefs). |
+All 18 packages are well-formed:
 
-**Linting:** Only root `analysis_options.yaml` exists. Packages declare `very_good_analysis` in dev_dependencies but do not include their own `analysis_options.yaml` with `include: ../../analysis_options.yaml`. Standalone package analysis may not pick up project rules.
+- Each has a `pubspec.yaml` with a clear name/description and `publish_to: "none"`.
+- Each declares `very_good_analysis` and a `test`/`flutter_test` dev dependency.
+- Each has a single, clear responsibility; data clients and repositories are cleanly separated into distinct packages.
+- UI/business logic is kept out of the data and repository packages (those are pure Dart, except the intentionally-Flutter data clients `storage`, `location_client`, `backend_zones_api_client`).
 
-**App `pubspec.yaml`:** Does not depend on `geocoding_api_client` or `zones_api_client` directly (good). Transitive access is via repositories and bootstrap.
+### Findings
 
----
+- **Lint version drift (Suggestion):** `argentina_bounds` uses `very_good_analysis: ^7.0.0` while every other package (and the app) uses `^6.0.0`. Align to one major version across the monorepo.
 
-## Test Coverage Assessment
+### Backend (`backend/`)
 
-**Existing tests (5 test files):**
-
-| File | Coverage |
-|------|----------|
-| `packages/flight_rules_repository/test/flight_rules_repository_test.dart` | Core assess logic, altitude overlap — good |
-| `packages/zones_api_client/test/openaip_altitude_parser_test.dart` | Altitude parsing — good |
-| `test/map_cubit_test.dart` | MapCubit bloc tests + duplicated repository tests |
-
-**Missing tests (priority order):**
-
-1. **`FlightRulesRepository.load` merge behavior** — bundled baseline preserved when live feeds partial; id de-duplication; fallback on all feeds failing.
-2. **`RemoteZonesApiClient`** — GeoJSON parsing including altitude properties once fixed.
-3. **`GeocodingRepository`** — cache write on success, cache read on network failure, reverse behavior.
-4. **`MapCubit` + `SettingsRepository`** — persistence of permission/modality/altitude on selection (mock storage).
-5. **`SettingsCubit`** — locale/theme persistence and `ThemeMode` mapping.
-6. **`GeocodingApiClient`** — JSON parsing, Argentina bbox filter, error mapping (mock HTTP).
-7. **`LocationClient` / `LocationRepository`** — permission denied paths (mock geolocator).
-
-**Test execution:** `very_good test -r` exited with code 69 in this environment (likely workspace/tooling setup). Tests should be verified locally before merge.
-
----
-
-## Security Review (Static)
-
-| Area | Finding | Severity |
-|------|---------|----------|
-| API keys | `OPENAIP_API_KEY` compile-time via `--dart-define` | Important — extractable from binary |
-| Remote feeds | `ZONES_FEED_URL` compile-time URI; no TLS pinning | Suggestion — standard HTTP client |
-| Geocoding | Public Photon API, no secrets | OK |
-| Storage | SharedPreferences, non-sensitive prefs | OK |
-| Location | Runtime permission via geolocator | OK |
-| Input validation | GeoJSON/OpenAIP JSON parsed with type checks; malformed data skipped or throws | OK |
-
-No hardcoded secrets found in source.
-
----
-
-## Recommendations (Prioritized)
-
-### Must fix before merge
-
-1. **Merge bundled zones with live feeds** in `FlightRulesRepository.load` — bundled as baseline, live feeds override by id.
-2. **Parse vertical limits from remote GeoJSON** properties in `RemoteZonesApiClient._parseFeature`.
-
-### Should fix soon
-
-3. Change `search_results_overlay.dart` import to `geocoding_repository`.
-4. Move search/location orchestration from `MapView` to a cubit.
-5. Await settings persistence in `MapCubit` (or expose `Future<void>` selectors).
-6. Disable `onTap` for locked modalities in `config_sheet.dart`.
-7. Break `PermissionLevel` ↔ `FlightAssessment` circular dependency.
-8. Add tests for zone merge and geocoding cache.
-
-### Suggestions
-
-9. Align SDK constraints across root and packages.
-10. Add `analysis_options.yaml` to each package.
-11. Remove duplicated repository tests from `test/map_cubit_test.dart`.
-12. Add offline cache for reverse geocoding.
-13. Update `geocoding_api_client` package description (Photon, not Nominatim).
+Cleanly layered for a Dart Frog service:
+- **Transport:** `routes/**` handle HTTP only and delegate to services via `AppContainer.instance.<service>` (e.g. `routes/v1/posts/index.dart` → `postService.getFeed/createPost`).
+- **Business logic:** `lib/services/**` (auth, post, messaging, weather, zone, notification, …).
+- **Data:** `lib/db/database.dart`; **DI:** `lib/app_container.dart` singleton wires config → db → services.
+- Supporting `config/`, `models/`, `middleware/`, `util/` are appropriately scoped.
+- Pure Dart (no Flutter). No layering violations observed in the routes/services sampled.
 
 ---
 
 ## Verdict
 
-**Fix 2 critical violations before merging.**
+**Needs work** — the architecture is fundamentally sound (clean package graph, no cycles, solid state management, clean backend), but the presentation↔data boundary is breached repeatedly. Fix the boundary by making the four "pass-through" repositories expose domain types (or re-export their data types via `export ... show`, as `geocoding_repository` already does), then remove the direct `*_api_client` imports from `lib/` — especially the UI widgets. Relocate `ZoneSyncService`'s data-client composition behind the repository/bootstrap. These are mechanical, low-risk changes that bring the codebase fully in line with its own stated architecture.
 
-The layered architecture is sound and mostly consistent with VGV conventions. The composition root, repository providers, and cubit patterns are well applied. The zone-loading merge bug and missing GeoJSON altitude parsing are safety-critical for this app's purpose and must be addressed before release. Layer boundary cleanup, cubit extraction for search, and test coverage gaps should follow immediately.
-
----
-
-## Appendix: Files Reviewed
-
-**Presentation:** `lib/main.dart`, `lib/bootstrap.dart`, `lib/app/app.dart`, `lib/settings/settings_cubit.dart`, `lib/map/cubit/map_cubit.dart`, `lib/map/cubit/map_state.dart`, `lib/map/view/map_page.dart`, `lib/map/view/widgets/*`, `lib/theme/app_theme.dart`, `lib/resources/view/*`, `lib/l10n/localized_labels.dart`
-
-**Repositories:** all files under `packages/flight_rules_repository`, `geocoding_repository`, `settings_repository`, `location_repository`
-
-**Data:** all files under `packages/zones_api_client`, `geocoding_api_client`, `location_client`, `storage`
-
-**Tests:** `test/map_cubit_test.dart`, `packages/flight_rules_repository/test/*`, `packages/zones_api_client/test/*`
+### Issue count
+- **Critical:** 1 — UI widgets import the data layer directly (8 files).
+- **Important:** 3 — cubits coupled to data-layer types/exceptions; repository layer transitively depends on Flutter via `storage`; `ZoneSyncService` does repository composition in `lib/`.
+- **Suggestions:** 2 — unify the repository boundary pattern (domain models vs re-export); align `very_good_analysis` versions. (Plus a cosmetic `ChatState.copyWith` note.)

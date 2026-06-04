@@ -8,9 +8,8 @@ import 'package:flight_rules_repository/src/zone_deduplicator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:zones_api_client/zones_api_client.dart';
 
-/// Repository: composes the zone data clients (bundled + optional remote feed),
-/// maps raw [ZoneData] to domain [FlyZone]s, and applies the flight-verdict
-/// business rules for a given permission level and flight modality.
+/// Repository: loads zone data from the backend feed, maps raw [ZoneData] to
+/// domain [FlyZone]s, and applies flight-verdict business rules.
 class FlightRulesRepository {
   /// Builds the repository from the bundled offline snapshot (synchronous).
   FlightRulesRepository({
@@ -26,35 +25,18 @@ class FlightRulesRepository {
 
   final List<FlyZone> _zones;
 
-  /// Loads zones from the live sources and merges them, falling back to the
-  /// bundled offline snapshot when no source returns data.
-  ///
-  /// Both a self-hosted [geojson] feed, an [openaip] airspace feed, and the
-  /// official [madhel] aerodrome catalog can be supplied; live results overlay
-  /// the bundled offline snapshot by id. Any source that errors is ignored so
-  /// the app always ends up with data.
+  /// Loads zones from the backend feed, falling back to [offlineFallback] when
+  /// the feed and its local cache are both empty.
   static Future<FlightRulesRepository> load({
-    ZonesFeedClient? geojson,
-    OpenAipZonesApiClient? openaip,
-    MadhelZonesApiClient? madhel,
-    BundledZonesApiClient bundled = const BundledZonesApiClient(),
+    required ZonesFeedClient feed,
+    BundledZonesApiClient offlineFallback = const BundledZonesApiClient(),
   }) async {
-    final fromGeojson =
-        geojson == null ? <ZoneData>[] : await _safe(geojson.fetchZones);
-    final fromOpenAip =
-        openaip == null ? <ZoneData>[] : await _safe(openaip.fetchZones);
-    final fromMadhel =
-        madhel == null ? <ZoneData>[] : await _safe(madhel.fetchZones);
-
-    final bundledZones = await bundled.fetchZones();
-    final merged = <String, ZoneData>{
-      for (final zone in bundledZones) zone.id: zone,
-    };
-    for (final zone in [...fromMadhel, ...fromGeojson, ...fromOpenAip]) {
-      merged[zone.id] = zone;
+    final fromFeed = await _safe(feed.fetchZones);
+    if (fromFeed.isNotEmpty) {
+      return FlightRulesRepository._fromData(fromFeed);
     }
-
-    return FlightRulesRepository._fromData(merged.values.toList());
+    final fromBundled = await _safe(offlineFallback.fetchZones);
+    return FlightRulesRepository._fromData(fromBundled);
   }
 
   static Future<List<ZoneData>> _safe(

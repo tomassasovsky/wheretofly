@@ -1,0 +1,18 @@
+name: om_tile_server
+description: Dev-only wind tile PNG server (SIMD OM decode) for iOS testing.
+publish_to: none
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  http: ^1.2.2
+  image: ^4.5.4
+  om_smoke:
+    path: ../om_smoke
+  shelf: ^1.4.2
+  shelf_router: ^1.1.4
+  wasm_run: ^0.1.0+2
+
+executables:
+  om_tile_server:

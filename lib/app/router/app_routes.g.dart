@@ -7,13 +7,10 @@ part of 'app_routes.dart';
 // **************************************************************************
 
 List<RouteBase> get $appRoutes => [
+      $splashRoute,
       $appShellRoute,
-      $feedTabRoute,
-      $exploreTabRoute,
-      $mapTabRoute,
-      $messagesTabRoute,
-      $meTabRoute,
       $settingsRoute,
+      $attributionsRoute,
       $resourcesRoute,
       $loginRoute,
       $signUpRoute,
@@ -22,6 +19,35 @@ List<RouteBase> get $appRoutes => [
       $createPostRoute,
       $postRoute,
     ];
+
+RouteBase get $splashRoute => GoRouteData.$route(
+      path: '/splash',
+      name: 'splash',
+      parentNavigatorKey: SplashRoute.$parentNavigatorKey,
+      factory: $SplashRoute._fromState,
+    );
+
+mixin $SplashRoute on GoRouteData {
+  static SplashRoute _fromState(GoRouterState state) => const SplashRoute();
+
+  @override
+  String get location => GoRouteData.$location(
+        '/splash',
+      );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
 
 RouteBase get $appShellRoute => StatefulShellRouteData.$route(
       factory: $AppShellRouteExtension._fromState,
@@ -185,39 +211,10 @@ mixin $MeTabRoute on GoRouteData {
   void replace(BuildContext context) => context.replace(location);
 }
 
-RouteBase get $feedTabRoute => GoRouteData.$route(
-      path: '/feed',
-      name: 'feed',
-      factory: $FeedTabRoute._fromState,
-    );
-
-RouteBase get $exploreTabRoute => GoRouteData.$route(
-      path: '/explore',
-      name: 'explore',
-      factory: $ExploreTabRoute._fromState,
-    );
-
-RouteBase get $mapTabRoute => GoRouteData.$route(
-      path: '/map',
-      name: 'map',
-      factory: $MapTabRoute._fromState,
-    );
-
-RouteBase get $messagesTabRoute => GoRouteData.$route(
-      path: '/messages',
-      name: 'messages',
-      factory: $MessagesTabRoute._fromState,
-    );
-
-RouteBase get $meTabRoute => GoRouteData.$route(
-      path: '/me',
-      name: 'me',
-      factory: $MeTabRoute._fromState,
-    );
-
 RouteBase get $settingsRoute => GoRouteData.$route(
       path: '/settings',
       name: 'settings',
+      parentNavigatorKey: SettingsRoute.$parentNavigatorKey,
       factory: $SettingsRoute._fromState,
     );
 
@@ -243,9 +240,40 @@ mixin $SettingsRoute on GoRouteData {
   void replace(BuildContext context) => context.replace(location);
 }
 
+RouteBase get $attributionsRoute => GoRouteData.$route(
+      path: '/settings/attributions',
+      name: 'attributions',
+      parentNavigatorKey: AttributionsRoute.$parentNavigatorKey,
+      factory: $AttributionsRoute._fromState,
+    );
+
+mixin $AttributionsRoute on GoRouteData {
+  static AttributionsRoute _fromState(GoRouterState state) =>
+      const AttributionsRoute();
+
+  @override
+  String get location => GoRouteData.$location(
+        '/settings/attributions',
+      );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
 RouteBase get $resourcesRoute => GoRouteData.$route(
       path: '/resources',
       name: 'resources',
+      parentNavigatorKey: ResourcesRoute.$parentNavigatorKey,
       factory: $ResourcesRoute._fromState,
     );
 
@@ -281,6 +309,7 @@ mixin $ResourcesRoute on GoRouteData {
 RouteBase get $loginRoute => GoRouteData.$route(
       path: '/auth/login',
       name: 'login',
+      parentNavigatorKey: LoginRoute.$parentNavigatorKey,
       factory: $LoginRoute._fromState,
     );
 
@@ -309,6 +338,7 @@ mixin $LoginRoute on GoRouteData {
 RouteBase get $signUpRoute => GoRouteData.$route(
       path: '/auth/signup',
       name: 'signup',
+      parentNavigatorKey: SignUpRoute.$parentNavigatorKey,
       factory: $SignUpRoute._fromState,
     );
 
@@ -337,6 +367,7 @@ mixin $SignUpRoute on GoRouteData {
 RouteBase get $profileRoute => GoRouteData.$route(
       path: '/profile/:handle',
       name: 'profile',
+      parentNavigatorKey: ProfileRoute.$parentNavigatorKey,
       factory: $ProfileRoute._fromState,
     );
 
@@ -369,6 +400,7 @@ mixin $ProfileRoute on GoRouteData {
 RouteBase get $threadRoute => GoRouteData.$route(
       path: '/threads/:threadId',
       name: 'thread',
+      parentNavigatorKey: ThreadRoute.$parentNavigatorKey,
       factory: $ThreadRoute._fromState,
     );
 
@@ -404,6 +436,7 @@ mixin $ThreadRoute on GoRouteData {
 RouteBase get $createPostRoute => GoRouteData.$route(
       path: '/posts/new',
       name: 'createPost',
+      parentNavigatorKey: CreatePostRoute.$parentNavigatorKey,
       factory: $CreatePostRoute._fromState,
     );
 
@@ -438,6 +471,7 @@ mixin $CreatePostRoute on GoRouteData {
 RouteBase get $postRoute => GoRouteData.$route(
       path: '/posts/:postId',
       name: 'post',
+      parentNavigatorKey: PostRoute.$parentNavigatorKey,
       factory: $PostRoute._fromState,
     );
 

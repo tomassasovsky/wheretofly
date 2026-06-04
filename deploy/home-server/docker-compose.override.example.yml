@@ -1,0 +1,16 @@
+# Copy to docker-compose.override.yml so Nginx Proxy Manager can reach the API.
+#
+# 1. docker inspect <npm-container> --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}'
+# 2. Set the network name below (common: npm_default, nginx-proxy-manager_default)
+# 3. In NPM: Proxy Host → Forward Hostname dondevolar-api, Port 9080
+
+services:
+  api:
+    networks:
+      - default
+      - npm
+
+networks:
+  npm:
+    external: true
+    name: your-npm-docker-network-name

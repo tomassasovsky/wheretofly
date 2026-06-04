@@ -27,10 +27,6 @@ class WeatherApiClient {
     required double lat,
     required double lon,
   }) async {
-    final token = await accessTokenProvider();
-    if (token == null) {
-      throw const WeatherApiException('Not authenticated', statusCode: 401);
-    }
     final uri = baseUrl.replace(
       path: '/v1/weather',
       queryParameters: {
@@ -40,10 +36,7 @@ class WeatherApiClient {
     );
     http.Response response;
     try {
-      response = await _http.get(
-        uri,
-        headers: {'Authorization': 'Bearer $token'},
-      ).timeout(const Duration(seconds: 10));
+      response = await _http.get(uri).timeout(const Duration(seconds: 10));
     } on TimeoutException {
       throw const WeatherApiException('Network timeout', statusCode: 408);
     }

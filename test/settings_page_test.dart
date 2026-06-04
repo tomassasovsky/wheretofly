@@ -6,8 +6,11 @@ import 'package:settings_repository/settings_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:storage/storage.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
+import 'package:where_to_fly/app/router/root_navigator_key.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/settings/settings_cubit.dart';
+
+import 'helpers/pump_helpers.dart';
 
 void main() {
   late SettingsCubit settingsCubit;
@@ -28,13 +31,14 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: GoRouter(
+            navigatorKey: rootNavigatorKey,
             initialLocation: const SettingsRoute().location,
             routes: $appRoutes,
           ),
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await pumpRouterFrames(tester);
   }
 
   testWidgets('shows theme and language controls', (tester) async {
@@ -46,10 +50,31 @@ void main() {
     expect(find.text('System default'), findsOneWidget);
   });
 
+  testWidgets('hides log in while map-only mode', (tester) async {
+    await pumpSettingsPage(tester);
+
+    expect(find.text('Log in'), findsNothing);
+    expect(find.text('Account'), findsNothing);
+  });
+
+  testWidgets('shows permits and resources entry', (tester) async {
+    await pumpSettingsPage(tester);
+
+    expect(find.text('Permits and resources'), findsOneWidget);
+    expect(
+      find.text('Permits, guides, and official links'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('shows sponsor me button', (tester) async {
     await pumpSettingsPage(tester);
 
     expect(find.text('Sponsor me'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Support development on Cafecito.'),
+      200,
+    );
     expect(find.text('Support development on Cafecito.'), findsOneWidget);
     expect(find.byIcon(Icons.local_cafe_outlined), findsOneWidget);
   });
@@ -58,7 +83,7 @@ void main() {
     await pumpSettingsPage(tester);
 
     await tester.tap(find.text('Dark'));
-    await tester.pumpAndSettle();
+    await pumpRouterFrames(tester);
 
     expect(settingsCubit.state.themeMode, ThemeMode.dark);
   });
@@ -68,7 +93,7 @@ void main() {
     await pumpSettingsPage(tester);
 
     await tester.tap(find.text('Español'));
-    await tester.pumpAndSettle();
+    await pumpRouterFrames(tester);
 
     expect(settingsCubit.state.locale?.languageCode, 'es');
   });

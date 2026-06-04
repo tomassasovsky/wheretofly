@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geocoding_repository/geocoding_repository.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
+import 'package:where_to_fly/theme/app_theme.dart';
 
 /// Floating overlay card listing geocoding suggestions below the search bar.
 class SearchResultsOverlay extends StatelessWidget {
@@ -25,7 +26,7 @@ class SearchResultsOverlay extends StatelessWidget {
     return Material(
       elevation: 4,
       borderRadius: BorderRadius.circular(16),
-      color: theme.colorScheme.surface,
+      color: AppTheme.mapOverlaySurface(theme.brightness),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 280),

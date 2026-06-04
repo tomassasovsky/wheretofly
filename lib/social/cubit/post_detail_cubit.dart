@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:social_api_client/social_api_client.dart';
 import 'package:social_repository/social_repository.dart';
 
 enum PostDetailStatus { initial, loading, loaded, error, submittingComment }
@@ -62,7 +61,9 @@ class PostDetailCubit extends Cubit<PostDetailState> {
     } on SocialApiException catch (e) {
       emit(
         PostDetailState(
-            status: PostDetailStatus.error, errorMessage: e.message,),
+          status: PostDetailStatus.error,
+          errorMessage: e.message,
+        ),
       );
     } catch (_) {
       emit(

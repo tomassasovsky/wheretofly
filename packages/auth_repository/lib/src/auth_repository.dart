@@ -4,17 +4,21 @@ import 'package:auth_api_client/auth_api_client.dart';
 import 'package:storage/storage.dart';
 
 /// Persists and refreshes auth sessions.
+///
+/// The session (including the refresh token) is stored in [SecureStorage] so
+/// the long-lived credential is encrypted at rest rather than in plain
+/// SharedPreferences.
 class AuthRepository {
   AuthRepository({
     required AuthApiClient apiClient,
-    required Storage storage,
+    required SecureStorage secureStorage,
   })  : _apiClient = apiClient,
-        _storage = storage;
+        _secureStorage = secureStorage;
 
   static const _sessionKey = 'auth_session';
 
   final AuthApiClient _apiClient;
-  final Storage _storage;
+  final SecureStorage _secureStorage;
 
   Future<AuthSession> signUp({
     required String email,
@@ -42,7 +46,7 @@ class AuthRepository {
   }
 
   Future<AuthSession?> currentSession() async {
-    final raw = _storage.read(_sessionKey);
+    final raw = await _secureStorage.read(_sessionKey);
     if (raw == null) return null;
     final decoded = jsonDecode(raw);
     if (decoded is! Map<String, dynamic>) return null;
@@ -64,7 +68,7 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
-    await _storage.delete(_sessionKey);
+    await _secureStorage.delete(_sessionKey);
   }
 
   Future<AuthSession> refreshSession() async {
@@ -88,6 +92,6 @@ class AuthRepository {
   }
 
   Future<void> _saveSession(AuthSession session) async {
-    await _storage.write(_sessionKey, jsonEncode(session.toJson()));
+    await _secureStorage.write(_sessionKey, jsonEncode(session.toJson()));
   }
 }

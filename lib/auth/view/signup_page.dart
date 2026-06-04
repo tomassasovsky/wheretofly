@@ -20,26 +20,12 @@ class _SignUpPageState extends State<SignUpPage> {
   var _navigatedAfterAuth = false;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _leaveIfAlreadyAuthenticated();
-    });
-  }
-
-  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _handleController.dispose();
     _displayNameController.dispose();
     super.dispose();
-  }
-
-  void _leaveIfAlreadyAuthenticated() {
-    if (!mounted || _navigatedAfterAuth) return;
-    if (!context.read<AuthCubit>().state.isAuthenticated) return;
-    _navigateAway();
   }
 
   void _navigateAway() {
@@ -54,14 +40,10 @@ class _SignUpPageState extends State<SignUpPage> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.authSignUpTitle)),
       body: BlocConsumer<AuthCubit, AuthState>(
-        listenWhen: (previous, current) => current.isAuthenticated,
+        listenWhen: (previous, current) =>
+            current.isAuthenticated && !previous.isAuthenticated,
         listener: (context, state) => _navigateAway(),
         builder: (context, state) {
-          if (state.isAuthenticated) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _navigateAway();
-            });
-          }
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [

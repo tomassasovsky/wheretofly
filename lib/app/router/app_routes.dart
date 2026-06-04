@@ -2,12 +2,18 @@ import 'package:flight_rules_repository/flight_rules_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_router_guards/go_router_guards.dart';
+import 'package:where_to_fly/app/router/root_navigator_key.dart';
 import 'package:where_to_fly/app/view/app_shell.dart';
+import 'package:where_to_fly/auth/guards/auth_guard.dart';
+import 'package:where_to_fly/auth/guards/redirect_if_authenticated_guard.dart';
 import 'package:where_to_fly/auth/view/login_page.dart';
 import 'package:where_to_fly/auth/view/signup_page.dart';
+import 'package:where_to_fly/auth/view/splash_page.dart';
+import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/map/view/map_page.dart';
 import 'package:where_to_fly/messaging/view/chat_page.dart';
 import 'package:where_to_fly/resources/view/resources_page.dart';
+import 'package:where_to_fly/settings/view/attributions_page.dart';
 import 'package:where_to_fly/settings/view/settings_page.dart';
 import 'package:where_to_fly/social/create_post_draft.dart';
 import 'package:where_to_fly/social/view/create_post_page.dart';
@@ -19,6 +25,21 @@ import 'package:where_to_fly/social/view/post_detail_page.dart';
 import 'package:where_to_fly/social/view/profile_page.dart';
 
 part 'app_routes.g.dart';
+
+@TypedGoRoute<SplashRoute>(
+  path: '/splash',
+  name: 'splash',
+)
+class SplashRoute extends GoRouteData with $SplashRoute {
+  const SplashRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const SplashPage();
+  }
+}
 
 @TypedStatefulShellRoute<AppShellRoute>(
   branches: <TypedStatefulShellBranch<StatefulShellBranchData>>[
@@ -62,12 +83,11 @@ class AppShellRoute extends StatefulShellRouteData {
   }
 }
 
-@TypedGoRoute<FeedTabRoute>(
-  path: '/feed',
-  name: 'feed',
-)
 class FeedTabRoute extends GoRouteData with $FeedTabRoute, GuardedRoute {
   const FeedTabRoute();
+
+  @override
+  RouteGuard get guard => const AuthGuard();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -75,12 +95,11 @@ class FeedTabRoute extends GoRouteData with $FeedTabRoute, GuardedRoute {
   }
 }
 
-@TypedGoRoute<ExploreTabRoute>(
-  path: '/explore',
-  name: 'explore',
-)
 class ExploreTabRoute extends GoRouteData with $ExploreTabRoute, GuardedRoute {
   const ExploreTabRoute();
+
+  @override
+  RouteGuard get guard => const AuthGuard();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -88,11 +107,7 @@ class ExploreTabRoute extends GoRouteData with $ExploreTabRoute, GuardedRoute {
   }
 }
 
-@TypedGoRoute<MapTabRoute>(
-  path: '/map',
-  name: 'map',
-)
-class MapTabRoute extends GoRouteData with $MapTabRoute, GuardedRoute {
+class MapTabRoute extends GoRouteData with $MapTabRoute {
   const MapTabRoute();
 
   @override
@@ -101,13 +116,12 @@ class MapTabRoute extends GoRouteData with $MapTabRoute, GuardedRoute {
   }
 }
 
-@TypedGoRoute<MessagesTabRoute>(
-  path: '/messages',
-  name: 'messages',
-)
 class MessagesTabRoute extends GoRouteData
     with $MessagesTabRoute, GuardedRoute {
   const MessagesTabRoute();
+
+  @override
+  RouteGuard get guard => const AuthGuard();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -115,12 +129,11 @@ class MessagesTabRoute extends GoRouteData
   }
 }
 
-@TypedGoRoute<MeTabRoute>(
-  path: '/me',
-  name: 'me',
-)
 class MeTabRoute extends GoRouteData with $MeTabRoute, GuardedRoute {
   const MeTabRoute();
+
+  @override
+  RouteGuard get guard => const AuthGuard();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -132,8 +145,10 @@ class MeTabRoute extends GoRouteData with $MeTabRoute, GuardedRoute {
   path: '/settings',
   name: 'settings',
 )
-class SettingsRoute extends GoRouteData with $SettingsRoute, GuardedRoute {
+class SettingsRoute extends GoRouteData with $SettingsRoute {
   const SettingsRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -141,12 +156,29 @@ class SettingsRoute extends GoRouteData with $SettingsRoute, GuardedRoute {
   }
 }
 
+@TypedGoRoute<AttributionsRoute>(
+  path: '/settings/attributions',
+  name: 'attributions',
+)
+class AttributionsRoute extends GoRouteData with $AttributionsRoute {
+  const AttributionsRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const AttributionsPage();
+  }
+}
+
 @TypedGoRoute<ResourcesRoute>(
   path: '/resources',
   name: 'resources',
 )
-class ResourcesRoute extends GoRouteData with $ResourcesRoute, GuardedRoute {
+class ResourcesRoute extends GoRouteData with $ResourcesRoute {
   const ResourcesRoute({this.highlight});
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
   final String? highlight;
 
@@ -166,6 +198,11 @@ class ResourcesRoute extends GoRouteData with $ResourcesRoute, GuardedRoute {
 class LoginRoute extends GoRouteData with $LoginRoute, GuardedRoute {
   const LoginRoute();
 
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  RouteGuard get guard => const RedirectIfAuthenticatedGuard();
+
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const LoginPage();
@@ -178,6 +215,11 @@ class LoginRoute extends GoRouteData with $LoginRoute, GuardedRoute {
 )
 class SignUpRoute extends GoRouteData with $SignUpRoute, GuardedRoute {
   const SignUpRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  RouteGuard get guard => const RedirectIfAuthenticatedGuard();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -192,7 +234,12 @@ class SignUpRoute extends GoRouteData with $SignUpRoute, GuardedRoute {
 class ProfileRoute extends GoRouteData with $ProfileRoute, GuardedRoute {
   const ProfileRoute({required this.handle});
 
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
   final String handle;
+
+  @override
+  RouteGuard get guard => const AuthGuard();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -207,8 +254,13 @@ class ProfileRoute extends GoRouteData with $ProfileRoute, GuardedRoute {
 class ThreadRoute extends GoRouteData with $ThreadRoute, GuardedRoute {
   const ThreadRoute({required this.threadId, this.$extra});
 
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
   final String threadId;
   final String? $extra;
+
+  @override
+  RouteGuard get guard => const AuthGuard();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -226,14 +278,20 @@ class ThreadRoute extends GoRouteData with $ThreadRoute, GuardedRoute {
 class CreatePostRoute extends GoRouteData with $CreatePostRoute, GuardedRoute {
   const CreatePostRoute({this.$extra});
 
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
   final CreatePostDraft? $extra;
+
+  @override
+  RouteGuard get guard => const AuthGuard();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     final draft = $extra;
     if (draft == null) {
-      return const Scaffold(
-        body: Center(child: Text('Missing fly-check data')),
+      final l10n = AppLocalizations.of(context);
+      return Scaffold(
+        body: Center(child: Text(l10n.socialFlyCheckMissing)),
       );
     }
     return CreatePostPage(draft: draft);
@@ -247,7 +305,12 @@ class CreatePostRoute extends GoRouteData with $CreatePostRoute, GuardedRoute {
 class PostRoute extends GoRouteData with $PostRoute, GuardedRoute {
   const PostRoute({required this.postId});
 
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
   final String postId;
+
+  @override
+  RouteGuard get guard => const AuthGuard();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {

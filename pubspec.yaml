@@ -10,6 +10,8 @@ environment:
   sdk: ">=3.6.0 <4.0.0"
 
 dependencies:
+  argentina_bounds:
+    path: packages/argentina_bounds
   auth_api_client:
     path: packages/auth_api_client
   auth_repository:
@@ -17,7 +19,6 @@ dependencies:
   backend_zones_api_client:
     path: packages/backend_zones_api_client
   bloc: ^8.1.4
-  cupertino_icons: ^1.0.9
   equatable: ^2.0.5
   flight_rules_repository:
     path: packages/flight_rules_repository
@@ -26,13 +27,14 @@ dependencies:
   flutter_bloc: ^8.1.6
   flutter_localizations:
     sdk: flutter
+  flutter_map: ^7.0.2
   geocoding_api_client:
     path: packages/geocoding_api_client
   geocoding_repository:
     path: packages/geocoding_repository
   go_router: ^16.3.0
   go_router_guards: ^2.0.0+2
-  google_maps_flutter: ^2.9.0
+  http: ^1.2.2
   intl: any
   latlong2: ^0.9.1
   location_repository:
@@ -53,6 +55,8 @@ dependencies:
   storage:
     path: packages/storage
   url_launcher: ^6.3.0
+  wasm_run: ^0.1.0+2
+  wasm_run_flutter: ^0.1.0
   weather_api_client:
     path: packages/weather_api_client
   weather_repository:
@@ -63,9 +67,13 @@ dependencies:
 dev_dependencies:
   bloc_test: ^9.1.7
   build_runner: ^2.15.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
   flutter_test:
     sdk: flutter
   go_router_builder: ^4.3.0
+  integration_test:
+    sdk: flutter
   mocktail: ^1.0.4
   shared_preferences: ^2.3.3
   very_good_analysis: ^6.0.0
@@ -73,3 +81,27 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/om/om_reader_wasm.wasm
+    - assets/om/om_reader_wasm_wasmi.wasm
+
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  adaptive_icon_background: "#091020"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  macos:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+
+flutter_native_splash:
+  color: "#091020"
+  image: assets/icon/app_icon_foreground.png
+  android_12:
+    color: "#091020"
+    image: assets/icon/app_icon_foreground.png
+  android: true
+  ios: true

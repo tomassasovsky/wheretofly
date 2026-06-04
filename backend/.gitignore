@@ -14,3 +14,8 @@ build/
 
 # Test related files
 coverage/
+
+# Secrets (use .env.example as the template)
+.env
+.env.*
+!.env.example

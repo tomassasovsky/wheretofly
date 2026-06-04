@@ -82,10 +82,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get outsideArgentina =>
-      'Tu ubicación parece estar fuera de Argentina; el conjunto de datos solo cubre zonas argentinas.';
+      'Este punto puede estar fuera de Argentina. Los datos de zonas pueden estar incompletos o no estar disponibles.';
 
   @override
-  String get searchHint => 'Buscá una ciudad o dirección en Argentina';
+  String get searchHint => 'Ciudad o dirección';
 
   @override
   String get searchNoResults => 'No se encontraron resultados.';
@@ -107,6 +107,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settings => 'Ajustes';
+
+  @override
+  String get attributions => 'Licencias y atribuciones';
+
+  @override
+  String get attributionsSubtitle => 'Mapa, clima y paquetes de código abierto';
 
   @override
   String get theme => 'Apariencia';
@@ -142,6 +148,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get sponsorMeDescription => 'Apoyá el desarrollo en Cafecito.';
+
+  @override
+  String get creditsDevelopedBy => 'Desarrollado por Tomás Sasovsky';
+
+  @override
+  String get creditsWebsite => 'Sitio web';
+
+  @override
+  String get creditsGithub => 'GitHub';
 
   @override
   String get permRecreational => 'Recreativo / sin licencia';
@@ -437,6 +452,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo iniciar sesión. Revisá tus datos y la conexión.';
 
   @override
+  String get authContinueWithoutAccount => 'Continuar sin cuenta';
+
+  @override
+  String get splashLoading => 'Comprobando tu sesión…';
+
+  @override
   String get weatherAdvisoryTitle => 'Alerta meteorológica';
 
   @override
@@ -447,6 +468,39 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get weatherDisclaimer =>
       'Solo orientativo — responsabilidad del piloto según RAAC 100.';
+
+  @override
+  String get weatherReasonSmnAlert => 'Alerta meteorológica activa (SMN)';
+
+  @override
+  String get weatherReasonWindHigh => 'Viento demasiado fuerte para volar';
+
+  @override
+  String get weatherReasonWindElevated => 'Viento elevado para drones ligeros';
+
+  @override
+  String get weatherReasonWindModerate => 'Precaución por viento moderado';
+
+  @override
+  String get weatherReasonFavorable => 'Condiciones favorables';
+
+  @override
+  String get mapLayerZones => 'Zonas';
+
+  @override
+  String get mapLayerWind => 'Viento';
+
+  @override
+  String get mapWindOverlayToggle => 'Mostrar ráfagas de viento';
+
+  @override
+  String get mapWindLegendTitle => 'Ráfagas de viento (10 m)';
+
+  @override
+  String get mapWindLegendUnit => 'm/s';
+
+  @override
+  String get openMeteoAttribution => '© Open-Meteo · DWD ICON';
 
   @override
   String get weatherLoading => 'Cargando clima…';
@@ -499,7 +553,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get socialFeedLoadFailed => 'No se pudo cargar el feed.';
 
   @override
-  String get socialFeedOffline => 'Sin conexión — mostrando publicaciones guardadas';
+  String get socialFeedOffline =>
+      'Sin conexión — mostrando publicaciones guardadas';
 
   @override
   String get socialShareFlyCheck => 'Compartir consulta';
@@ -624,4 +679,13 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get profileSignInPrompt =>
       'Iniciá sesión para ver tu perfil, publicaciones y alertas.';
+
+  @override
+  String get socialFlyCheckMissing => 'Faltan datos de la consulta de vuelo.';
+
+  @override
+  String get socialReelBadge => 'REEL';
+
+  @override
+  String get socialReelRetryVideo => 'Reintentar video';
 }

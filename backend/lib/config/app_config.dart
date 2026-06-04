@@ -7,7 +7,8 @@ class AppConfig {
     required this.databaseUrl,
     required this.redisUrl,
     required this.jwtSecret,
-    required this.openWeatherApiKey,
+    required this.openAipApiKey,
+    required this.photonBaseUrl,
     required this.minioEndpoint,
     required this.minioAccessKey,
     required this.minioSecretKey,
@@ -21,23 +22,46 @@ class AppConfig {
   });
 
   /// Loads configuration from process environment with dev-friendly defaults.
+  ///
+  /// In production (`APP_ENV=production`) the insecure development defaults are
+  /// rejected: required secrets must be supplied via the environment, otherwise
+  /// the server fails fast on startup instead of silently using known-public
+  /// credentials.
   factory AppConfig.fromEnvironment() {
+    final env = Platform.environment;
+    final isProduction =
+        (env['APP_ENV'] ?? env['DART_ENV'])?.toLowerCase() == 'production';
+
+    String require(String key, String devDefault, {bool secret = false}) {
+      final value = env[key];
+      if (isProduction) {
+        if (value == null || value.isEmpty || value == devDefault) {
+          throw StateError(
+            'Missing or insecure value for $key in production. '
+            'Set $key to a strong${secret ? ', secret' : ''} value.',
+          );
+        }
+      }
+      return value == null || value.isEmpty ? devDefault : value;
+    }
+
     return AppConfig(
-      databaseUrl:
-          Platform.environment['DATABASE_URL'] ??
-          'postgresql://dondevolar:dondevolar@localhost:5432/dondevolar',
-      redisUrl: Platform.environment['REDIS_URL'] ?? 'redis://localhost:6379',
-      jwtSecret: Platform.environment['JWT_SECRET'] ?? 'dev-secret-change-me',
-      openWeatherApiKey: Platform.environment['OPENWEATHER_API_KEY'] ?? '',
-      minioEndpoint: Platform.environment['MINIO_ENDPOINT'] ?? 'localhost:9000',
-      minioAccessKey: Platform.environment['MINIO_ACCESS_KEY'] ?? 'minioadmin',
-      minioSecretKey: Platform.environment['MINIO_SECRET_KEY'] ?? 'minioadmin',
-      minioBucket: Platform.environment['MINIO_BUCKET'] ?? 'media',
-      googleClientId: Platform.environment['GOOGLE_CLIENT_ID'] ?? '',
-      appleClientId: Platform.environment['APPLE_CLIENT_ID'] ?? '',
-      zoneFeedPath:
-          Platform.environment['ZONE_FEED_PATH'] ?? 'data/zones.geojson',
-      port: int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080,
+      databaseUrl: require(
+        'DATABASE_URL',
+        'postgresql://dondevolar:dondevolar@localhost:5432/dondevolar',
+      ),
+      redisUrl: env['REDIS_URL'] ?? 'redis://localhost:6379',
+      jwtSecret: require('JWT_SECRET', 'dev-secret-change-me', secret: true),
+      openAipApiKey: env['OPENAIP_API_KEY'] ?? '',
+      photonBaseUrl: env['PHOTON_BASE_URL'] ?? 'http://localhost:2322',
+      minioEndpoint: env['MINIO_ENDPOINT'] ?? 'localhost:9000',
+      minioAccessKey: require('MINIO_ACCESS_KEY', 'minioadmin', secret: true),
+      minioSecretKey: require('MINIO_SECRET_KEY', 'minioadmin', secret: true),
+      minioBucket: env['MINIO_BUCKET'] ?? 'media',
+      googleClientId: env['GOOGLE_CLIENT_ID'] ?? '',
+      appleClientId: env['APPLE_CLIENT_ID'] ?? '',
+      zoneFeedPath: env['ZONE_FEED_PATH'] ?? 'data/zones.geojson',
+      port: int.tryParse(env['PORT'] ?? '') ?? 8080,
     );
   }
 
@@ -50,8 +74,11 @@ class AppConfig {
   /// Secret used to sign JWT access tokens.
   final String jwtSecret;
 
-  /// OpenWeather One Call API key (empty uses mock weather).
-  final String openWeatherApiKey;
+  /// OpenAIP airspace API key (empty skips live airspace during zone ingest).
+  final String openAipApiKey;
+
+  /// Base URL for the self-hosted Photon geocoder (no trailing slash).
+  final String photonBaseUrl;
 
   /// MinIO/S3-compatible object storage host.
   final String minioEndpoint;

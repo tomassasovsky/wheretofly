@@ -1,3 +1,6 @@
+# Local dev with backend/docker-compose.yaml (no TLS).
 :8080 {
   reverse_proxy api:8080
 }
+
+# Production TLS: Nginx Proxy Manager — deploy/home-server/README.md

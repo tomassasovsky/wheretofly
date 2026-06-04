@@ -1,0 +1,16 @@
+name: om_smoke
+description: Standalone Open-Meteo OM decode smoke test (no Flutter).
+publish_to: none
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  http: ^1.2.2
+  wasm_run: ^0.1.0+2
+
+executables:
+  om_smoke:
+
+dev_dependencies:
+  lints: ^5.0.0

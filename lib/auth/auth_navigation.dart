@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:where_to_fly/app/app_mode.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/app/view/app_shell.dart';
 
-const _returnToQueryKey = 'returnTo';
+/// Query parameter used when redirecting unauthenticated users to login.
+const returnToQueryKey = 'returnTo';
 
 const _shellTabPaths = {
   '/feed',
@@ -35,13 +37,14 @@ String loginReturnDestination(BuildContext context) {
 
 /// Opens login and remembers the active shell tab for post-auth navigation.
 void openLogin(BuildContext context) {
+  if (AppMode.isMapOnly) return;
   final router = GoRouter.of(context);
   final currentPath = router.state.uri.path;
-  final returnTo = router.state.uri.queryParameters[_returnToQueryKey] ??
+  final returnTo = router.state.uri.queryParameters[returnToQueryKey] ??
       loginReturnDestination(context);
   final loginLocation = Uri(
     path: '/auth/login',
-    queryParameters: {_returnToQueryKey: returnTo},
+    queryParameters: {returnToQueryKey: returnTo},
   ).toString();
 
   if (currentPath.startsWith('/auth/')) {
@@ -54,43 +57,45 @@ void openLogin(BuildContext context) {
 /// Opens sign-up, preserving any login returnTo query parameter.
 void openSignUp(BuildContext context) {
   final router = GoRouter.of(context);
-  final returnTo = router.state.uri.queryParameters[_returnToQueryKey];
+  final returnTo = router.state.uri.queryParameters[returnToQueryKey];
   final from = returnTo ?? loginReturnDestination(context);
   router.pushReplacement(
     Uri(
       path: '/auth/signup',
-      queryParameters: {_returnToQueryKey: from},
+      queryParameters: {returnToQueryKey: from},
     ).toString(),
   );
 }
 
-String authReturnDestination(GoRouter router) {
-  final returnTo = router.state.uri.queryParameters[_returnToQueryKey];
+/// Resolves where to send an already-authenticated user leaving auth screens.
+String resolveAuthReturnPath(Uri uri) {
+  if (AppMode.isMapOnly) return const MapTabRoute().location;
+  final returnTo = uri.queryParameters[returnToQueryKey];
   if (returnTo != null && _shellTabPaths.contains(returnTo)) {
     return returnTo;
   }
   return const MapTabRoute().location;
 }
 
+String authReturnDestination(GoRouter router) =>
+    resolveAuthReturnPath(router.state.uri);
+
 /// Navigates away from auth screens after a successful sign-in or sign-up.
 ///
-/// Prefer [GoRouter.pop] so the shell (map, feed videos) stays mounted.
-/// Fall back to [GoRouter.go] only when login was opened without a back stack
-/// or a single pop did not leave the auth flow (legacy stacked auth routes).
+/// Uses a single [GoRouter.pop] when auth was pushed on top of the shell so
+/// tab state stays mounted. Uses [GoRouter.go] only for deep-linked auth with
+/// no back stack. Never chains pop and go — that completes the same imperative
+/// route future twice and triggers "Future already completed".
 void navigateAfterAuthentication(BuildContext context) {
   final router = GoRouter.of(context);
   final fallback = authReturnDestination(router);
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
+  Future.microtask(() {
+    if (!context.mounted) return;
     if (!router.state.uri.path.startsWith('/auth/')) return;
 
     if (router.canPop()) {
       router.pop();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (router.state.uri.path.startsWith('/auth/')) {
-          router.go(fallback);
-        }
-      });
       return;
     }
 

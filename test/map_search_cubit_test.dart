@@ -57,6 +57,22 @@ void main() {
   );
 
   blocTest<MapSearchCubit, MapSearchState>(
+    'selectResult outside Argentina sets warning flag',
+    build: buildCubit,
+    act: (cubit) => cubit.selectResult(
+      const GeocodeResult(
+        label: 'Santiago, Chile',
+        point: LatLng(-33.45, -70.66),
+      ),
+    ),
+    expect: () => [
+      isA<MapSearchState>()
+          .having((s) => s.focusPoint?.latitude, 'lat', -33.45)
+          .having((s) => s.outsideArgentina, 'outside', isTrue),
+    ],
+  );
+
+  blocTest<MapSearchCubit, MapSearchState>(
     'locateMe emits focus point when inside Argentina',
     build: buildCubit,
     setUp: () {
@@ -71,6 +87,24 @@ void main() {
           .having((s) => s.locating, 'locating', isFalse)
           .having((s) => s.focusPoint?.latitude, 'lat', -34.6)
           .having((s) => s.outsideArgentina, 'outside', isFalse),
+    ],
+  );
+
+  blocTest<MapSearchCubit, MapSearchState>(
+    'locateMe outside Argentina still focuses with warning flag',
+    build: buildCubit,
+    setUp: () {
+      when(() => location.currentLocation()).thenAnswer(
+        (_) async => const LatLng(-33.45, -70.66),
+      );
+    },
+    act: (cubit) => cubit.locateMe(),
+    expect: () => [
+      isA<MapSearchState>().having((s) => s.locating, 'locating', isTrue),
+      isA<MapSearchState>()
+          .having((s) => s.locating, 'locating', isFalse)
+          .having((s) => s.focusPoint?.latitude, 'lat', -33.45)
+          .having((s) => s.outsideArgentina, 'outside', isTrue),
     ],
   );
 }

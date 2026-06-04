@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:social_api_client/social_api_client.dart';
+import 'package:social_repository/social_repository.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/social/view/widgets/post_media_view.dart';
@@ -171,14 +171,14 @@ class ReelFeedItem extends StatelessWidget {
                 color: Colors.black45,
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.play_arrow, color: Colors.white, size: 16),
-                  SizedBox(width: 4),
+                  const Icon(Icons.play_arrow, color: Colors.white, size: 16),
+                  const SizedBox(width: 4),
                   Text(
-                    'REEL',
-                    style: TextStyle(
+                    l10n.socialReelBadge,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,

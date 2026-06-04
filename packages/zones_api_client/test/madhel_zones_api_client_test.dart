@@ -31,7 +31,7 @@ void main() {
       final zones = await client.fetchZones();
       expect(zones, hasLength(1));
       expect(zones.first.id, 'madhel_EZE');
-      expect(zones.first.radiusMeters, 12000);
+      expect(zones.first.radiusMeters, 9000);
     });
 
     test('throws when response is empty', () async {

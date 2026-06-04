@@ -5,6 +5,8 @@ import 'package:equatable/equatable.dart';
 import 'package:geocoding_repository/geocoding_repository.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location_repository/location_repository.dart';
+import 'package:where_to_fly/core/place_name_display.dart';
+import 'package:where_to_fly/map/argentina_map_bounds.dart';
 
 part 'map_search_state.dart';
 
@@ -20,11 +22,6 @@ class MapSearchCubit extends Cubit<MapSearchState> {
 
   final GeocodingRepository _geocoding;
   final LocationRepository _location;
-
-  static const _minLat = -56.0;
-  static const _maxLat = -21.0;
-  static const _minLon = -74.0;
-  static const _maxLon = -53.0;
 
   Timer? _debounce;
   Object? _latestSearchRequest;
@@ -90,7 +87,7 @@ class MapSearchCubit extends Cubit<MapSearchState> {
       emit(
         state.copyWith(
           searching: false,
-          results: results,
+          results: _localizeResults(results),
           searchError: results.isEmpty ? GeocodingFailure.noResults : null,
         ),
       );
@@ -108,6 +105,9 @@ class MapSearchCubit extends Cubit<MapSearchState> {
   }
 
   /// User picked a suggestion — focus the map on that point.
+  ///
+  /// Results from [GeocodingRepository.search] are already limited to
+  /// Argentina by the backend (Photon country code).
   void selectResult(GeocodeResult result) {
     _debounce?.cancel();
     _latestSearchRequest = Object();
@@ -116,17 +116,29 @@ class MapSearchCubit extends Cubit<MapSearchState> {
         showResults: false,
         searching: false,
         results: const [],
-        resolvedAddressLabel: _shortAddressLabel(result.label),
+        resolvedAddressLabel:
+            _shortAddressLabel(PlaceNameDisplay.localize(result.label)),
         focusPoint: result.point,
+        outsideArgentina: !ArgentinaMapBounds.contains(result.point),
       ),
     );
+  }
+
+  /// Shows the outside-Argentina warning snackbar (once).
+  void warnOutsideArgentina() {
+    if (state.outsideArgentina) return;
+    emit(state.copyWith(outsideArgentina: true));
   }
 
   /// Resolves a human-readable label for a map tap (cache-aware).
   Future<void> resolveAddressForPoint(LatLng point) async {
     try {
       final result = await _geocoding.reverse(point);
-      emit(state.copyWith(resolvedAddressLabel: result.label));
+      emit(
+        state.copyWith(
+          resolvedAddressLabel: PlaceNameDisplay.localize(result.label),
+        ),
+      );
     } on GeocodingException {
       emit(
         state.copyWith(
@@ -151,7 +163,7 @@ class MapSearchCubit extends Cubit<MapSearchState> {
         state.copyWith(
           locating: false,
           focusPoint: point,
-          outsideArgentina: !_isInsideArgentina(point),
+          outsideArgentina: !ArgentinaMapBounds.contains(point),
         ),
       );
     } on LocationException catch (e) {
@@ -207,11 +219,16 @@ class MapSearchCubit extends Cubit<MapSearchState> {
     );
   }
 
-  bool _isInsideArgentina(LatLng p) =>
-      p.latitude >= _minLat &&
-      p.latitude <= _maxLat &&
-      p.longitude >= _minLon &&
-      p.longitude <= _maxLon;
+  static List<GeocodeResult> _localizeResults(List<GeocodeResult> results) {
+    return results
+        .map(
+          (r) => GeocodeResult(
+            label: PlaceNameDisplay.localize(r.label),
+            point: r.point,
+          ),
+        )
+        .toList();
+  }
 
   static String _shortAddressLabel(String label) {
     final parts = label

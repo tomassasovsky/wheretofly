@@ -9,8 +9,6 @@ Future<Response> onRequest(RequestContext context) async {
     return Response(statusCode: 405);
   }
   await ensureContainer();
-  final userId = authenticatedUserId(context);
-  if (userId == null) return unauthorized();
 
   final lat = double.tryParse(context.request.uri.queryParameters['lat'] ?? '');
   final lon = double.tryParse(context.request.uri.queryParameters['lon'] ?? '');

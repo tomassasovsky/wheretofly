@@ -2,17 +2,25 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+/// Production API host (home server stack on aquiles.dev).
+const productionApiBaseUrl = 'https://dondevolar.aquiles.dev';
+
 /// Resolves the backend base URL for the current run target.
 ///
 /// Override at build time when needed:
 ///   flutter run --dart-define=API_BASE_URL=http://192.168.x.x:8080
 ///
+/// Release builds without `API_BASE_URL` use [productionApiBaseUrl].
 /// On a physical phone/tablet, `localhost` points at the device itself — use
 /// your Mac's LAN IP (same Wi‑Fi) or run `./scripts/flutter_run_dev.sh`.
 Uri resolveApiBaseUri() {
   const explicit = String.fromEnvironment('API_BASE_URL');
   if (explicit.isNotEmpty) {
     return Uri.parse(explicit);
+  }
+
+  if (kReleaseMode) {
+    return Uri.parse(productionApiBaseUrl);
   }
 
   const hostOverride = String.fromEnvironment('API_HOST');
@@ -48,6 +56,7 @@ bool get _isIosSimulator {
 
 /// True when the app likely cannot reach a Mac-hosted backend at localhost.
 bool get apiBaseUriNeedsPhysicalDeviceOverride {
+  if (kReleaseMode) return false;
   if (kIsWeb) return false;
   const explicit = String.fromEnvironment('API_BASE_URL');
   if (explicit.isNotEmpty) return false;
@@ -65,5 +74,6 @@ bool get _isAndroidEmulator {
 
 String physicalDeviceApiHint() {
   return 'On a physical device, run: '
-      'flutter run --dart-define=API_BASE_URL=http://<your-mac-ip>:8080';
+      'flutter run --dart-define=API_BASE_URL=http://<your-mac-ip>:8080 '
+      '(or $productionApiBaseUrl for the home server)';
 }
