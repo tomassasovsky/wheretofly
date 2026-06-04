@@ -4,6 +4,7 @@ import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/l10n/localized_labels.dart';
 import 'package:where_to_fly/map/cubit/map_cubit.dart';
 import 'package:where_to_fly/map/view/widgets/config_sheet.dart';
+import 'package:where_to_fly/theme/app_theme.dart';
 
 /// A compact bottom card summarising the current permission + modality, à la
 /// Google Maps' bottom info card. Tapping opens the configuration sheet.
@@ -20,7 +21,7 @@ class ConfigBar extends StatelessWidget {
         return Material(
           elevation: 3,
           borderRadius: BorderRadius.circular(18),
-          color: theme.colorScheme.surface,
+          color: AppTheme.mapOverlaySurface(theme.brightness),
           child: InkWell(
             borderRadius: BorderRadius.circular(18),
             onTap: () => showConfigSheet(context),

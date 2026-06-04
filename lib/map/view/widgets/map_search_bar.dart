@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
+import 'package:where_to_fly/theme/app_theme.dart';
 
 /// A floating, pill-shaped search bar: search icon, text field, settings.
 class MapSearchBar extends StatelessWidget {
@@ -26,10 +27,13 @@ class MapSearchBar extends StatelessWidget {
       height: 1.25,
     );
 
+    final overlay = AppTheme.mapOverlaySurface(theme.brightness);
+
     return Material(
       elevation: 3,
+      shadowColor: Colors.black.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(28),
-      color: theme.colorScheme.surface,
+      color: overlay,
       child: Padding(
         padding: const EdgeInsets.only(left: 14, right: 2),
         child: SizedBox(
@@ -51,11 +55,15 @@ class MapSearchBar extends StatelessWidget {
                   onSubmitted: (_) => onSubmitted(),
                   style: fieldStyle,
                   decoration: InputDecoration(
+                    filled: false,
+                    fillColor: Colors.transparent,
                     hintText: l10n.searchHint,
                     hintStyle: fieldStyle?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 13),
                     isCollapsed: true,
                   ),
@@ -65,6 +73,7 @@ class MapSearchBar extends StatelessWidget {
                 tooltip: l10n.settings,
                 iconSize: 22,
                 visualDensity: VisualDensity.compact,
+                color: theme.colorScheme.onSurfaceVariant,
                 icon: const Icon(Icons.settings_outlined),
                 onPressed: () => const SettingsRoute().push<void>(context),
               ),

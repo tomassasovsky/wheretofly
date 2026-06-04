@@ -17,6 +17,8 @@ class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   static const sponsorUrl = 'https://cafecito.app/aquilesdev';
+  static const websiteUrl = 'https://aquiles.dev';
+  static const githubUrl = 'https://github.com/tomassasovsky';
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +112,7 @@ class SettingsPage extends StatelessWidget {
                 ],
                 const SizedBox(height: 12),
                 _SettingsCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Column(
                     children: [
                       ListTile(
@@ -169,6 +172,8 @@ class SettingsPage extends StatelessWidget {
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
+                const SizedBox(height: 24),
+                _CreditsFooter(l10n: l10n),
               ],
             );
           },
@@ -190,18 +195,74 @@ class SettingsPage extends StatelessWidget {
 }
 
 class _SettingsCard extends StatelessWidget {
-  const _SettingsCard({required this.child});
+  const _SettingsCard({
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+  });
 
   final Widget child;
+  final EdgeInsets padding;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: padding,
         child: child,
       ),
+    );
+  }
+}
+
+class _CreditsFooter extends StatelessWidget {
+  const _CreditsFooter({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  Future<void> _openLink(BuildContext context, String url) async {
+    final ok = await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!ok && context.mounted) {
+      context.showAppSnackBar(
+        AppLocalizations.of(context).couldNotOpen(url),
+        intent: AppSnackBarIntent.error,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      children: [
+        Text(
+          l10n.creditsDevelopedBy,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton.icon(
+              onPressed: () => _openLink(context, SettingsPage.websiteUrl),
+              icon: const Icon(Icons.language_outlined, size: 18),
+              label: Text(l10n.creditsWebsite),
+            ),
+            TextButton.icon(
+              onPressed: () => _openLink(context, SettingsPage.githubUrl),
+              icon: const Icon(Icons.code, size: 18),
+              label: Text(l10n.creditsGithub),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

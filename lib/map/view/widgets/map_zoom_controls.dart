@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:where_to_fly/theme/app_theme.dart';
 
 /// Zoom controls grouped as a single rounded pill (+ over −).
 class MapZoomControls extends StatelessWidget {
@@ -16,7 +17,7 @@ class MapZoomControls extends StatelessWidget {
     final theme = Theme.of(context);
     return Material(
       elevation: 3,
-      color: theme.colorScheme.surface,
+      color: AppTheme.mapOverlaySurface(theme.brightness),
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: Column(

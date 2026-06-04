@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:geocoding_repository/geocoding_repository.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location_repository/location_repository.dart';
+import 'package:where_to_fly/core/place_name_display.dart';
 import 'package:where_to_fly/map/argentina_map_bounds.dart';
 
 part 'map_search_state.dart';
@@ -86,7 +87,7 @@ class MapSearchCubit extends Cubit<MapSearchState> {
       emit(
         state.copyWith(
           searching: false,
-          results: results,
+          results: _localizeResults(results),
           searchError: results.isEmpty ? GeocodingFailure.noResults : null,
         ),
       );
@@ -115,7 +116,8 @@ class MapSearchCubit extends Cubit<MapSearchState> {
         showResults: false,
         searching: false,
         results: const [],
-        resolvedAddressLabel: _shortAddressLabel(result.label),
+        resolvedAddressLabel:
+            _shortAddressLabel(PlaceNameDisplay.localize(result.label)),
         focusPoint: result.point,
         outsideArgentina: !ArgentinaMapBounds.contains(result.point),
       ),
@@ -132,7 +134,11 @@ class MapSearchCubit extends Cubit<MapSearchState> {
   Future<void> resolveAddressForPoint(LatLng point) async {
     try {
       final result = await _geocoding.reverse(point);
-      emit(state.copyWith(resolvedAddressLabel: result.label));
+      emit(
+        state.copyWith(
+          resolvedAddressLabel: PlaceNameDisplay.localize(result.label),
+        ),
+      );
     } on GeocodingException {
       emit(
         state.copyWith(
@@ -211,6 +217,17 @@ class MapSearchCubit extends Cubit<MapSearchState> {
         outsideArgentina: false,
       ),
     );
+  }
+
+  static List<GeocodeResult> _localizeResults(List<GeocodeResult> results) {
+    return results
+        .map(
+          (r) => GeocodeResult(
+            label: PlaceNameDisplay.localize(r.label),
+            point: r.point,
+          ),
+        )
+        .toList();
   }
 
   static String _shortAddressLabel(String label) {

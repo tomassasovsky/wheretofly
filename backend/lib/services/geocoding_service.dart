@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:backend/config/app_config.dart';
+import 'package:backend/util/place_name_display.dart';
 import 'package:http/http.dart' as http;
 
 /// Proxies OpenStreetMap geocoding via a self-hosted Photon instance.
@@ -140,7 +141,9 @@ class GeocodingService {
     }
 
     return GeocodeHit(
-      label: _formatLabel(props, fallback: feature['name'] as String?),
+      label: PlaceNameDisplay.localize(
+        _formatLabel(props, fallback: feature['name'] as String?),
+      ),
       latitude: lat.toDouble(),
       longitude: lon.toDouble(),
     );

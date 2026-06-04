@@ -17,7 +17,11 @@ abstract final class MapConfig {
 
   /// Resolves the basemap tile URL template for [brightness].
   ///
-  /// Override at build time for MapTiler or self-hosted raster templates:
+  /// Override at build time for MapTiler or self-hosted raster templates.
+  /// For Spanish labels on the map (e.g. Islas Malvinas), use a provider that
+  /// supports `language=es` (MapTiler, Mapbox GL, etc.) — CARTO Voyager uses
+  /// default OSM English names baked into raster tiles.
+  ///
   ///   flutter run --dart-define=MAP_TILE_URL_LIGHT=https://...
   ///   flutter run --dart-define=MAP_TILE_URL_DARK=https://...
   static String tileUrlTemplateFor(Brightness brightness) {

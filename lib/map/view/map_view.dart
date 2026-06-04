@@ -143,6 +143,10 @@ class _MapViewState extends State<MapView> {
           );
           return Scaffold(
             backgroundColor: MapInitializer.placeholderColorFor(mapBrightness),
+            // The search bar floats at the top; let the keyboard overlay the
+            // map instead of resizing it (a resize relayouts FlutterMap and
+            // briefly blanks tiles to the placeholder color while typing).
+            resizeToAvoidBottomInset: false,
             body: BlocBuilder<MapCubit, MapState>(
               builder: (context, state) {
                 final assessment = state.assessment;
@@ -150,6 +154,12 @@ class _MapViewState extends State<MapView> {
                     assessment != null && state.selectedPoint != null;
 
                 return Stack(
+                  // The Scaffold gives its body loose height constraints. Every
+                  // child here is Positioned except the stale-banner slot,
+                  // which collapses to SizedBox.shrink when hidden. Without
+                  // expanding the Stack, would size to that 0x0 child and
+                  // blank the map.
+                  fit: StackFit.expand,
                   children: [
                     Positioned.fill(
                       child: FlutterMapLayer(

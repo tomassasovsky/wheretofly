@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/map/view/widgets/map_zoom_controls.dart';
+import 'package:where_to_fly/theme/app_theme.dart';
 
 /// Right-side FAB column: wind overlay, legend, zoom, locate.
 class MapFabColumn extends StatelessWidget {
@@ -41,7 +42,7 @@ class MapFabColumn extends StatelessWidget {
             tooltip: l10n.mapWindOverlayToggle,
             backgroundColor: showWindOverlay
                 ? theme.colorScheme.primaryContainer
-                : theme.colorScheme.surfaceContainerHighest,
+                : AppTheme.mapOverlayMuted(theme.brightness),
             foregroundColor: showWindOverlay
                 ? theme.colorScheme.onPrimaryContainer
                 : theme.colorScheme.onSurfaceVariant,

@@ -356,6 +356,24 @@ abstract class AppLocalizations {
   /// **'Support development on Cafecito.'**
   String get sponsorMeDescription;
 
+  /// No description provided for @creditsDevelopedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Developed by Tomás Sasovsky'**
+  String get creditsDevelopedBy;
+
+  /// No description provided for @creditsWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get creditsWebsite;
+
+  /// No description provided for @creditsGithub.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub'**
+  String get creditsGithub;
+
   /// No description provided for @permRecreational.
   ///
   /// In en, this message translates to:

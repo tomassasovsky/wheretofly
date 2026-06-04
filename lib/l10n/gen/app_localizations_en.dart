@@ -151,6 +151,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sponsorMeDescription => 'Support development on Cafecito.';
 
   @override
+  String get creditsDevelopedBy => 'Developed by Tomás Sasovsky';
+
+  @override
+  String get creditsWebsite => 'Website';
+
+  @override
+  String get creditsGithub => 'GitHub';
+
+  @override
   String get permRecreational => 'Recreational / no license';
 
   @override

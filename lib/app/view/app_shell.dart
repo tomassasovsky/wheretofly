@@ -54,6 +54,9 @@ class _AppShellState extends State<AppShell> {
           final showTabBar = !AppMode.mapOnly && authState.isAuthenticated;
 
           return Scaffold(
+            // Pages manage their own keyboard insets (the map overlays the
+            // keyboard rather than resizing, which blanks flutter_map tiles).
+            resizeToAvoidBottomInset: false,
             body: widget.navigationShell,
             bottomNavigationBar: showTabBar
                 ? NavigationBarTheme(

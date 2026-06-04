@@ -38,6 +38,21 @@ void main() {
       expect(captured.queryParameters['q'], 'Buenos Aires');
     });
 
+    test('localizes Falkland Islands in labels', () async {
+      when(() => httpClient.get(any())).thenAnswer(
+        (_) async => http.Response(_falklandsFeatureCollection, 200),
+      );
+
+      final service = GeocodingService(
+        config: _testConfig(),
+        httpClient: httpClient,
+      );
+
+      final results = await service.search('Malvinas');
+      expect(results.first.label, contains('Islas Malvinas'));
+      expect(results.first.label, isNot(contains('Falkland Islands')));
+    });
+
     test('reverse geocodes via Photon', () async {
       when(() => httpClient.get(any())).thenAnswer(
         (_) async => http.Response(_buenosFeatureCollection, 200),
@@ -74,6 +89,22 @@ AppConfig _testConfig({String photonBaseUrl = 'http://localhost:2322'}) {
     zoneFeedPath: '',
   );
 }
+
+const _falklandsFeatureCollection = '''
+{
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-59.5, -51.7]},
+      "properties": {
+        "name": "Falkland Islands",
+        "state": "Falkland Islands",
+        "countrycode": "AR"
+      }
+    }
+  ]
+}
+''';
 
 const _buenosFeatureCollection = '''
 {

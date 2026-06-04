@@ -102,7 +102,7 @@ class ZoneDetailCard extends StatelessWidget {
     return Material(
       elevation: 4,
       borderRadius: BorderRadius.circular(18),
-      color: theme.colorScheme.surface,
+      color: AppTheme.mapOverlaySurface(theme.brightness),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
         constraints: BoxConstraints(
