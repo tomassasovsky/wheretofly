@@ -227,7 +227,7 @@ abstract class AppLocalizations {
   /// No description provided for @outsideArgentina.
   ///
   /// In en, this message translates to:
-  /// **'Your location appears to be outside Argentina; the dataset only covers Argentine zones.'**
+  /// **'This location may be outside Argentina. Zone data may be incomplete or unavailable.'**
   String get outsideArgentina;
 
   /// No description provided for @searchHint.
@@ -277,6 +277,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
+
+  /// No description provided for @attributions.
+  ///
+  /// In en, this message translates to:
+  /// **'Licenses & attributions'**
+  String get attributions;
+
+  /// No description provided for @attributionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Map data, weather sources, and open-source packages'**
+  String get attributionsSubtitle;
 
   /// No description provided for @theme.
   ///
@@ -866,6 +878,36 @@ abstract class AppLocalizations {
   /// **'Advisory only — pilot responsibility under RAAC 100.'**
   String get weatherDisclaimer;
 
+  /// No description provided for @weatherReasonSmnAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Active weather alert (SMN)'**
+  String get weatherReasonSmnAlert;
+
+  /// No description provided for @weatherReasonWindHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind too strong for safe flight'**
+  String get weatherReasonWindHigh;
+
+  /// No description provided for @weatherReasonWindElevated.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind elevated for light drones'**
+  String get weatherReasonWindElevated;
+
+  /// No description provided for @weatherReasonWindModerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Caution: moderate wind'**
+  String get weatherReasonWindModerate;
+
+  /// No description provided for @weatherReasonFavorable.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorable conditions'**
+  String get weatherReasonFavorable;
+
   /// No description provided for @mapLayerZones.
   ///
   /// In en, this message translates to:
@@ -941,7 +983,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapWindTilesTimeout.
   ///
   /// In en, this message translates to:
-  /// **'Wind overlay did not load. Open-Meteo tiles need internet.'**
+  /// **'Wind gusts are taking longer than usual. Wait a moment or tap Retry.'**
   String get mapWindTilesTimeout;
 
   /// No description provided for @mapWindMaplibreMissing.

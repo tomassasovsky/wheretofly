@@ -5,10 +5,14 @@ import 'package:where_to_fly/map/map_initializer.dart';
 import 'package:where_to_fly/map/map_theme.dart';
 
 void main() {
-  test('argentina center and initial zoom', () {
+  test('argentina center and geographic bounds', () {
     expect(MapInitializer.argentinaCenter.latitude, -38.4161);
     expect(MapInitializer.argentinaCenter.longitude, -63.6167);
-    expect(MapInitializer.initialZoom, 4.5);
+    final bounds = MapInitializer.argentinaBounds;
+    expect(bounds.south, lessThan(-50));
+    expect(bounds.north, greaterThan(-20));
+    expect(bounds.west, lessThan(-70));
+    expect(bounds.east, greaterThan(-50));
   });
 
   testWidgets('mapBrightnessFor honors ThemeMode.dark', (tester) async {

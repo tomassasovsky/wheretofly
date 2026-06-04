@@ -308,7 +308,7 @@ class _InfoBanner extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.background,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         children: [

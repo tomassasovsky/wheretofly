@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// Open-Meteo `wind` breakpoint colorscale (used for `wind_gusts_10m`).
 ///
 /// Values from `@openmeteo/weather-map-layer` — keep in sync with
-/// `assets/wind_map/weather-map-layer.js`.
+/// Open-Meteo weather-map-layer (wind palette).
 abstract final class WindColorscale {
   static const unit = 'm/s';
 

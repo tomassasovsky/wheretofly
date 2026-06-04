@@ -8,6 +8,7 @@ import 'package:where_to_fly/auth/auth_navigation.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/messaging/cubit/notification_preferences_cubit.dart';
 import 'package:where_to_fly/settings/settings_cubit.dart';
+import 'package:where_to_fly/theme/app_snack_bar.dart';
 import 'package:where_to_fly/weather/weather_alerts_cubit.dart';
 
 /// Full-screen settings: appearance, language, and a link to support the app.
@@ -230,6 +231,20 @@ class SettingsPage extends StatelessWidget {
                   },
                 ),
                 const Divider(),
+                const SizedBox(height: 8),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.article_outlined),
+                  title: Text(l10n.attributions),
+                  subtitle: Text(
+                    l10n.attributionsSubtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => const AttributionsRoute().push<void>(context),
+                ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   onPressed: () => _openSponsorLink(context),
@@ -255,10 +270,9 @@ class SettingsPage extends StatelessWidget {
     final uri = Uri.parse(sponsorUrl);
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).couldNotOpen(sponsorUrl)),
-        ),
+      context.showAppSnackBar(
+        AppLocalizations.of(context).couldNotOpen(sponsorUrl),
+        intent: AppSnackBarIntent.error,
       );
     }
   }

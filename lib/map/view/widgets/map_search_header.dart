@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_to_fly/map/cubit/map_search_cubit.dart';
+import 'package:where_to_fly/map/map_overlay_policy.dart';
 import 'package:where_to_fly/map/view/widgets/map_legend.dart';
 import 'package:where_to_fly/map/view/widgets/map_search_bar.dart';
+import 'package:where_to_fly/map/view/widgets/map_transient_message.dart';
 import 'package:where_to_fly/map/view/widgets/search_results_overlay.dart';
 import 'package:where_to_fly/map/view/widgets/wind_speed_legend.dart';
 
@@ -39,6 +41,14 @@ class MapSearchHeader extends StatelessWidget {
               onChanged: onQueryChanged,
               onSubmitted: onSubmitSearch,
             ),
+            if (searchState.locationFailure != null ||
+                searchState.outsideArgentina) ...[
+              const SizedBox(height: 8),
+              MapTransientMessage(
+                locationFailure: searchState.locationFailure,
+                outsideArgentina: searchState.outsideArgentina,
+              ),
+            ],
             if (searchState.showResults) ...[
               const SizedBox(height: 8),
               SearchResultsOverlay(
@@ -49,18 +59,26 @@ class MapSearchHeader extends StatelessWidget {
                     context.read<MapSearchCubit>().selectResult(result),
               ),
             ],
-            if (showLegend) ...[
-              const SizedBox(height: 8),
-              const Align(
-                alignment: Alignment.centerRight,
-                child: MapLegend(),
-              ),
-            ],
-            if (showWindLegend) ...[
+            if (MapOverlayPolicy.showWindLegend(
+              windLegendToggleOn: showWindLegend,
+              legendToggleOn: showLegend,
+              search: searchState,
+            )) ...[
               const SizedBox(height: 8),
               const Align(
                 alignment: Alignment.centerRight,
                 child: WindSpeedLegend(),
+              ),
+            ],
+            if (MapOverlayPolicy.showZoneLegend(
+              legendToggleOn: showLegend,
+              windLegendToggleOn: showWindLegend,
+              search: searchState,
+            )) ...[
+              const SizedBox(height: 8),
+              const Align(
+                alignment: Alignment.centerRight,
+                child: MapLegend(),
               ),
             ],
           ],

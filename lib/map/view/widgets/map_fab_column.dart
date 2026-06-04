@@ -62,6 +62,8 @@ class MapFabColumn extends StatelessWidget {
           heroTag: 'locate',
           onPressed: locating ? null : onLocate,
           tooltip: l10n.locateMe,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           child: locating
               ? const SizedBox(
                   width: 20,

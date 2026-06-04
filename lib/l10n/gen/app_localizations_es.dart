@@ -82,7 +82,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get outsideArgentina =>
-      'Tu ubicación parece estar fuera de Argentina; el conjunto de datos solo cubre zonas argentinas.';
+      'Este punto puede estar fuera de Argentina. Los datos de zonas pueden estar incompletos o no estar disponibles.';
 
   @override
   String get searchHint => 'Buscá una ciudad o dirección en Argentina';
@@ -107,6 +107,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settings => 'Ajustes';
+
+  @override
+  String get attributions => 'Licencias y atribuciones';
+
+  @override
+  String get attributionsSubtitle => 'Mapa, clima y paquetes de código abierto';
 
   @override
   String get theme => 'Apariencia';
@@ -455,6 +461,21 @@ class AppLocalizationsEs extends AppLocalizations {
       'Solo orientativo — responsabilidad del piloto según RAAC 100.';
 
   @override
+  String get weatherReasonSmnAlert => 'Alerta meteorológica activa (SMN)';
+
+  @override
+  String get weatherReasonWindHigh => 'Viento demasiado fuerte para volar';
+
+  @override
+  String get weatherReasonWindElevated => 'Viento elevado para drones ligeros';
+
+  @override
+  String get weatherReasonWindModerate => 'Precaución por viento moderado';
+
+  @override
+  String get weatherReasonFavorable => 'Condiciones favorables';
+
+  @override
   String get mapLayerZones => 'Zonas';
 
   @override
@@ -496,7 +517,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mapWindTilesTimeout =>
-      'La capa de viento no cargó. Los tiles de Open-Meteo requieren internet.';
+      'Las ráfagas tardan más de lo habitual. Esperá un momento o tocá Reintentar.';
 
   @override
   String get mapWindMaplibreMissing => 'Falta el script de MapLibre GL.';

@@ -145,13 +145,13 @@ Attribution for the active tile provider is shown on the map via
 ### Wind field (Open-Meteo)
 
 The map is a single **flutter_map** view (zones, tap-to-check, search). Use
-the **wind** FAB (air icon) to show or hide an Open-Meteo **gust overlay**
-(WebView raster on top, same camera). **Does not use your backend** — it needs
-internet to `map-tiles.open-meteo.com`. MapLibre GL JS + weather-map-layer are
-bundled in `assets/wind_map/` (GPL-2.0).
+the **wind** FAB (air icon) to show or hide an Open-Meteo **gust raster layer**
+rendered in Flutter (`TileLayer` + `.om` decode via `wasm_run`). **Does not use
+your backend** — it needs internet to `map-tiles.open-meteo.com`. Wind decoding
+uses Open-Meteo file-format WASM in `assets/om/` (GPL-2.0-only): SIMD build for
+desktop/Android arm64, scalar build for iOS/Wasmi.
 
 - Hide the toggle: `flutter run --dart-define=WIND_MAP_ENABLED=false`
-- Refresh vendored JS: `./scripts/vendor_wind_map_assets.sh`
 - Capture simulator screenshots: `flutter test integration_test/wind_map_screenshot_test.dart -d <device_id>`
 
 ### Platform permissions (already configured)

@@ -10,6 +10,7 @@ List<RouteBase> get $appRoutes => [
       $splashRoute,
       $appShellRoute,
       $settingsRoute,
+      $attributionsRoute,
       $resourcesRoute,
       $loginRoute,
       $signUpRoute,
@@ -223,6 +224,36 @@ mixin $SettingsRoute on GoRouteData {
   @override
   String get location => GoRouteData.$location(
         '/settings',
+      );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $attributionsRoute => GoRouteData.$route(
+      path: '/settings/attributions',
+      name: 'attributions',
+      parentNavigatorKey: AttributionsRoute.$parentNavigatorKey,
+      factory: $AttributionsRoute._fromState,
+    );
+
+mixin $AttributionsRoute on GoRouteData {
+  static AttributionsRoute _fromState(GoRouterState state) =>
+      const AttributionsRoute();
+
+  @override
+  String get location => GoRouteData.$location(
+        '/settings/attributions',
       );
 
   @override

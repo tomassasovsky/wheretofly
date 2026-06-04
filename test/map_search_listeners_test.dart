@@ -11,6 +11,7 @@ import 'package:where_to_fly/map/cubit/map_cubit.dart';
 import 'package:where_to_fly/map/cubit/map_search_cubit.dart';
 import 'package:where_to_fly/map/map_camera_controller.dart';
 import 'package:where_to_fly/map/view/map_search_listeners.dart';
+import 'package:where_to_fly/map/view/widgets/map_transient_message.dart';
 
 class _MockGeocodingRepository extends Mock implements GeocodingRepository {}
 
@@ -97,7 +98,9 @@ void main() {
     expect(searchCubit.state.focusPoint, isNull);
   });
 
-  testWidgets('locationFailure shows localized snackbar', (tester) async {
+  testWidgets('locationFailure is kept in search state for map banner', (
+    tester,
+  ) async {
     when(() => location.currentLocation()).thenThrow(
       const LocationException(LocationFailure.permissionDenied),
     );
@@ -106,9 +109,36 @@ void main() {
 
     await searchCubit.locateMe();
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.byType(SnackBar), findsOneWidget);
+    expect(
+      searchCubit.state.locationFailure,
+      LocationFailure.permissionDenied,
+    );
+  });
+
+  testWidgets('locationFailure shows in MapTransientMessage', (tester) async {
+    when(() => location.currentLocation()).thenThrow(
+      const LocationException(LocationFailure.permissionDenied),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: BlocProvider<MapSearchCubit>.value(
+            value: searchCubit,
+            child: const MapTransientMessage(
+              locationFailure: LocationFailure.permissionDenied,
+              outsideArgentina: false,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(MapTransientMessage), findsOneWidget);
+    expect(find.textContaining('permission'), findsOneWidget);
   });
 
   testWidgets('resolvedAddressLabel updates search field', (tester) async {

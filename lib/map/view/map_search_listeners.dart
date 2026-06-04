@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:location_repository/location_repository.dart';
-import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/map/cubit/map_cubit.dart';
 import 'package:where_to_fly/map/cubit/map_search_cubit.dart';
 import 'package:where_to_fly/map/map_camera_controller.dart';
@@ -28,8 +26,6 @@ class MapSearchListeners extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
     return MultiBlocListener(
       listeners: [
         BlocListener<MapSearchCubit, MapSearchState>(
@@ -48,7 +44,7 @@ class MapSearchListeners extends StatelessWidget {
             final point = state.focusPoint;
             if (point == null) return;
             final searchCubit = context.read<MapSearchCubit>();
-            final zoom = searchCubit.state.outsideArgentina ? 5.0 : 12.0;
+            const zoom = 12.0;
             final resolve = state.resolvedAddressLabel == null;
             await _goToPoint(
               context,
@@ -57,28 +53,6 @@ class MapSearchListeners extends StatelessWidget {
               zoom: zoom,
             );
             searchCubit.clearFocusPoint();
-          },
-        ),
-        BlocListener<MapSearchCubit, MapSearchState>(
-          listenWhen: (prev, next) =>
-              prev.locationFailure != next.locationFailure ||
-              prev.outsideArgentina != next.outsideArgentina,
-          listener: (context, state) {
-            final messenger = ScaffoldMessenger.of(context);
-            if (state.locationFailure != null) {
-              messenger.showSnackBar(
-                SnackBar(
-                  content: Text(
-                    _locationErrorMessage(l10n, state.locationFailure!),
-                  ),
-                ),
-              );
-            } else if (state.outsideArgentina) {
-              messenger.showSnackBar(
-                SnackBar(content: Text(l10n.outsideArgentina)),
-              );
-            }
-            context.read<MapSearchCubit>().clearLocationMessages();
           },
         ),
       ],
@@ -100,18 +74,5 @@ class MapSearchListeners extends StatelessWidget {
       context.read<MapCubit>().checkPoint(point);
     }
     await mapController.moveTo(point, zoom: zoom);
-  }
-
-  static String _locationErrorMessage(
-    AppLocalizations l10n,
-    LocationFailure reason,
-  ) {
-    return switch (reason) {
-      LocationFailure.serviceDisabled => l10n.locationServiceDisabled,
-      LocationFailure.permissionDenied => l10n.locationPermissionDenied,
-      LocationFailure.permissionDeniedForever =>
-        l10n.locationPermissionDeniedForever,
-      LocationFailure.unavailable => l10n.locationUnavailable,
-    };
   }
 }

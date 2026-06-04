@@ -19,6 +19,16 @@ abstract final class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: colorScheme.surface,
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        backgroundColor: colorScheme.surfaceContainerHigh,
+        contentTextStyle: TextStyle(color: colorScheme.onSurface),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: colorScheme.outlineVariant),
+        ),
+      ),
       // iOS-style page transitions on every platform.
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {

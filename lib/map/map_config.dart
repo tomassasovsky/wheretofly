@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Map tile configuration for flutter_map.
 abstract final class MapConfig {
-  /// CARTO Voyager raster tiles — free with on-map attribution.
+  /// CARTO Voyager raster tiles.
   static const cartoVoyagerTileUrl =
       'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png';
 

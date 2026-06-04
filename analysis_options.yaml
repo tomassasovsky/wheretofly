@@ -3,6 +3,8 @@ include: package:very_good_analysis/analysis_options.yaml
 analyzer:
   exclude:
     - "**/*.g.dart"
+    - "packages/argentina_bounds/lib/argentina_border_path.dart"
+    - "tooling/**"
   language:
     strict-casts: true
     strict-raw-types: true

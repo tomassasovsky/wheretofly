@@ -10,6 +10,8 @@ environment:
   sdk: ">=3.6.0 <4.0.0"
 
 dependencies:
+  argentina_bounds:
+    path: packages/argentina_bounds
   auth_api_client:
     path: packages/auth_api_client
   auth_repository:
@@ -55,13 +57,12 @@ dependencies:
   storage:
     path: packages/storage
   url_launcher: ^6.3.0
+  wasm_run: ^0.1.0+2
+  wasm_run_flutter: ^0.1.0
   weather_api_client:
     path: packages/weather_api_client
   weather_repository:
     path: packages/weather_repository
-  webview_flutter: ^4.13.1
-  webview_flutter_android: ^4.12.2
-  webview_flutter_wkwebview: ^3.25.1
   zones_api_client:
     path: packages/zones_api_client
 
@@ -81,7 +82,5 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
-    - assets/wind_map/maplibre-gl.css
-    - assets/wind_map/maplibre-gl.js
-    - assets/wind_map/weather-map-layer.js
-    - assets/wind_map/wind_map.js
+    - assets/om/om_reader_wasm.wasm
+    - assets/om/om_reader_wasm_wasmi.wasm

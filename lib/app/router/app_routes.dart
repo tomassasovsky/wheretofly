@@ -13,6 +13,7 @@ import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/map/view/map_page.dart';
 import 'package:where_to_fly/messaging/view/chat_page.dart';
 import 'package:where_to_fly/resources/view/resources_page.dart';
+import 'package:where_to_fly/settings/view/attributions_page.dart';
 import 'package:where_to_fly/settings/view/settings_page.dart';
 import 'package:where_to_fly/social/create_post_draft.dart';
 import 'package:where_to_fly/social/view/create_post_page.dart';
@@ -152,6 +153,21 @@ class SettingsRoute extends GoRouteData with $SettingsRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const SettingsPage();
+  }
+}
+
+@TypedGoRoute<AttributionsRoute>(
+  path: '/settings/attributions',
+  name: 'attributions',
+)
+class AttributionsRoute extends GoRouteData with $AttributionsRoute {
+  const AttributionsRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const AttributionsPage();
   }
 }
 

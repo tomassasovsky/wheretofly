@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:weather_api_client/weather_api_client.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
+import 'package:where_to_fly/theme/app_snack_bar.dart';
 import 'package:where_to_fly/weather/weather_alerts_cubit.dart';
 
 /// Compact weather advisory shown alongside zone verdicts.
@@ -15,6 +16,23 @@ class WeatherAdvisoryCard extends StatelessWidget {
 
   final WeatherSnapshot snapshot;
   final bool showSaveAlert;
+
+  String? _reasonText(AppLocalizations l10n) {
+    if (snapshot.advisoryReasons.isEmpty) return null;
+    switch (snapshot.advisoryReasons.first) {
+      case 'smnAlert':
+        return l10n.weatherReasonSmnAlert;
+      case 'windHigh':
+        return l10n.weatherReasonWindHigh;
+      case 'windElevated':
+        return l10n.weatherReasonWindElevated;
+      case 'windModerate':
+        return l10n.weatherReasonWindModerate;
+      case 'favorable':
+        return l10n.weatherReasonFavorable;
+    }
+    return null;
+  }
 
   Color _color(BuildContext context) {
     switch (snapshot.advisoryLevel) {
@@ -35,6 +53,7 @@ class WeatherAdvisoryCard extends StatelessWidget {
     final theme = Theme.of(context);
     final wind = snapshot.windSpeedMs;
     final gust = snapshot.windGustMs;
+    final reasonText = _reasonText(l10n);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -58,10 +77,10 @@ class WeatherAdvisoryCard extends StatelessWidget {
               ),
             ),
           ],
-          if (snapshot.advisoryReasons.isNotEmpty) ...[
+          if (reasonText != null) ...[
             const SizedBox(height: 4),
             Text(
-              snapshot.advisoryReasons.first,
+              reasonText,
               style: theme.textTheme.bodySmall,
             ),
           ],
@@ -102,10 +121,9 @@ class WeatherAdvisoryCard extends StatelessWidget {
           point: LatLng(snapshot.lat, snapshot.lon),
         );
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(ok ? l10n.weatherAlertSaved : l10n.weatherFetchFailed),
-      ),
+    context.showAppSnackBar(
+      ok ? l10n.weatherAlertSaved : l10n.weatherFetchFailed,
+      intent: ok ? AppSnackBarIntent.success : AppSnackBarIntent.error,
     );
   }
 }

@@ -6,6 +6,7 @@
   var config = {};
   var shellTimeoutId = null;
   var windCheckTimeoutId = null;
+  var windTileErrorTimerId = null;
   var omProtocolRegistered = false;
 
   function post(type, message) {
@@ -29,6 +30,13 @@
     }
   }
 
+  function clearWindTileErrorTimer() {
+    if (windTileErrorTimerId != null) {
+      clearTimeout(windTileErrorTimerId);
+      windTileErrorTimerId = null;
+    }
+  }
+
   function startShellTimeout(ms) {
     clearShellTimeout();
     shellTimeoutId = setTimeout(function () {
@@ -36,20 +44,47 @@
     }, ms || 20000);
   }
 
-  function scheduleWindCheck() {
+  function scheduleWindCheck(ms) {
     clearWindCheckTimeout();
     windCheckTimeoutId = setTimeout(function () {
       if (!map || !map.getSource('open-meteo-wind')) return;
-      var loaded = map.isSourceLoaded('open-meteo-wind');
-      if (!loaded) {
+      if (!map.isSourceLoaded('open-meteo-wind')) {
         post('windError', 'wind_tiles_timeout');
       }
-    }, 10000);
+    }, ms || 45000);
+  }
+
+  function notifyWindReadyIfLoaded() {
+    if (!map || !map.getSource('open-meteo-wind')) return;
+    if (map.isSourceLoaded('open-meteo-wind')) {
+      clearWindCheckTimeout();
+      clearWindTileErrorTimer();
+      post('windReady', '');
+    }
+  }
+
+  function scheduleWindTileErrorCheck(ms) {
+    clearWindTileErrorTimer();
+    windTileErrorTimerId = setTimeout(function () {
+      if (!map || !map.getSource('open-meteo-wind')) return;
+      if (!map.isSourceLoaded('open-meteo-wind')) {
+        post('windError', 'map_tile_error');
+      }
+    }, ms || 12000);
+  }
+
+  function watchWindSourceLoad() {
+    map.on('sourcedata', function (e) {
+      if (e.sourceId !== 'open-meteo-wind') return;
+      notifyWindReadyIfLoaded();
+    });
+    map.on('idle', notifyWindReadyIfLoaded);
   }
 
   function destroyMap() {
     clearShellTimeout();
     clearWindCheckTimeout();
+    clearWindTileErrorTimer();
     if (map) {
       map.remove();
       map = null;
@@ -125,6 +160,7 @@
 
         map.on('load', function () {
           clearShellTimeout();
+          map.resize();
           if (config.overlayOnly) {
             var el = document.getElementById('map');
             if (el) {
@@ -140,16 +176,8 @@
           }
           try {
             addWindLayer();
-            scheduleWindCheck();
-            map.once('sourcedata', function (e) {
-              if (
-                e.sourceId === 'open-meteo-wind' &&
-                e.isSourceLoaded &&
-                map.areTilesLoaded()
-              ) {
-                clearWindCheckTimeout();
-              }
-            });
+            watchWindSourceLoad();
+            scheduleWindCheck(config.windCheckTimeoutMs);
           } catch (err) {
             var code =
               err && err.message === 'om_layer_missing'
@@ -160,8 +188,9 @@
           post('mapReady');
         });
 
-        map.on('error', function () {
-          post('windError', 'map_tile_error');
+        map.on('error', function (e) {
+          if (e && e.sourceId && e.sourceId !== 'open-meteo-wind') return;
+          scheduleWindTileErrorCheck(12000);
         });
       } catch (err) {
         clearShellTimeout();

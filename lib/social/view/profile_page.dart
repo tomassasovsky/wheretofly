@@ -5,6 +5,7 @@ import 'package:social_api_client/social_api_client.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
+import 'package:where_to_fly/theme/app_snack_bar.dart';
 import 'package:where_to_fly/social/cubit/profile_cubit.dart';
 import 'package:where_to_fly/social/view/widgets/profile_media_grid.dart';
 
@@ -206,10 +207,9 @@ class _ProfileActionsState extends State<_ProfileActions> {
       ).push<void>(context);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).socialMessageOpenFailed),
-        ),
+      context.showAppSnackBar(
+        AppLocalizations.of(context).socialMessageOpenFailed,
+        intent: AppSnackBarIntent.error,
       );
     } finally {
       if (mounted) setState(() => _messagePending = false);
