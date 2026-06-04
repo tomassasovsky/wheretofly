@@ -84,7 +84,7 @@ docker exec nginx-proxy-manager curl -sS http://dondevolar-api:9080/health
 Publishing `127.0.0.1:9080` is **not** reachable from NPM in another container
 (that loopback is inside each container). Either use the override network above, or:
 
-- Set `API_BIND=0.0.0.0` in `.env` and redeploy, then in NPM forward to your
+- Set stack env `API_BIND=0.0.0.0` and redeploy, then in NPM forward to your
   **host LAN IP** (e.g. `192.168.1.x`) port `9080`, or
 - In Portainer, connect the `dondevolar-api` container to the NPM network manually
   (**Networks** → connect container).
@@ -103,16 +103,24 @@ current setup).
 ## Portainer
 
 1. Clone this repository on the server (or use Portainer “Git repository” deploy).
-2. **Stacks → Add stack** → `deploy/home-server/docker-compose.yml`
-3. Copy `.env.example` → `.env` and set `POSTGRES_PASSWORD`, `DATABASE_URL`,
-   `JWT_SECRET`, and MinIO keys.
+2. **Stacks → Add stack** → compose path `deploy/home-server/docker-compose.yml`
+3. **Environment variables** (stack editor → *Environment variables* → *Advanced*):
+   paste from [`.env.example`](.env.example) and replace placeholders. You do **not**
+   need a `.env` file on disk — Portainer injects these into Compose substitution.
+   Required: `POSTGRES_PASSWORD`, `JWT_SECRET`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`.
+   `DATABASE_URL` is built automatically from the Postgres variables.
 4. Add `docker-compose.override.yml` (NPM network) and redeploy.
 5. First Photon start downloads ~3.9 GB Argentina index; geocoding works after
    Photon logs `Listening on http://0.0.0.0:2322/`.
 
+**Git deploy note:** the checkout must include `feed/zones.geojson` and `backend/`
+(API build context). If paths fail, adjust compose `context` / volume paths for your
+Portainer clone layout.
+
 ## API port
 
-Default **`9080`** (avoids conflict with other services on `8080`). Change in `.env`:
+Default **`9080`** (avoids conflict with other services on `8080`). Change stack env
+`API_PORT` (and NPM forward port):
 
 ```bash
 API_PORT=9080
@@ -123,7 +131,7 @@ Update the NPM **Forward Port** to match.
 
 ## Cron (zone feed + weather alerts)
 
-Header `x-cron-secret` must equal **`JWT_SECRET`** from `.env`.
+Header `x-cron-secret` must equal **`JWT_SECRET`** from the stack environment.
 
 ```bash
 curl -sS -X POST https://dondevolar.aquiles.dev/v1/cron/zone_ingest \
