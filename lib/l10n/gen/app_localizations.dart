@@ -1309,6 +1309,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry video'**
   String get socialReelRetryVideo;
+
+  /// No description provided for @flightDataSourcesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Where our data comes from'**
+  String get flightDataSourcesTitle;
+
+  /// No description provided for @flightDataSourcesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'This app helps you explore where you may fly under Argentina’s drone rules. It combines public datasets, curated zones, and your chosen permission level. Guidance only. Always confirm with ANAC, NOTAMs, and the official AIP before operating.'**
+  String get flightDataSourcesIntro;
+
+  /// No description provided for @flightDataSourcesHowWeDecideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How we decide if you can fly'**
+  String get flightDataSourcesHowWeDecideTitle;
+
+  /// No description provided for @flightDataSourcesHowWeDecideBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When you tap the map, we check whether any registered restriction circles overlap that point and whether your selected permission level and flight modality (recreational, commercial, etc.) are allowed there. Altitude and VLOS rules from ANAC Res. 550/2025 and RAAC 100 are summarized in the verdict text.'**
+  String get flightDataSourcesHowWeDecideBody;
+
+  /// No description provided for @flightDataSourcesPermissionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your permission and modality'**
+  String get flightDataSourcesPermissionsTitle;
+
+  /// No description provided for @flightDataSourcesPermissionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission categories (recreational open category, specific category, certified operator, etc.) follow Argentina’s ANAC framework (Res. 550/2025 and RAAC 100). You choose them in the app; they are not downloaded from a government API. See Permits and resources for how to obtain each authorization.'**
+  String get flightDataSourcesPermissionsBody;
+
+  /// No description provided for @flightDataSourcesZonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restriction zones on the map'**
+  String get flightDataSourcesZonesTitle;
+
+  /// No description provided for @flightDataSourcesZoneMadhelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'ANAC MADHEL'**
+  String get flightDataSourcesZoneMadhelTitle;
+
+  /// No description provided for @flightDataSourcesZoneMadhelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Aerodromes and heliports from Argentina’s MADHEL open data (ANAC). Shown as protection circles around published coordinates. The app also keeps a bundled snapshot for offline use.'**
+  String get flightDataSourcesZoneMadhelBody;
+
+  /// No description provided for @flightDataSourcesZoneOpenAipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAIP'**
+  String get flightDataSourcesZoneOpenAipTitle;
+
+  /// No description provided for @flightDataSourcesZoneOpenAipBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Community-maintained airspace (controlled areas, restrictions, etc.) from OpenAIP country exports, merged on the server when configured. Zones are approximated as circles for performance.'**
+  String get flightDataSourcesZoneOpenAipBody;
+
+  /// No description provided for @flightDataSourcesZoneCuratedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Curated zones'**
+  String get flightDataSourcesZoneCuratedTitle;
+
+  /// No description provided for @flightDataSourcesZoneCuratedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional circles for parks, critical infrastructure, and other areas maintained in the project’s zone packages and baseline feed — not live government polygons.'**
+  String get flightDataSourcesZoneCuratedBody;
+
+  /// No description provided for @flightDataSourcesZoneFeedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Dónde Volar zone feed'**
+  String get flightDataSourcesZoneFeedTitle;
+
+  /// No description provided for @flightDataSourcesZoneFeedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The backend merges MADHEL, OpenAIP, and curated sources into a published GeoJSON feed. The app downloads updates from the API when online and falls back to the last cached or bundled copy.'**
+  String get flightDataSourcesZoneFeedBody;
+
+  /// No description provided for @flightDataSourcesSearchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Place search'**
+  String get flightDataSourcesSearchTitle;
+
+  /// No description provided for @flightDataSourcesSearchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'City and address search goes through the Dónde Volar API, which queries a self-hosted Photon geocoder built from OpenStreetMap data (Argentina index). Contains OSM © contributors under ODbL.'**
+  String get flightDataSourcesSearchBody;
+
+  /// No description provided for @flightDataSourcesWeatherTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather advisory'**
+  String get flightDataSourcesWeatherTitle;
+
+  /// No description provided for @flightDataSourcesWeatherBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind and temperature at the tapped point come from Open-Meteo (DWD ICON). Active short-term alerts use Argentina’s SMN CAP RSS feed. Weather does not change zone geometry — it adds an advisory layer only.'**
+  String get flightDataSourcesWeatherBody;
+
+  /// No description provided for @flightDataSourcesWeatherOpenMeteoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-Meteo'**
+  String get flightDataSourcesWeatherOpenMeteoTitle;
+
+  /// No description provided for @flightDataSourcesWeatherOpenMeteoBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hourly wind gusts and related fields for the map overlay and fly-check card.'**
+  String get flightDataSourcesWeatherOpenMeteoBody;
+
+  /// No description provided for @flightDataSourcesWeatherSmnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'SMN (Servicio Meteorológico Nacional)'**
+  String get flightDataSourcesWeatherSmnTitle;
+
+  /// No description provided for @flightDataSourcesWeatherSmnBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Official Argentina weather alerts (CAP RSS) surfaced when an active warning applies to the area.'**
+  String get flightDataSourcesWeatherSmnBody;
+
+  /// No description provided for @flightDataSourcesDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone boundaries are simplified circles and may be incomplete or out of date. ANAC, aerodrome operators, NOTAMs, and the official AIP remain authoritative. Never rely on this app alone for operational decisions.'**
+  String get flightDataSourcesDisclaimer;
+
+  /// No description provided for @flightDataSourcesSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones, permissions framework, search, and weather'**
+  String get flightDataSourcesSettingsSubtitle;
+
+  /// No description provided for @flightDataSourcesOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Open official site'**
+  String get flightDataSourcesOpenLink;
+
+  /// No description provided for @flightDataSourcesMapLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Where does this data come from?'**
+  String get flightDataSourcesMapLink;
+
+  /// No description provided for @flightDataSourcesResourcesLink.
+  ///
+  /// In en, this message translates to:
+  /// **'How we build the map'**
+  String get flightDataSourcesResourcesLink;
 }
 
 class _AppLocalizationsDelegate

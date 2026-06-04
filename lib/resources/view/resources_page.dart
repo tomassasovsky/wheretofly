@@ -1,6 +1,7 @@
 import 'package:flight_rules_repository/flight_rules_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/l10n/localized_labels.dart';
 import 'package:where_to_fly/resources/view/permit_resources.dart';
@@ -62,6 +63,16 @@ class _ResourcesPageState extends State<ResourcesPage> {
               ),
             ),
             const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () =>
+                    const FlightDataSourcesRoute().push<void>(context),
+                icon: const Icon(Icons.map_outlined, size: 18),
+                label: Text(l10n.flightDataSourcesResourcesLink),
+              ),
+            ),
+            const SizedBox(height: 4),
             for (final guide in buildPermitGuides(l10n))
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),

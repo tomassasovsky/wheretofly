@@ -139,6 +139,28 @@ class SettingsPage extends StatelessWidget {
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(
+                          Icons.info_outline,
+                          color: theme.colorScheme.primary,
+                        ),
+                        title: Text(l10n.flightDataSourcesTitle),
+                        subtitle: Text(
+                          l10n.flightDataSourcesSettingsSubtitle,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () =>
+                            const FlightDataSourcesRoute().push<void>(context),
+                      ),
+                      Divider(
+                        height: 1,
+                        color: theme.colorScheme.outlineVariant
+                            .withValues(alpha: 0.5),
+                      ),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
                           Icons.article_outlined,
                           color: theme.colorScheme.primary,
                         ),

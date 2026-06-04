@@ -10,6 +10,7 @@ List<RouteBase> get $appRoutes => [
       $splashRoute,
       $appShellRoute,
       $settingsRoute,
+      $flightDataSourcesRoute,
       $attributionsRoute,
       $resourcesRoute,
       $loginRoute,
@@ -224,6 +225,36 @@ mixin $SettingsRoute on GoRouteData {
   @override
   String get location => GoRouteData.$location(
         '/settings',
+      );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $flightDataSourcesRoute => GoRouteData.$route(
+      path: '/settings/data-sources',
+      name: 'flightDataSources',
+      parentNavigatorKey: FlightDataSourcesRoute.$parentNavigatorKey,
+      factory: $FlightDataSourcesRoute._fromState,
+    );
+
+mixin $FlightDataSourcesRoute on GoRouteData {
+  static FlightDataSourcesRoute _fromState(GoRouterState state) =>
+      const FlightDataSourcesRoute();
+
+  @override
+  String get location => GoRouteData.$location(
+        '/settings/data-sources',
       );
 
   @override

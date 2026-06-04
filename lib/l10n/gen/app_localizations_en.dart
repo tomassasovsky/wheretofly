@@ -687,4 +687,104 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get socialReelRetryVideo => 'Retry video';
+
+  @override
+  String get flightDataSourcesTitle => 'Where our data comes from';
+
+  @override
+  String get flightDataSourcesIntro =>
+      'This app helps you explore where you may fly under Argentina’s drone rules. It combines public datasets, curated zones, and your chosen permission level. Guidance only. Always confirm with ANAC, NOTAMs, and the official AIP before operating.';
+
+  @override
+  String get flightDataSourcesHowWeDecideTitle =>
+      'How we decide if you can fly';
+
+  @override
+  String get flightDataSourcesHowWeDecideBody =>
+      'When you tap the map, we check whether any registered restriction circles overlap that point and whether your selected permission level and flight modality (recreational, commercial, etc.) are allowed there. Altitude and VLOS rules from ANAC Res. 550/2025 and RAAC 100 are summarized in the verdict text.';
+
+  @override
+  String get flightDataSourcesPermissionsTitle =>
+      'Your permission and modality';
+
+  @override
+  String get flightDataSourcesPermissionsBody =>
+      'Permission categories (recreational open category, specific category, certified operator, etc.) follow Argentina’s ANAC framework (Res. 550/2025 and RAAC 100). You choose them in the app; they are not downloaded from a government API. See Permits and resources for how to obtain each authorization.';
+
+  @override
+  String get flightDataSourcesZonesTitle => 'Restriction zones on the map';
+
+  @override
+  String get flightDataSourcesZoneMadhelTitle => 'ANAC MADHEL';
+
+  @override
+  String get flightDataSourcesZoneMadhelBody =>
+      'Aerodromes and heliports from Argentina’s MADHEL open data (ANAC). Shown as protection circles around published coordinates. The app also keeps a bundled snapshot for offline use.';
+
+  @override
+  String get flightDataSourcesZoneOpenAipTitle => 'OpenAIP';
+
+  @override
+  String get flightDataSourcesZoneOpenAipBody =>
+      'Community-maintained airspace (controlled areas, restrictions, etc.) from OpenAIP country exports, merged on the server when configured. Zones are approximated as circles for performance.';
+
+  @override
+  String get flightDataSourcesZoneCuratedTitle => 'Curated zones';
+
+  @override
+  String get flightDataSourcesZoneCuratedBody =>
+      'Additional circles for parks, critical infrastructure, and other areas maintained in the project’s zone packages and baseline feed — not live government polygons.';
+
+  @override
+  String get flightDataSourcesZoneFeedTitle => 'Dónde Volar zone feed';
+
+  @override
+  String get flightDataSourcesZoneFeedBody =>
+      'The backend merges MADHEL, OpenAIP, and curated sources into a published GeoJSON feed. The app downloads updates from the API when online and falls back to the last cached or bundled copy.';
+
+  @override
+  String get flightDataSourcesSearchTitle => 'Place search';
+
+  @override
+  String get flightDataSourcesSearchBody =>
+      'City and address search goes through the Dónde Volar API, which queries a self-hosted Photon geocoder built from OpenStreetMap data (Argentina index). Contains OSM © contributors under ODbL.';
+
+  @override
+  String get flightDataSourcesWeatherTitle => 'Weather advisory';
+
+  @override
+  String get flightDataSourcesWeatherBody =>
+      'Wind and temperature at the tapped point come from Open-Meteo (DWD ICON). Active short-term alerts use Argentina’s SMN CAP RSS feed. Weather does not change zone geometry — it adds an advisory layer only.';
+
+  @override
+  String get flightDataSourcesWeatherOpenMeteoTitle => 'Open-Meteo';
+
+  @override
+  String get flightDataSourcesWeatherOpenMeteoBody =>
+      'Hourly wind gusts and related fields for the map overlay and fly-check card.';
+
+  @override
+  String get flightDataSourcesWeatherSmnTitle =>
+      'SMN (Servicio Meteorológico Nacional)';
+
+  @override
+  String get flightDataSourcesWeatherSmnBody =>
+      'Official Argentina weather alerts (CAP RSS) surfaced when an active warning applies to the area.';
+
+  @override
+  String get flightDataSourcesDisclaimer =>
+      'Zone boundaries are simplified circles and may be incomplete or out of date. ANAC, aerodrome operators, NOTAMs, and the official AIP remain authoritative. Never rely on this app alone for operational decisions.';
+
+  @override
+  String get flightDataSourcesSettingsSubtitle =>
+      'Zones, permissions framework, search, and weather';
+
+  @override
+  String get flightDataSourcesOpenLink => 'Open official site';
+
+  @override
+  String get flightDataSourcesMapLink => 'Where does this data come from?';
+
+  @override
+  String get flightDataSourcesResourcesLink => 'How we build the map';
 }

@@ -1,5 +1,6 @@
 import 'package:flight_rules_repository/flight_rules_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/l10n/localized_labels.dart';
 import 'package:where_to_fly/theme/app_theme.dart';
@@ -42,6 +43,23 @@ class MapLegend extends StatelessWidget {
                     ],
                   ),
                 ),
+            const SizedBox(height: 6),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: () =>
+                    const FlightDataSourcesRoute().push<void>(context),
+                child: Text(
+                  l10n.flightDataSourcesMapLink,
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ),
+            ),
           ],
         ),
       ),
