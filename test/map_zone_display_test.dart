@@ -82,5 +82,70 @@ void main() {
       );
       expect(visible, isEmpty);
     });
+
+    const madhelAerodrome = FlyZone(
+      id: 'madhel_ACM',
+      name: 'La Cura Malal',
+      category: ZoneCategory.restricted,
+      center: LatLng(-34.08, -60.14),
+      radiusMeters: 2500,
+      permissionsThatAllowFlight: {PermissionLevel.authorizedCommercial},
+      details: 'test',
+    );
+
+    test('keeps MADHEL aerodromes when zoomed out', () {
+      final visible = MapZoneDisplay.visibleZones(
+        zones: [madhelAerodrome],
+        bounds: null,
+        zoom: 8,
+      );
+      expect(visible, hasLength(1));
+    });
+
+    test('fills MADHEL aerodromes at wide zoom for visibility', () {
+      expect(
+        MapZoneDisplay.shouldFill(
+          madhelAerodrome,
+          highlighted: false,
+          zoom: 8,
+        ),
+        isTrue,
+      );
+      expect(
+        MapZoneDisplay.fillAlpha(
+          madhelAerodrome,
+          isDark: false,
+          highlighted: false,
+          zoom: 8,
+        ),
+        greaterThan(0),
+      );
+    });
+
+    test('prioritizes MADHEL over generic controlled when culling', () {
+      final zones = List.generate(
+        350,
+        (i) => FlyZone(
+          id: 'openaip_zone_$i',
+          name: 'Zone $i',
+          category: ZoneCategory.controlledAirspace,
+          center: LatLng(-34.6 + i * 0.001, -58.4),
+          radiusMeters: 3000,
+          permissionsThatAllowFlight: const {
+            PermissionLevel.authorizedCommercial,
+          },
+          details: 'test',
+        ),
+      )..add(madhelAerodrome);
+
+      final visible = MapZoneDisplay.visibleZones(
+        zones: zones,
+        bounds: null,
+        zoom: 14,
+      );
+
+      expect(visible.any((z) => z.id == 'madhel_ACM'), isTrue);
+      expect(visible, hasLength(300));
+    });
   });
 }

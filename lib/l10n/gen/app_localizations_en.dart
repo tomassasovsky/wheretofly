@@ -733,7 +733,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flightDataSourcesZoneCuratedBody =>
-      'Additional circles for parks, critical infrastructure, and other areas maintained in the project’s zone packages and baseline feed — not live government polygons.';
+      'Additional circles for parks, critical infrastructure, and other areas maintained in the project’s zone packages and baseline feed. These are not live government polygons.';
 
   @override
   String get flightDataSourcesZoneFeedTitle => 'Dónde Volar zone feed';
@@ -754,7 +754,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flightDataSourcesWeatherBody =>
-      'Wind and temperature at the tapped point come from Open-Meteo (DWD ICON). Active short-term alerts use Argentina’s SMN CAP RSS feed. Weather does not change zone geometry — it adds an advisory layer only.';
+      'Wind and temperature at the tapped point come from Open-Meteo (DWD ICON). Active short-term alerts use Argentina’s SMN CAP RSS feed. Weather does not change zone geometry; it adds an advisory layer only.';
 
   @override
   String get flightDataSourcesWeatherOpenMeteoTitle => 'Open-Meteo';
@@ -787,4 +787,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flightDataSourcesResourcesLink => 'How we build the map';
+
+  @override
+  String get privacyPolicy => 'Privacy policy';
+
+  @override
+  String get privacyPolicySubtitle => 'How we handle your data';
 }

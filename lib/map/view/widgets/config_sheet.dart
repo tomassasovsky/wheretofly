@@ -111,6 +111,7 @@ class _ConfigSheet extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
+                key: const ValueKey('map_resources_link'),
                 onPressed: () => ResourcesRoute(
                   highlight: state.permission.id,
                 ).push<void>(context),

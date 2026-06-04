@@ -5,7 +5,7 @@
   "packages": [
     {
       "name": "where_to_fly",
-      "version": "1.0.0+1",
+      "version": "1.0.0+3",
       "dependencies": [
         "argentina_bounds",
         "auth_api_client",
@@ -53,6 +53,14 @@
         "mocktail",
         "shared_preferences",
         "very_good_analysis"
+      ]
+    },
+    {
+      "name": "shared_preferences_android",
+      "version": "2.4.25",
+      "dependencies": [
+        "flutter",
+        "shared_preferences_platform_interface"
       ]
     },
     {
@@ -525,6 +533,14 @@
       ]
     },
     {
+      "name": "shared_preferences_platform_interface",
+      "version": "2.4.2",
+      "dependencies": [
+        "flutter",
+        "plugin_platform_interface"
+      ]
+    },
+    {
       "name": "shared_preferences_windows",
       "version": "2.4.1",
       "dependencies": [
@@ -547,14 +563,6 @@
       ]
     },
     {
-      "name": "shared_preferences_platform_interface",
-      "version": "2.4.2",
-      "dependencies": [
-        "flutter",
-        "plugin_platform_interface"
-      ]
-    },
-    {
       "name": "shared_preferences_linux",
       "version": "2.4.1",
       "dependencies": [
@@ -569,14 +577,6 @@
     {
       "name": "shared_preferences_foundation",
       "version": "2.5.6",
-      "dependencies": [
-        "flutter",
-        "shared_preferences_platform_interface"
-      ]
-    },
-    {
-      "name": "shared_preferences_android",
-      "version": "2.4.23",
       "dependencies": [
         "flutter",
         "shared_preferences_platform_interface"

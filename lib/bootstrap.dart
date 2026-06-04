@@ -23,6 +23,7 @@ import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/app/app.dart';
 import 'package:where_to_fly/config/api_config.dart';
 import 'package:where_to_fly/legal/register_app_licenses.dart';
+import 'package:where_to_fly/map/store_screenshot_config.dart';
 import 'package:where_to_fly/map/wind/om/om_wasm_module.dart';
 import 'package:where_to_fly/map/wind/om/wind_decode_support.dart';
 import 'package:where_to_fly/map/wind_map_config.dart';
@@ -78,8 +79,14 @@ Future<void> bootstrap() async {
   }
   // MediaKit.ensureInitialized();
 
+  final previousFlutterOnError = FlutterError.onError;
   FlutterError.onError = (details) {
+    if (StoreScreenshotConfig.captureMode &&
+        StoreScreenshotConfig.isBenignFlutterError(details)) {
+      return;
+    }
     log(details.exceptionAsString(), stackTrace: details.stack);
+    previousFlutterOnError?.call(details);
   };
 
   if (kDebugMode) {
@@ -99,6 +106,12 @@ Future<void> bootstrap() async {
 
   // Repository layer (each composes its data clients).
   final settingsRepository = SettingsRepository(storage);
+  if (StoreScreenshotConfig.captureMode) {
+    await settingsRepository.setThemeMode(AppThemeMode.light);
+    if (StoreScreenshotConfig.localeCode.isNotEmpty) {
+      await settingsRepository.setLocaleCode(StoreScreenshotConfig.localeCode);
+    }
+  }
   final authApiClient = AuthApiClient(baseUrl: apiBaseUri);
   final authRepository = AuthRepository(
     apiClient: authApiClient,

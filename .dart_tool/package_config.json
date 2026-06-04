@@ -843,9 +843,9 @@
     },
     {
       "name": "shared_preferences_android",
-      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.23",
+      "rootUri": "file:///Users/Tomas/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.25",
       "packageUri": "lib/",
-      "languageVersion": "3.9"
+      "languageVersion": "3.12"
     },
     {
       "name": "shared_preferences_foundation",

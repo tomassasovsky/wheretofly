@@ -6,10 +6,17 @@ import 'package:where_to_fly/map/map_visible_bounds.dart';
 /// Filters and styles map overlays so dense urban areas stay readable.
 abstract final class MapZoneDisplay {
   static const maxCircles = 300;
+  // Country view can include every MADHEL aerodrome (~700); urban view caps
+  // overlap for readability.
+  static const maxCirclesWideView = 800;
   static const urbanZoomThreshold = 11.5;
   // Below the urban threshold (country/region view) hide only the smallest
   // footprints so the map stays readable; everything else is drawn.
   static const wideZoomMinRadiusMeters = 2000;
+
+  static bool isMadhelAerodrome(FlyZone zone) => zone.id.startsWith('madhel_');
+
+  static bool _isWideZoom(double zoom) => zoom < urbanZoomThreshold;
 
   /// Zones to draw for the current camera. Assessment uses the full dataset.
   static List<FlyZone> visibleZones({
@@ -27,7 +34,8 @@ abstract final class MapZoneDisplay {
         .where((z) => _isSignificantAtZoom(z, zoom, highlightIds))
         .toList();
 
-    if (visible.length <= maxCircles) return visible;
+    final cap = _maxCirclesForZoom(zoom);
+    if (visible.length <= cap) return visible;
 
     visible.sort((a, b) {
       final aHighlight = highlightIds.contains(a.id);
@@ -37,8 +45,11 @@ abstract final class MapZoneDisplay {
       if (severity != 0) return severity;
       return b.radiusMeters.compareTo(a.radiusMeters);
     });
-    return visible.take(maxCircles).toList();
+    return visible.take(cap).toList();
   }
+
+  static int _maxCirclesForZoom(double zoom) =>
+      _isWideZoom(zoom) ? maxCirclesWideView : maxCircles;
 
   static bool _isSignificantAtZoom(
     FlyZone zone,
@@ -46,6 +57,7 @@ abstract final class MapZoneDisplay {
     Set<String> highlightIds,
   ) {
     if (highlightIds.contains(zone.id)) return true;
+    if (isMadhelAerodrome(zone)) return true;
     if (_alwaysDraw(zone)) return true;
 
     // Only thin out the smallest footprints at country/region zoom; from the
@@ -66,8 +78,15 @@ abstract final class MapZoneDisplay {
     };
   }
 
-  static bool shouldFill(FlyZone zone, {required bool highlighted}) {
+  static bool shouldFill(
+    FlyZone zone, {
+    required bool highlighted,
+    double? zoom,
+  }) {
     if (highlighted) return true;
+    if (zoom != null && _isWideZoom(zoom) && isMadhelAerodrome(zone)) {
+      return true;
+    }
     return switch (zone.category) {
       ZoneCategory.prohibited ||
       ZoneCategory.nationalPark ||
@@ -81,9 +100,13 @@ abstract final class MapZoneDisplay {
     FlyZone zone, {
     required bool isDark,
     required bool highlighted,
+    double? zoom,
   }) {
-    if (!shouldFill(zone, highlighted: highlighted)) return 0;
+    if (!shouldFill(zone, highlighted: highlighted, zoom: zoom)) return 0;
     if (highlighted) return isDark ? 0.28 : 0.18;
+    if (zoom != null && _isWideZoom(zoom) && isMadhelAerodrome(zone)) {
+      return 0.11;
+    }
     return switch (zone.category) {
       ZoneCategory.prohibited => isDark ? 0.22 : 0.14,
       ZoneCategory.nationalPark => isDark ? 0.18 : 0.12,
@@ -92,15 +115,40 @@ abstract final class MapZoneDisplay {
     };
   }
 
-  static double strokeAlpha({required bool isDark, required bool highlighted}) {
+  static double strokeAlpha({
+    required bool isDark,
+    required bool highlighted,
+    FlyZone? zone,
+    double? zoom,
+  }) {
     if (highlighted) return isDark ? 0.95 : 0.90;
+    if (zone != null &&
+        zoom != null &&
+        _isWideZoom(zoom) &&
+        isMadhelAerodrome(zone)) {
+      return isDark ? 0.72 : 0.78;
+    }
     // Light basemap: stronger strokes so rings read on pale land.
     return isDark ? 0.50 : 0.58;
   }
 
-  static int strokeWidth({required bool highlighted}) => highlighted ? 3 : 2;
+  static int strokeWidth({
+    required bool highlighted,
+    FlyZone? zone,
+    double? zoom,
+  }) {
+    if (highlighted) return 2;
+    if (zone != null &&
+        zoom != null &&
+        _isWideZoom(zoom) &&
+        isMadhelAerodrome(zone)) {
+      return 2;
+    }
+    return 1;
+  }
 
   static int _severity(FlyZone zone) {
+    if (isMadhelAerodrome(zone)) return 72;
     if (zone.permissionsThatAllowFlight.isEmpty) return 100;
     return switch (zone.category) {
       ZoneCategory.prohibited => 90,

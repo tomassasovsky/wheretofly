@@ -11,6 +11,8 @@ import 'package:where_to_fly/theme/app_theme.dart';
 class ConfigBar extends StatelessWidget {
   const ConfigBar({super.key});
 
+  static const tapKey = ValueKey('map_config_bar');
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -19,6 +21,7 @@ class ConfigBar extends StatelessWidget {
     return BlocBuilder<MapCubit, MapState>(
       builder: (context, state) {
         return Material(
+          key: tapKey,
           elevation: 3,
           borderRadius: BorderRadius.circular(18),
           color: AppTheme.mapOverlaySurface(theme.brightness),

@@ -40,7 +40,7 @@ abstract final class MapZoneFlutterMapMarkers {
           point: selected,
           radius: 10,
           color: MapTheme.selectionFillFor(brightness),
-          borderColor: MapTheme.selectionStroke,
+          borderColor: MapTheme.selectionStrokeFor(brightness),
           borderStrokeWidth: 3,
         ),
       );

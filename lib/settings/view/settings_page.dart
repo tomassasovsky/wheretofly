@@ -19,6 +19,7 @@ class SettingsPage extends StatelessWidget {
   static const sponsorUrl = 'https://cafecito.app/aquilesdev';
   static const websiteUrl = 'https://aquiles.dev';
   static const githubUrl = 'https://github.com/tomassasovsky';
+  static const privacyPolicyUrl = 'https://dondevolar.aquiles.dev/privacy';
 
   @override
   Widget build(BuildContext context) {
@@ -175,6 +176,27 @@ class SettingsPage extends StatelessWidget {
                         onTap: () =>
                             const AttributionsRoute().push<void>(context),
                       ),
+                      Divider(
+                        height: 1,
+                        color: theme.colorScheme.outlineVariant
+                            .withValues(alpha: 0.5),
+                      ),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          Icons.privacy_tip_outlined,
+                          color: theme.colorScheme.primary,
+                        ),
+                        title: Text(l10n.privacyPolicy),
+                        subtitle: Text(
+                          l10n.privacyPolicySubtitle,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () => _openPrivacyPolicy(context),
+                      ),
                     ],
                   ),
                 ),
@@ -202,6 +224,17 @@ class SettingsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    final uri = Uri.parse(privacyPolicyUrl);
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && context.mounted) {
+      context.showAppSnackBar(
+        AppLocalizations.of(context).couldNotOpen(privacyPolicyUrl),
+        intent: AppSnackBarIntent.error,
+      );
+    }
   }
 
   Future<void> _openSponsorLink(BuildContext context) async {

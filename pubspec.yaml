@@ -4,7 +4,7 @@ description: >-
   Argentina, based on ANAC regulations (Res. 550/2025 / RAAC 100) and the
   permissions you hold.
 publish_to: "none"
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
@@ -54,7 +54,7 @@ dependencies:
     path: packages/social_repository
   storage:
     path: packages/storage
-  url_launcher: ^6.3.0
+  url_launcher: ^6.3.2
   wasm_run: ^0.1.0+2
   wasm_run_flutter: ^0.1.0
   weather_api_client:
@@ -63,6 +63,10 @@ dependencies:
     path: packages/weather_repository
   zones_api_client:
     path: packages/zones_api_client
+
+# Migrated Android impl (built-in Kotlin DSL, no kotlin-android plugin).
+dependency_overrides:
+  shared_preferences_android: 2.4.25
 
 dev_dependencies:
   bloc_test: ^9.1.7
@@ -75,7 +79,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   mocktail: ^1.0.4
-  shared_preferences: ^2.3.3
+  shared_preferences: ^2.5.3
   very_good_analysis: ^6.0.0
 
 flutter:

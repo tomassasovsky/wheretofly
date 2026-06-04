@@ -238,5 +238,7 @@
   "flightDataSourcesSettingsSubtitle": "Zonas, marco de permisos, búsqueda y clima",
   "flightDataSourcesOpenLink": "Abrir sitio oficial",
   "flightDataSourcesMapLink": "¿De dónde salen estos datos?",
-  "flightDataSourcesResourcesLink": "Cómo armamos el mapa"
+  "flightDataSourcesResourcesLink": "Cómo armamos el mapa",
+  "privacyPolicy": "Política de privacidad",
+  "privacyPolicySubtitle": "Cómo manejamos tus datos"
 }

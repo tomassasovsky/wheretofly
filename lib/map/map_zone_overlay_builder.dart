@@ -31,10 +31,13 @@ abstract final class MapZoneOverlayBuilder {
         zone,
         isDark: isDark,
         highlighted: highlighted,
+        zoom: zoom,
       );
       final strokeAlpha = MapZoneDisplay.strokeAlpha(
         isDark: isDark,
         highlighted: highlighted,
+        zone: zone,
+        zoom: zoom,
       );
       return MapZoneCircleStyle(
         id: zone.id,
@@ -42,7 +45,11 @@ abstract final class MapZoneOverlayBuilder {
         radiusMeters: zone.radiusMeters,
         fillColor: color.withValues(alpha: fillAlpha),
         strokeColor: color.withValues(alpha: strokeAlpha),
-        strokeWidth: MapZoneDisplay.strokeWidth(highlighted: highlighted),
+        strokeWidth: MapZoneDisplay.strokeWidth(
+          highlighted: highlighted,
+          zone: zone,
+          zoom: zoom,
+        ),
       );
     }).toList();
   }

@@ -733,7 +733,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get flightDataSourcesZoneCuratedBody =>
-      'Círculos adicionales para parques, infraestructura crítica y otras áreas del proyecto — no son polígonos oficiales en vivo.';
+      'Círculos adicionales para parques, infraestructura crítica y otras áreas del proyecto. No son polígonos oficiales en vivo.';
 
   @override
   String get flightDataSourcesZoneFeedTitle => 'Feed de zonas de Dónde Volar';
@@ -754,7 +754,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get flightDataSourcesWeatherBody =>
-      'Viento y temperatura en el punto tocado provienen de Open-Meteo (DWD ICON). Las alertas cortas activas usan el feed CAP RSS del SMN. El clima no cambia la geometría de zonas — solo agrega una capa de aviso.';
+      'Viento y temperatura en el punto tocado provienen de Open-Meteo (DWD ICON). Las alertas cortas activas usan el feed CAP RSS del SMN. El clima no cambia la geometría de zonas; solo agrega una capa de aviso.';
 
   @override
   String get flightDataSourcesWeatherOpenMeteoTitle => 'Open-Meteo';
@@ -787,4 +787,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get flightDataSourcesResourcesLink => 'Cómo armamos el mapa';
+
+  @override
+  String get privacyPolicy => 'Política de privacidad';
+
+  @override
+  String get privacyPolicySubtitle => 'Cómo manejamos tus datos';
 }

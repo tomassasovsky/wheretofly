@@ -275,5 +275,7 @@
   "flightDataSourcesSettingsSubtitle": "Zones, permissions framework, search, and weather",
   "flightDataSourcesOpenLink": "Open official site",
   "flightDataSourcesMapLink": "Where does this data come from?",
-  "flightDataSourcesResourcesLink": "How we build the map"
+  "flightDataSourcesResourcesLink": "How we build the map",
+  "privacyPolicy": "Privacy policy",
+  "privacyPolicySubtitle": "How we handle your data"
 }

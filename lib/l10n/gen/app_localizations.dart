@@ -1385,7 +1385,7 @@ abstract class AppLocalizations {
   /// No description provided for @flightDataSourcesZoneCuratedBody.
   ///
   /// In en, this message translates to:
-  /// **'Additional circles for parks, critical infrastructure, and other areas maintained in the project’s zone packages and baseline feed — not live government polygons.'**
+  /// **'Additional circles for parks, critical infrastructure, and other areas maintained in the project’s zone packages and baseline feed. These are not live government polygons.'**
   String get flightDataSourcesZoneCuratedBody;
 
   /// No description provided for @flightDataSourcesZoneFeedTitle.
@@ -1421,7 +1421,7 @@ abstract class AppLocalizations {
   /// No description provided for @flightDataSourcesWeatherBody.
   ///
   /// In en, this message translates to:
-  /// **'Wind and temperature at the tapped point come from Open-Meteo (DWD ICON). Active short-term alerts use Argentina’s SMN CAP RSS feed. Weather does not change zone geometry — it adds an advisory layer only.'**
+  /// **'Wind and temperature at the tapped point come from Open-Meteo (DWD ICON). Active short-term alerts use Argentina’s SMN CAP RSS feed. Weather does not change zone geometry; it adds an advisory layer only.'**
   String get flightDataSourcesWeatherBody;
 
   /// No description provided for @flightDataSourcesWeatherOpenMeteoTitle.
@@ -1477,6 +1477,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'How we build the map'**
   String get flightDataSourcesResourcesLink;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @privacyPolicySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How we handle your data'**
+  String get privacyPolicySubtitle;
 }
 
 class _AppLocalizationsDelegate

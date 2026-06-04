@@ -38,46 +38,67 @@ class MapSearchBar extends StatelessWidget {
         padding: const EdgeInsets.only(left: 14, right: 2),
         child: SizedBox(
           height: 48,
-          child: Row(
-            children: [
-              Icon(
-                Icons.search,
-                size: 22,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  textInputAction: TextInputAction.search,
-                  onChanged: onChanged,
-                  onSubmitted: (_) => onSubmitted(),
-                  style: fieldStyle,
-                  decoration: InputDecoration(
-                    filled: false,
-                    fillColor: Colors.transparent,
-                    hintText: l10n.searchHint,
-                    hintStyle: fieldStyle?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 13),
-                    isCollapsed: true,
+          child: ListenableBuilder(
+            listenable: controller,
+            builder: (context, _) {
+              return Row(
+                children: [
+                  Icon(
+                    Icons.search,
+                    size: 22,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
-                ),
-              ),
-              IconButton(
-                tooltip: l10n.settings,
-                iconSize: 22,
-                visualDensity: VisualDensity.compact,
-                color: theme.colorScheme.onSurfaceVariant,
-                icon: const Icon(Icons.settings_outlined),
-                onPressed: () => const SettingsRoute().push<void>(context),
-              ),
-            ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      key: const ValueKey('map_search_field'),
+                      controller: controller,
+                      focusNode: focusNode,
+                      textInputAction: TextInputAction.search,
+                      onChanged: onChanged,
+                      onSubmitted: (_) => onSubmitted(),
+                      style: fieldStyle,
+                      decoration: InputDecoration(
+                        filled: false,
+                        fillColor: Colors.transparent,
+                        hintText: l10n.searchHint,
+                        hintStyle: fieldStyle?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 13),
+                        isCollapsed: true,
+                      ),
+                    ),
+                  ),
+                  if (controller.text.isNotEmpty)
+                    IconButton(
+                      key: const ValueKey('map_search_clear'),
+                      tooltip:
+                          MaterialLocalizations.of(context).clearButtonTooltip,
+                      iconSize: 20,
+                      visualDensity: VisualDensity.compact,
+                      color: theme.colorScheme.onSurfaceVariant,
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        controller.clear();
+                        onChanged('');
+                      },
+                    ),
+                  IconButton(
+                    tooltip: l10n.settings,
+                    iconSize: 22,
+                    visualDensity: VisualDensity.compact,
+                    color: theme.colorScheme.onSurfaceVariant,
+                    icon: const Icon(Icons.settings_outlined),
+                    onPressed: () => const SettingsRoute().push<void>(context),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),

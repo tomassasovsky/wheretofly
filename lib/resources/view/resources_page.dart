@@ -34,9 +34,10 @@ class _ResourcesPageState extends State<ResourcesPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final context = _guideKeys[highlight]?.currentContext;
         if (context == null || !context.mounted) return;
+        final reduce = MediaQuery.of(context).disableAnimations;
         Scrollable.ensureVisible(
           context,
-          duration: const Duration(milliseconds: 450),
+          duration: reduce ? Duration.zero : const Duration(milliseconds: 450),
           curve: Curves.easeOutCubic,
           alignment: 0.08,
         );
@@ -117,16 +118,15 @@ class _GuideCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Card(
-      elevation: highlighted ? 3 : 1,
-      color: highlighted
-          ? colorScheme.primaryContainer.withValues(alpha: 0.35)
-          : null,
-      shape: highlighted
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: colorScheme.primary, width: 2),
-            )
-          : null,
+      elevation: 0,
+      color: highlighted ? colorScheme.primaryContainer : colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: highlighted ? colorScheme.primary : colorScheme.outlineVariant,
+          width: highlighted ? 2 : 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -162,8 +162,12 @@ class _GuideCard extends StatelessWidget {
             for (final resource in guide.resources)
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(
-                  resource.url != null ? Icons.open_in_new : Icons.info_outline,
+                leading: ExcludeSemantics(
+                  child: Icon(
+                    resource.url != null
+                        ? Icons.open_in_new
+                        : Icons.info_outline,
+                  ),
                 ),
                 title: Text(resource.title),
                 subtitle: Text(resource.description),
