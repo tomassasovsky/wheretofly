@@ -158,11 +158,8 @@ curl -sS -X POST https://dondevolar.aquiles.dev/v1/cron/zone_ingest \
 
 ## Flutter app
 
-Release builds default to `https://dondevolar.aquiles.dev` (`lib/config/api_config.dart`).
-
-```bash
-flutter run --dart-define=API_BASE_URL=https://dondevolar.aquiles.dev
-```
+The app defaults to `https://dondevolar.aquiles.dev` (`lib/config/api_config.dart`).
+Local backend: `flutter run --dart-define=USE_LOCAL_API=true`.
 
 ## Local development
 

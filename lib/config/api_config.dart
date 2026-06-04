@@ -2,25 +2,19 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
-/// Production API host (home server stack on aquiles.dev).
+/// Production API (home server on aquiles.dev).
 const productionApiBaseUrl = 'https://dondevolar.aquiles.dev';
 
 /// Resolves the backend base URL for the current run target.
 ///
-/// Override at build time when needed:
-///   flutter run --dart-define=API_BASE_URL=http://192.168.x.x:8080
-///
-/// Release builds without `API_BASE_URL` use [productionApiBaseUrl].
-/// On a physical phone/tablet, `localhost` points at the device itself — use
-/// your Mac's LAN IP (same Wi‑Fi) or run `./scripts/flutter_run_dev.sh`.
+/// Defaults to [productionApiBaseUrl]. Overrides:
+///   --dart-define=API_BASE_URL=https://...
+///   --dart-define=API_HOST=192.168.x.x  (http://HOST:8080)
+///   --dart-define=USE_LOCAL_API=true    (localhost / emulator hosts)
 Uri resolveApiBaseUri() {
   const explicit = String.fromEnvironment('API_BASE_URL');
   if (explicit.isNotEmpty) {
     return Uri.parse(explicit);
-  }
-
-  if (kReleaseMode) {
-    return Uri.parse(productionApiBaseUrl);
   }
 
   const hostOverride = String.fromEnvironment('API_HOST');
@@ -28,12 +22,20 @@ Uri resolveApiBaseUri() {
     return Uri(scheme: 'http', host: hostOverride, port: 8080);
   }
 
+  const useLocalApi = bool.fromEnvironment('USE_LOCAL_API');
+  if (useLocalApi) {
+    return _localDevApiUri();
+  }
+
+  return Uri.parse(productionApiBaseUrl);
+}
+
+Uri _localDevApiUri() {
   if (kIsWeb) {
     return Uri.parse('http://localhost:8080');
   }
 
   if (Platform.isAndroid) {
-    // Android emulator maps the host machine to 10.0.2.2.
     return Uri.parse('http://10.0.2.2:8080');
   }
 
@@ -41,12 +43,6 @@ Uri resolveApiBaseUri() {
     return Uri.parse('http://localhost:8080');
   }
 
-  // macOS desktop / Linux / Windows dev builds.
-  if (Platform.isMacOS || Platform.isLinux || Platform.isWindows) {
-    return Uri.parse('http://localhost:8080');
-  }
-
-  // Physical iOS/Android device — localhost will not reach the dev machine.
   return Uri.parse('http://localhost:8080');
 }
 
@@ -54,9 +50,9 @@ bool get _isIosSimulator {
   return Platform.environment.containsKey('SIMULATOR_DEVICE_NAME');
 }
 
-/// True when the app likely cannot reach a Mac-hosted backend at localhost.
+/// True when using local dev API on a physical device (localhost unreachable).
 bool get apiBaseUriNeedsPhysicalDeviceOverride {
-  if (kReleaseMode) return false;
+  if (!const bool.fromEnvironment('USE_LOCAL_API')) return false;
   if (kIsWeb) return false;
   const explicit = String.fromEnvironment('API_BASE_URL');
   if (explicit.isNotEmpty) return false;
@@ -73,7 +69,7 @@ bool get _isAndroidEmulator {
 }
 
 String physicalDeviceApiHint() {
-  return 'On a physical device, run: '
+  return 'On a physical device with USE_LOCAL_API, run: '
       'flutter run --dart-define=API_BASE_URL=http://<your-mac-ip>:8080 '
-      '(or $productionApiBaseUrl for the home server)';
+      'or drop USE_LOCAL_API to use $productionApiBaseUrl';
 }

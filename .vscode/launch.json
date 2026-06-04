@@ -8,12 +8,21 @@
       "program": "lib/main.dart"
     },
     {
-      "name": "Flutter (iOS + wind tile server)",
+      "name": "Flutter (local API)",
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart",
       "toolArgs": [
-        "--dart-define=API_BASE_URL=http://127.0.0.1:8080",
+        "--dart-define=USE_LOCAL_API=true"
+      ]
+    },
+    {
+      "name": "Flutter (local API + wind tiles)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define=USE_LOCAL_API=true",
         "--dart-define=WIND_TILE_BASE_URL=http://127.0.0.1:8765"
       ]
     }
