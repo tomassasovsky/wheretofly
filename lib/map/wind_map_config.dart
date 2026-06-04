@@ -2,26 +2,25 @@ import 'package:flutter/foundation.dart';
 
 /// Open-Meteo wind field configuration.
 abstract final class WindMapConfig {
+  /// Overrides [enabled] in widget tests (avoids wind tile HTTP during map tests).
+  @visibleForTesting
+  static bool? enabledOverride;
+
   /// Set `--dart-define=WIND_MAP_ENABLED=false` to hide the wind layer toggle.
-  static const enabled = bool.fromEnvironment(
-    'WIND_MAP_ENABLED',
-    defaultValue: true,
-  );
+  static bool get enabled =>
+      enabledOverride ??
+      const bool.fromEnvironment(
+        'WIND_MAP_ENABLED',
+        defaultValue: true,
+      );
 
   /// QA only: open the map tab directly in wind mode (simulator screenshots).
   static const autoOpen = bool.fromEnvironment('WIND_MAP_AUTO_OPEN');
-
-  /// Direction arrows over the gust layer (off until performance is ready).
-  static const arrowsEnabled = false;
 
   static const model = 'dwd_icon';
 
   /// Scalar gust field (≥ 0, uses the `wind` colorscale in weather-map-layer).
   static const variable = 'wind_gusts_10m';
-
-  /// 10 m wind components for direction arrows (same `.om` file as [variable]).
-  static const windUVariable = 'wind_u_component_10m';
-  static const windVVariable = 'wind_v_component_10m';
 
   static const timeStep = 'current_time_1H';
 

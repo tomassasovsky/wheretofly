@@ -121,7 +121,7 @@ class _AppState extends State<App> {
                       unawaited(widget.pushRegistrationService.unregister());
                       final navContext = rootNavigatorKey.currentContext;
                       if (navContext != null) {
-                        if (AppMode.mapOnly) {
+                        if (AppMode.isMapOnly) {
                           const MapTabRoute().go(navContext);
                         } else {
                           const LoginRoute().go(navContext);

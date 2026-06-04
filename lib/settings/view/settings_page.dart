@@ -33,7 +33,7 @@ class SettingsPage extends StatelessWidget {
           context.pop();
           return;
         }
-        if (AppMode.mapOnly) {
+        if (AppMode.isMapOnly) {
           const MapTabRoute().go(context);
         } else {
           const MeTabRoute().go(context);
@@ -106,7 +106,7 @@ class SettingsPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (!AppMode.mapOnly) ...[
+                if (!AppMode.isMapOnly) ...[
                   const SizedBox(height: 12),
                   _AccountSection(l10n: l10n),
                 ],

@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:social_api_client/social_api_client.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:where_to_fly/social/create_post_draft.dart';
 

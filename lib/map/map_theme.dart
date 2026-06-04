@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:where_to_fly/map/map_config.dart';
 
 /// Map basemap and overlay styling aligned with the app Material theme.
 abstract final class MapTheme {
@@ -8,9 +7,6 @@ abstract final class MapTheme {
 
   /// Matches CARTO Dark Matter background.
   static const darkPlaceholder = Color(0xFF0D0D0D);
-
-  static String tileUrlTemplateFor(Brightness brightness) =>
-      MapConfig.tileUrlTemplateFor(brightness);
 
   static Color placeholderFor(Brightness brightness) =>
       brightness == Brightness.dark ? darkPlaceholder : lightPlaceholder;

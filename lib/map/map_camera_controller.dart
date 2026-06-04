@@ -4,8 +4,6 @@ import 'dart:math' show Point;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:where_to_fly/map/map_camera_snapshot.dart';
-import 'package:where_to_fly/map/map_visible_bounds.dart';
 
 /// Imperative handle for the [FlutterMap] layer (camera moves and bounds).
 class MapCameraController {
@@ -49,47 +47,6 @@ class MapCameraController {
     );
   }
 
-  MapCameraSnapshot? readCamera() {
-    final map = _map;
-    if (map == null) return null;
-    try {
-      final camera = map.camera;
-      return MapCameraSnapshot(
-        lat: camera.center.latitude,
-        lon: camera.center.longitude,
-        zoom: camera.zoom,
-      );
-    } on Exception {
-      return null;
-    }
-  }
-
-  /// Pans the map by [dx]/[dy] in logical pixels (wind gesture proxy).
-  Future<void> panByPixels(double dx, double dy) async {
-    final map = _map;
-    if (map == null) return;
-    try {
-      final camera = map.camera;
-      final centerScreen = camera.latLngToScreenPoint(camera.center);
-      final newCenter = camera.pointToLatLng(
-        Point(centerScreen.x - dx, centerScreen.y - dy),
-      );
-      map.move(newCenter, camera.zoom);
-    } on Exception {
-      // Map widget was disposed during navigation.
-    }
-  }
-
-  LatLng? latLngForScreenOffset(Offset offset) {
-    final map = _map;
-    if (map == null) return null;
-    try {
-      return map.camera.pointToLatLng(Point(offset.dx, offset.dy));
-    } on Exception {
-      return null;
-    }
-  }
-
   Future<void> zoomBy(double delta) async {
     final map = _map;
     if (map == null) return;
@@ -102,20 +59,6 @@ class MapCameraController {
       );
     } on Exception {
       // Map widget was disposed during navigation.
-    }
-  }
-
-  Future<MapVisibleBounds?> visibleBounds() async {
-    final map = _map;
-    if (map == null) return null;
-    try {
-      final bounds = map.camera.visibleBounds;
-      return MapVisibleBounds(
-        southWest: bounds.southWest,
-        northEast: bounds.northEast,
-      );
-    } on Exception {
-      return null;
     }
   }
 

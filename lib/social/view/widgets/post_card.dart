@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:social_api_client/social_api_client.dart';
+import 'package:social_repository/social_repository.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 

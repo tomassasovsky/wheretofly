@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:weather_api_client/weather_api_client.dart';
 import 'package:weather_repository/weather_repository.dart';
 
 enum MapWeatherStatus { idle, loading, loaded, error }

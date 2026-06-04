@@ -6,10 +6,13 @@ import 'package:settings_repository/settings_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:storage/storage.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
+import 'package:where_to_fly/app/router/root_navigator_key.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/resources/view/resources_page.dart';
 import 'package:where_to_fly/settings/settings_cubit.dart';
 import 'package:where_to_fly/settings/view/settings_page.dart';
+
+import 'helpers/pump_helpers.dart';
 
 void main() {
   late SettingsCubit settingsCubit;
@@ -33,13 +36,14 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: GoRouter(
+            navigatorKey: rootNavigatorKey,
             initialLocation: initialLocation,
             routes: $appRoutes,
           ),
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await pumpRouterFrames(tester);
   }
 
   testWidgets('navigates to settings route', (tester) async {

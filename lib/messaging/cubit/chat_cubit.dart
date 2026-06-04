@@ -1,7 +1,6 @@
 import 'package:auth_repository/auth_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:messaging_api_client/messaging_api_client.dart';
 import 'package:messaging_repository/messaging_repository.dart';
 
 enum ChatStatus { initial, loading, loaded, sending, error }
@@ -18,6 +17,21 @@ class ChatState extends Equatable {
   final List<ChatMessage> messages;
   final String? currentUserId;
   final String? errorMessage;
+
+  ChatState copyWith({
+    ChatStatus? status,
+    List<ChatMessage>? messages,
+    String? currentUserId,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return ChatState(
+      status: status ?? this.status,
+      messages: messages ?? this.messages,
+      currentUserId: currentUserId ?? this.currentUserId,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
 
   @override
   List<Object?> get props => [status, messages, currentUserId, errorMessage];
@@ -96,22 +110,5 @@ class ChatCubit extends Cubit<ChatState> {
         ),
       );
     }
-  }
-}
-
-extension on ChatState {
-  ChatState copyWith({
-    ChatStatus? status,
-    List<ChatMessage>? messages,
-    String? currentUserId,
-    String? errorMessage,
-    bool clearError = false,
-  }) {
-    return ChatState(
-      status: status ?? this.status,
-      messages: messages ?? this.messages,
-      currentUserId: currentUserId ?? this.currentUserId,
-      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-    );
   }
 }

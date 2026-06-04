@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:weather_api_client/weather_api_client.dart';
+import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 import 'package:where_to_fly/theme/app_snack_bar.dart';
 import 'package:where_to_fly/weather/weather_alerts_cubit.dart';

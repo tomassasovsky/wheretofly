@@ -221,7 +221,7 @@ class ZoneDetailCard extends StatelessWidget {
                   ),
                 ),
               ],
-              if (!AppMode.mapOnly) ...[
+              if (!AppMode.isMapOnly) ...[
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: () => _shareFlyCheck(context),

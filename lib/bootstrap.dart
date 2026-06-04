@@ -23,7 +23,6 @@ import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/app/app.dart';
 import 'package:where_to_fly/config/api_config.dart';
 import 'package:where_to_fly/legal/register_app_licenses.dart';
-import 'package:where_to_fly/map/map_initializer.dart';
 import 'package:where_to_fly/map/wind/om/om_wasm_module.dart';
 import 'package:where_to_fly/map/wind/om/wind_decode_support.dart';
 import 'package:where_to_fly/map/wind_map_config.dart';
@@ -51,7 +50,6 @@ class AppBlocObserver extends BlocObserver {
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
   registerAppLicenses();
-  await MapInitializer.initializePlatform();
   WasmRunFlutterNative.registerWith();
   if (WindMapConfig.enabled) {
     try {
@@ -90,6 +88,7 @@ Future<void> bootstrap() async {
 
   // Data layer.
   final storage = await Storage.getInstance();
+  final secureStorage = SecureStorage();
   final apiBaseUri = resolveApiBaseUri();
   if (kDebugMode) {
     log('API base URL: $apiBaseUri');
@@ -103,7 +102,7 @@ Future<void> bootstrap() async {
   final authApiClient = AuthApiClient(baseUrl: apiBaseUri);
   final authRepository = AuthRepository(
     apiClient: authApiClient,
-    storage: storage,
+    secureStorage: secureStorage,
   );
   Future<String?> accessToken() => authRepository.accessToken();
   final weatherRepository = WeatherRepository(

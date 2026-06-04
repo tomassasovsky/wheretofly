@@ -35,7 +35,8 @@ class FlightRulesRepository {
     if (fromFeed.isNotEmpty) {
       return FlightRulesRepository._fromData(fromFeed);
     }
-    return FlightRulesRepository(bundled: offlineFallback);
+    final fromBundled = await _safe(offlineFallback.fetchZones);
+    return FlightRulesRepository._fromData(fromBundled);
   }
 
   static Future<List<ZoneData>> _safe(

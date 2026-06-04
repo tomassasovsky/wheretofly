@@ -10,13 +10,21 @@ void main() {
   group('GeocodingService', () {
     late _MockHttpClient httpClient;
 
-    setUp(() {
-      httpClient = _MockHttpClient();
+    setUpAll(() {
       registerFallbackValue(Uri.parse('http://localhost'));
     });
 
+    setUp(() {
+      httpClient = _MockHttpClient();
+    });
+
     test('search calls self-hosted Photon base URL', () async {
-      when(() => httpClient.get(any())).thenAnswer(
+      when(
+        () => httpClient.get(
+          any(),
+          headers: any(named: 'headers'),
+        ),
+      ).thenAnswer(
         (_) async => http.Response(_buenosFeatureCollection, 200),
       );
 
@@ -31,7 +39,13 @@ void main() {
       expect(results.first.latitude, closeTo(-34.6, 0.1));
 
       final captured =
-          verify(() => httpClient.get(captureAny())).captured.single as Uri;
+          verify(
+                () => httpClient.get(
+                  captureAny(),
+                  headers: any(named: 'headers'),
+                ),
+              ).captured.single
+              as Uri;
       expect(captured.host, 'photon');
       expect(captured.port, 2322);
       expect(captured.path, '/api/');
@@ -39,7 +53,12 @@ void main() {
     });
 
     test('localizes Falkland Islands in labels', () async {
-      when(() => httpClient.get(any())).thenAnswer(
+      when(
+        () => httpClient.get(
+          any(),
+          headers: any(named: 'headers'),
+        ),
+      ).thenAnswer(
         (_) async => http.Response(_falklandsFeatureCollection, 200),
       );
 
@@ -54,7 +73,12 @@ void main() {
     });
 
     test('reverse geocodes via Photon', () async {
-      when(() => httpClient.get(any())).thenAnswer(
+      when(
+        () => httpClient.get(
+          any(),
+          headers: any(named: 'headers'),
+        ),
+      ).thenAnswer(
         (_) async => http.Response(_buenosFeatureCollection, 200),
       );
 
@@ -67,7 +91,13 @@ void main() {
       expect(hit.label, isNotEmpty);
 
       final captured =
-          verify(() => httpClient.get(captureAny())).captured.single as Uri;
+          verify(
+                () => httpClient.get(
+                  captureAny(),
+                  headers: any(named: 'headers'),
+                ),
+              ).captured.single
+              as Uri;
       expect(captured.path, '/reverse');
     });
   });

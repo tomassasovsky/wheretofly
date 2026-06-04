@@ -1,7 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:social_api_client/social_api_client.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:where_to_fly/social/cubit/feed_cubit.dart';
 

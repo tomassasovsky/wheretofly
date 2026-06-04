@@ -11,7 +11,7 @@ void main() {
       name: 'CTR',
       category: ZoneCategory.controlledAirspace,
       center: LatLng(-34.61, -58.36),
-      radiusMeters: 2000,
+      radiusMeters: 1500,
       permissionsThatAllowFlight: {PermissionLevel.authorizedCommercial},
       details: 'test',
     );
@@ -74,11 +74,11 @@ void main() {
       expect(outside, isEmpty);
     });
 
-    test('hides small controlled zones at medium zoom', () {
+    test('hides small controlled zones below urban zoom', () {
       final visible = MapZoneDisplay.visibleZones(
         zones: [smallControlled],
         bounds: null,
-        zoom: 13,
+        zoom: 10,
       );
       expect(visible, isEmpty);
     });

@@ -1,5 +1,3 @@
-import 'dart:async' show unawaited;
-import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -11,13 +9,11 @@ import 'package:where_to_fly/map/wind/om/om_http_backend.dart';
 import 'package:where_to_fly/map/wind/om/om_spatial_url.dart';
 import 'package:where_to_fly/map/wind/om/om_tile_rasterizer.dart';
 import 'package:where_to_fly/map/wind/om/om_wasm_module.dart';
-import 'package:where_to_fly/map/wind/om/wind_arrow_math.dart';
 import 'package:where_to_fly/map/wind/om/wind_decode_support.dart';
 import 'package:where_to_fly/map/wind/om/wind_tile_math.dart';
-import 'package:where_to_fly/map/wind/om/wind_vector_tile.dart';
 import 'package:where_to_fly/map/wind_map_config.dart';
 
-/// Loads gust raster tiles and u/v vector data for wind direction arrows.
+/// Loads gust raster tiles for the wind overlay.
 class OpenMeteoWindData {
   OpenMeteoWindData({
     OmSpatialUrlResolver? urlResolver,
@@ -35,8 +31,6 @@ class OpenMeteoWindData {
   Future<OpenMeteoWindSession>? _sessionFuture;
   final _tileCache = <String, Future<ui.Image>>{};
   final _remotePngCache = <String, Future<Uint8List>>{};
-  final _vectorCache = <String, Future<WindVectorTile>>{};
-  final _remoteArrowCache = <String, Future<List<WindArrowSample>>>{};
 
   Future<ui.Image> tileImage(TileCoordinates coordinates) async {
     final key = '${coordinates.z}/${coordinates.x}/${coordinates.y}';
@@ -44,107 +38,6 @@ class OpenMeteoWindData {
       key,
       () => _loadTile(coordinates),
     );
-  }
-
-  /// u/v grid for direction arrows (local OM decode only).
-  Future<WindVectorTile> tileVectors(TileCoordinates coordinates) async {
-    if (WindDecodeSupport.hasRemoteTileServer) {
-      throw OmFileReaderException(
-        'tileVectors is not used with WIND_TILE_BASE_URL; use tileArrowSamples',
-      );
-    }
-    final key = '${coordinates.z}/${coordinates.x}/${coordinates.y}';
-    return _cached(
-      _vectorCache,
-      key,
-      () => _loadVectorsFromOmDecode(coordinates),
-    );
-  }
-
-  /// Arrow samples for one tile.
-  ///
-  /// JSON on dev server; local subsample otherwise.
-  Future<List<WindArrowSample>> tileArrowSamples(
-    TileCoordinates coordinates,
-  ) async {
-    if (WindDecodeSupport.hasRemoteTileServer) {
-      return _cached(
-        _remoteArrowCache,
-        '${coordinates.z}/${coordinates.x}/${coordinates.y}',
-        () => _fetchRemoteArrowSamples(coordinates),
-      );
-    }
-    final tile = await tileVectors(coordinates);
-    return samplesForTile(tile);
-  }
-
-  /// Caches async work; drops the entry on failure so retries work.
-  Future<T> _cached<T>(
-    Map<String, Future<T>> cache,
-    String key,
-    Future<T> Function() loader,
-  ) async {
-    final pending = cache[key];
-    if (pending != null) return pending;
-    final future = loader();
-    cache[key] = future;
-    try {
-      return await future;
-    } on Object {
-      final removed = cache.remove(key);
-      if (removed != null) unawaited(removed);
-      rethrow;
-    }
-  }
-
-  Future<WindVectorTile> _loadVectorsFromOmDecode(
-    TileCoordinates coordinates,
-  ) async {
-    final localOk = await _ensureLocalDecodeWorks();
-    if (!localOk) {
-      throw OmFileReaderException(
-        'Wind vector decode is not available. Start the tile server '
-        '(dart run tooling/om_tile_server/bin/server.dart) and set '
-        'WIND_TILE_BASE_URL for iOS.',
-      );
-    }
-    await OmWasmModule.ensureInitialized();
-    final session = await _openSession();
-    final tileRead = DwdIconTileRead.forTile(
-      coordinates.z,
-      coordinates.x,
-      coordinates.y,
-    );
-    final u = await DwdIconTileRead.readValues(
-      session.uReader.readFloat32,
-      tileRead,
-    );
-    final v = await DwdIconTileRead.readValues(
-      session.vReader.readFloat32,
-      tileRead,
-    );
-    _validateVectorValues(u, v);
-    return WindVectorTile(tileRead: tileRead, u: u, v: v);
-  }
-
-  Future<List<WindArrowSample>> _fetchRemoteArrowSamples(
-    TileCoordinates coordinates,
-  ) async {
-    final base = WindMapConfig.windTileBaseUrl.replaceAll(RegExp(r'/+$'), '');
-    final uri = Uri.parse(
-      '$base/${coordinates.z}/${coordinates.x}/${coordinates.y}.json',
-    );
-    final response = await _http.get(uri);
-    if (response.statusCode != 200) {
-      throw OmFileReaderException(
-        'Wind vector HTTP ${response.statusCode} for $uri',
-      );
-    }
-    final json = jsonDecode(response.body);
-    if (json is! List) {
-      throw OmFileReaderException('Wind vector JSON must be a list');
-    }
-    return samplesFromRemoteJson(json);
   }
 
   Future<ui.Image> _loadTile(TileCoordinates coordinates) async {
@@ -211,13 +104,9 @@ class OpenMeteoWindData {
   Future<OpenMeteoWindSession> _createSession() async {
     final omUrl = await _urlResolver.resolveOmFileUrl();
     final root = await OmFileReader.open(Uri.parse(omUrl), backend: _backend);
-    final uReader = await root.childByName(WindMapConfig.windUVariable);
-    final vReader = await root.childByName(WindMapConfig.windVVariable);
     final gustReader = await root.childByName(WindMapConfig.variable);
     root.dispose();
     return OpenMeteoWindSession(
-      uReader: uReader,
-      vReader: vReader,
       gustReader: gustReader,
       backend: _backend,
     );
@@ -238,24 +127,6 @@ class OpenMeteoWindData {
     );
     _validateGustValues(values, tileRead, coordinates);
     return rasterizeWindTile(values: values, tileRead: tileRead);
-  }
-
-  static void _validateVectorValues(Float32List u, Float32List v) {
-    var finite = 0;
-    for (var i = 0; i < u.length; i++) {
-      if (u[i].isFinite &&
-          v[i].isFinite &&
-          u[i].abs() < 120 &&
-          v[i].abs() < 120) {
-        finite++;
-      }
-    }
-    if (finite < u.length ~/ 4) {
-      throw OmFileReaderException(
-        'Wind u/v decode produced invalid samples ($finite finite of '
-        '${u.length})',
-      );
-    }
   }
 
   static void _validateGustValues(
@@ -284,20 +155,14 @@ class OpenMeteoWindData {
 
 class OpenMeteoWindSession {
   OpenMeteoWindSession({
-    required this.uReader,
-    required this.vReader,
     required this.gustReader,
     required this.backend,
   });
 
-  final OmFileReader uReader;
-  final OmFileReader vReader;
   final OmFileReader gustReader;
   final OmHttpBackend backend;
 
   void dispose() {
-    uReader.dispose();
-    vReader.dispose();
     gustReader.dispose();
   }
 }

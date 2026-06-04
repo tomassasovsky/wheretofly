@@ -7,6 +7,7 @@ import 'package:geocoding_repository/geocoding_repository.dart';
 import 'package:location_repository/location_repository.dart';
 import 'package:settings_repository/settings_repository.dart';
 import 'package:weather_repository/weather_repository.dart';
+import 'package:where_to_fly/app/app_provider_scope.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/map/cubit/map_cubit.dart';
 import 'package:where_to_fly/map/cubit/map_search_cubit.dart';
@@ -24,19 +25,19 @@ class MapPage extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (context) => MapCubit(
-            context.read<FlightRulesRepository>(),
-            settingsRepository: context.read<SettingsRepository>(),
+            readAppProvider<FlightRulesRepository>(context),
+            settingsRepository: readAppProvider<SettingsRepository>(context),
           ),
         ),
         BlocProvider(
           create: (context) => MapSearchCubit(
-            geocodingRepository: context.read<GeocodingRepository>(),
-            locationRepository: context.read<LocationRepository>(),
+            geocodingRepository: readAppProvider<GeocodingRepository>(context),
+            locationRepository: readAppProvider<LocationRepository>(context),
           ),
         ),
         BlocProvider(
           create: (context) => MapWeatherCubit(
-            weatherRepository: context.read<WeatherRepository>(),
+            weatherRepository: readAppProvider<WeatherRepository>(context),
           ),
         ),
       ],

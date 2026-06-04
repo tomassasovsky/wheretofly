@@ -17,13 +17,6 @@ abstract final class MapLayout {
   /// Gap between the config bar and the right FAB column.
   static const fabAboveConfigBar = 18.0;
 
-  /// Legacy name: config bar block without safe area (≈68px).
-  static const bottomChromeHeight =
-      configBarContentHeight + configBarBottomPadding;
-
-  /// Legacy name: camera/FAB inset when safe area is zero (~80px).
-  static const bottomOverlayInset = bottomChromeHeight + fabAboveConfigBar + 38;
-
   /// Total height of the bottom config bar including home-indicator padding.
   static double configBarStackHeight(BuildContext context) {
     return MediaQuery.paddingOf(context).bottom +

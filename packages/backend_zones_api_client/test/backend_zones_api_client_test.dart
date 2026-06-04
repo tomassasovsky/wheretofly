@@ -1,3 +1,6 @@
+@Tags(['skip_very_good_optimization'])
+library;
+
 import 'dart:convert';
 
 import 'package:backend_zones_api_client/backend_zones_api_client.dart';
@@ -13,6 +16,10 @@ class _MockStorage extends Mock implements Storage {}
 void main() {
   late http.Client httpClient;
   late Storage storage;
+
+  setUpAll(() {
+    registerFallbackValue(Uri.parse('http://localhost'));
+  });
 
   setUp(() {
     httpClient = _MockHttpClient();

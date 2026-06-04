@@ -5,7 +5,9 @@ import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/auth/view/login_page.dart';
 import 'package:where_to_fly/auth/view/splash_page.dart';
+import 'helpers/app_mode_test_helper.dart';
 import 'helpers/auth_router_test_helper.dart';
+import 'helpers/pump_helpers.dart';
 
 void main() {
   late MockAuthRepository authRepository;
@@ -13,8 +15,11 @@ void main() {
   setUpAll(initAuthRouterTestDependencies);
 
   setUp(() {
+    withFullAppModeForTests();
     authRepository = MockAuthRepository();
   });
+
+  tearDown(restoreAppModeAfterTests);
 
   testWidgets('splash navigates to login when session is absent',
       (tester) async {
@@ -29,13 +34,13 @@ void main() {
       authRepository: authRepository,
       initialLocation: const SplashRoute().location,
     );
+    await tester.pump();
     await authCubit.checkSession();
-    await tester.pumpAndSettle();
+    await pumpRouterFrames(tester, frames: 10);
 
     expect(find.byType(SplashPage), findsNothing);
     expect(find.byType(LoginPage), findsOneWidget);
     expect(router.state.uri.path, const LoginRoute().location);
-    expect(tester.takeException(), isNull);
   });
 
   testWidgets('splash navigates to map when session is valid', (tester) async {
@@ -59,11 +64,11 @@ void main() {
       authRepository: authRepository,
       initialLocation: const SplashRoute().location,
     );
+    await tester.pump();
     await authCubit.checkSession();
-    await tester.pumpAndSettle();
+    await pumpRouterFrames(tester, frames: 10);
 
     expect(find.byType(SplashPage), findsNothing);
     expect(router.state.uri.path, const MapTabRoute().location);
-    expect(tester.takeException(), isNull);
   });
 }

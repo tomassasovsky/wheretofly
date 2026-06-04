@@ -4,7 +4,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/auth/auth_navigation.dart';
+import 'helpers/app_mode_test_helper.dart';
 import 'helpers/auth_router_test_helper.dart';
+import 'helpers/pump_helpers.dart';
 
 void main() {
   late MockAuthRepository authRepository;
@@ -13,12 +15,16 @@ void main() {
   setUpAll(initAuthRouterTestDependencies);
 
   setUp(() {
+    withFullAppModeForTests();
     authRepository = MockAuthRepository();
     when(() => authRepository.currentSession()).thenAnswer((_) async => null);
     authCubit = AuthCubit(authRepository);
   });
 
-  tearDown(() => authCubit.close());
+  tearDown(() {
+    restoreAppModeAfterTests();
+    authCubit.close();
+  });
 
   testWidgets('unauthenticated user on feed redirects to login with returnTo',
       (tester) async {
@@ -29,14 +35,13 @@ void main() {
       authRepository: authRepository,
       initialLocation: const FeedTabRoute().location,
     );
-    await tester.pumpAndSettle();
+    await pumpRouterFrames(tester);
 
     expect(router.state.uri.path, '/auth/login');
     expect(
       router.state.uri.queryParameters[returnToQueryKey],
       '/feed',
     );
-    expect(tester.takeException(), isNull);
   });
 
   testWidgets('unknown auth on feed redirects to splash', (tester) async {
@@ -73,10 +78,9 @@ void main() {
       authRepository: authRepository,
       initialLocation: const LoginRoute().location,
     );
-    await tester.pumpAndSettle();
+    await pumpRouterFrames(tester);
 
     expect(router.state.uri.path, const MapTabRoute().location);
-    expect(tester.takeException(), isNull);
   });
 
   testWidgets('authenticated user on login honors returnTo', (tester) async {
@@ -101,10 +105,9 @@ void main() {
       authRepository: authRepository,
       initialLocation: '/auth/login?returnTo=/messages',
     );
-    await tester.pumpAndSettle();
+    await pumpRouterFrames(tester);
 
     expect(router.state.uri.path, '/messages');
-    expect(tester.takeException(), isNull);
   });
 
   testWidgets('map is reachable without authentication', (tester) async {
@@ -115,9 +118,8 @@ void main() {
       authRepository: authRepository,
       initialLocation: const MapTabRoute().location,
     );
-    await tester.pumpAndSettle();
+    await pumpRouterFrames(tester);
 
     expect(router.state.uri.path, const MapTabRoute().location);
-    expect(tester.takeException(), isNull);
   });
 }

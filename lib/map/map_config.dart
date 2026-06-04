@@ -13,7 +13,7 @@ abstract final class MapConfig {
   static const cartoSubdomains = ['a', 'b', 'c', 'd'];
 
   /// TileLayer user-agent package name (required on some platforms).
-  static const tileUserAgentPackageName = 'com.example.where_to_fly';
+  static const tileUserAgentPackageName = 'dev.aquiles.where_to_fly';
 
   /// Resolves the basemap tile URL template for [brightness].
   ///

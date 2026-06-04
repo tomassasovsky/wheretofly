@@ -1,226 +1,201 @@
-# Test Quality Review
+# Test Quality Review — `where_to_fly`
 
-**Project:** `where_to_fly` (Flutter monorepo)  
-**Scope:** `lib/`, `packages/*/lib/`, `packages/*/test/`, `test/`  
-**Review date:** 2026-06-02
-
----
+_Full-project test coverage and quality audit. Scope: `test/`, `packages/*/test/`,
+`backend/test/` against source in `lib/`, `packages/*/lib/`, `backend/lib/`.
+Excludes generated files (`**/*.g.dart`, `lib/l10n/gen/**`), `tooling/**`, `docs/**`._
 
 ## Coverage Summary
 
-| Metric | Result |
-| --- | --- |
-| **Test run** | **Pass** — 18 tests across 3 files (app + 2 packages) |
-| **Coverage %** | **Not collected** — `flutter test --coverage` / MCP coverage output did not produce `lcov.info` in the workspace; no `min_coverage` gate in project config |
-| **Estimated file coverage** | **~6%** — 3 test files vs ~50 non-generated implementation files in scope |
-| **Files with tests** | **3 / ~50** testable source units |
+- **Test run**: Not executed in this review (static audit). Existing
+  `coverage/lcov.info` is **stale** — it contains records for only
+  `lib/map/cubit/map_cubit.dart` and `lib/map/cubit/map_state.dart`, i.e. a
+  single-file run. There is no meaningful project-wide coverage artifact and no
+  evidence of a coverage threshold being enforced.
+- **Test files found**: 49 total
+  - App (`test/`): 33
+  - Packages (`packages/*/test/`): 12 (across 5 of 18 packages)
+  - Backend (`backend/test/`): 4
+- **Overall**: The existing tests are generally **high quality** (good use of
+  `bloc_test`, `mocktail`, `isA().having()` matchers, seeded states, `setUp`).
+  The problem is **breadth**: large portions of the state layer, the data layer
+  (API clients/repositories), the UI layer, and the backend have **no tests at
+  all**.
 
-### Missing test files (by layer)
+### Quality of what exists (positive baseline)
 
-#### State management (`lib/`)
+The strongest tests in the repo are good models to copy:
 
-| File | Status |
-| --- | --- |
-| `lib/settings/settings_cubit.dart` | **No test file** — `SettingsCubit` / `SettingsState` untested |
-| `lib/map/cubit/map_cubit.dart` | **Partial** — `test/map_cubit_test.dart` covers 4 of 6 public methods; no settings integration |
-
-#### Repositories / data clients (`packages/`)
-
-| File | Status |
-| --- | --- |
-| `packages/geocoding_api_client/lib/src/geocoding_api_client.dart` | **No test file** (despite `test:` in `pubspec.yaml`) |
-| `packages/geocoding_repository/lib/src/geocoding_repository.dart` | **No test file** |
-| `packages/settings_repository/lib/src/settings_repository.dart` | **No test file** |
-| `packages/location_repository/lib/src/location_repository.dart` | **No test file** |
-| `packages/location_client/lib/src/location_client.dart` | **No test file** |
-| `packages/storage/lib/src/storage.dart` | **No test file** |
-| `packages/zones_api_client/lib/src/openaip_zones_api_client.dart` | **No test file** |
-| `packages/zones_api_client/lib/src/bundled_zones_api_client.dart` | **No test file** |
-| `packages/zones_api_client/lib/src/remote_zones_api_client.dart` | **No test file** |
-| `packages/flight_rules_repository/lib/src/flight_rules_repository.dart` | **Tested** — `packages/flight_rules_repository/test/flight_rules_repository_test.dart` |
-| `packages/zones_api_client/lib/src/openaip_altitude_parser.dart` | **Tested** — `packages/zones_api_client/test/openaip_altitude_parser_test.dart` |
-
-#### Domain models (pure logic, no dedicated tests)
-
-| File | Status |
-| --- | --- |
-| `packages/flight_rules_repository/lib/src/models/fly_zone.dart` | Only exercised indirectly via `assess()` |
-| `packages/flight_rules_repository/lib/src/models/altitude_range.dart` | No direct tests for `clampedFor` / `clampedTo` |
-| `packages/flight_rules_repository/lib/src/models/permission_level.dart` | No tests for `fromId`, `rank`, altitude ceilings |
-| `packages/geocoding_api_client/lib/src/models/geocode_result.dart` | Trivial; covered when client is tested |
-
-#### UI (`lib/map/view/`, `lib/resources/`, `lib/app/`)
-
-| File | Status |
-| --- | --- |
-| `lib/map/view/map_page.dart` | **No widget tests** — search debounce, geocoding errors, location flow |
-| `lib/map/view/widgets/config_sheet.dart` | **No widget tests** |
-| `lib/map/view/widgets/config_bar.dart` | **No widget tests** |
-| `lib/map/view/widgets/map_search_bar.dart` | **No widget tests** |
-| `lib/map/view/widgets/search_results_overlay.dart` | **No widget tests** |
-| `lib/map/view/widgets/zone_detail_card.dart` | **No widget tests** — verdict / zone list UI |
-| `lib/map/view/widgets/map_legend.dart` | **No widget tests** |
-| `lib/map/view/widgets/settings_sheet.dart` | **No widget tests** |
-| `lib/resources/view/resources_page.dart` | **No widget tests** |
-| `lib/app/app.dart` | **No widget tests** |
-
-**Excluded from “missing” (generated or thin):** `lib/l10n/gen/*`, `lib/main.dart`, `lib/bootstrap.dart` (optional smoke test only).
+- `test/map_cubit_test.dart` — seeded states, multi-step `act`, behavioral
+  assertions on verdict/modality.
+- `test/map_search_cubit_test.dart` — covers success, edge (outside Argentina),
+  and async `locateMe` loading→loaded transitions with mocked repositories.
+- `test/feed_cubit_test.dart` — success and `SocialApiException` error paths with
+  proper `mocktail` stubbing.
+- `packages/zones_api_client/test/madhel_zones_api_client_test.dart` — HTTP
+  client faked via `http.BaseClient`, parse + empty-response failure covered.
+- `test/zone_detail_card_test.dart` — widget test with real `AppLocalizations`
+  delegates and meaningful text assertions across two distinct rendered states.
 
 ---
 
-## State Management Test Quality
+## Critical Findings
 
-### `test/map_cubit_test.dart` — **Issues found**
+### C1. State layer (cubits) is largely untested
 
-**Strengths**
+14 `Cubit`/`Bloc` classes exist. Only **5** have dedicated test files. The
+following cubits contain real branching logic (loading/loaded/error paths,
+optimistic updates) and have **no dedicated test**:
 
-- Uses `bloc_test` and `flutter_test` correctly for a Flutter cubit.
-- Covers happy-path reassessment when permission, modality, and point change.
-- Uses real `FlightRulesRepository` with known geographic fixtures (Plaza de Mayo, Aeroparque, open sea) — good integration signal.
+| Cubit | File | Untested logic |
+| --- | --- | --- |
+| `ChatCubit` | `lib/messaging/cubit/chat_cubit.dart` | `load` (session + messages), `send` (trim guard, optimistic append, error keeps `loaded`) |
+| `ThreadsCubit` | `lib/messaging/cubit/threads_cubit.dart` | thread list load/error |
+| `NotificationPreferencesCubit` | `lib/messaging/cubit/notification_preferences_cubit.dart` | preference load/update |
+| `ProfileCubit` | `lib/social/cubit/profile_cubit.dart` | `load` (profile+posts), `follow` (pending guard, error) |
+| `PostDetailCubit` | `lib/social/cubit/post_detail_cubit.dart` | detail load, comments, error |
+| `CreatePostCubit` | `lib/social/cubit/create_post_cubit.dart` | submit/validation/error |
+| `WeatherAlertsCubit` | `lib/weather/weather_alerts_cubit.dart` | `load`/`save` (returns bool on failure)/`remove`/`reset` |
+| `AuthCubit` | `lib/auth/auth_cubit.dart` | **partial** — login/signup happy paths exercised indirectly by `auth_navigation_test`, but `checkSession` (token-expiry refresh, `validateStoredSession` failure → logout), `AuthApiException` vs generic error branches, and `logout` are **untested** |
 
-**Gaps**
+These are the core of the app's behavior. Each should get a `blocTest` suite
+covering happy path, typed-exception path, and generic-catch path, mirroring
+`feed_cubit_test.dart`.
 
-| Method / behavior | Covered? |
-| --- | --- |
-| `checkPoint` | Yes |
-| `selectPermission` | Yes |
-| `selectModality` | Yes |
-| `selectAltitudeRange` | **No** — altitude is core to flight verdicts |
-| `clearSelection` | **No** |
-| Initial state from `SettingsRepository` | **No** — `permissionId`, `modalityId`, `flightAltitudeRangeAgl`, clamping |
-| `_persistAltitude` / settings writes on permission change | **No** |
+### C2. Data layer — API clients with real HTTP/parse/error logic are untested
 
-**Structural issue:** The file’s first `group('FlightRulesRepository', …)` duplicates four scenarios already covered (and extended) in `packages/flight_rules_repository/test/flight_rules_repository_test.dart`. The package tests add altitude overlap cases the app tests omit. Keeping both creates maintenance drift (e.g. wording differs: “blocked” vs “requires authorization”).
+API clients contain the project's most failure-prone code (HTTP, JSON decode,
+status-code → exception mapping) and have **no tests**:
 
-**Pattern note:** All `blocTest` cases use `verify:` only and never `expect:` on emitted states. That checks the final cubit state after `act` but not emission count or intermediate states. Acceptable for simple cubits, but weaker if regressions emit extra states.
+- `packages/social_api_client/lib/src/social_api_client.dart` — `_decode`
+  handles `FormatException`, `statusCode >= 400` error extraction, non-`Map`
+  responses, and a 401 "Not authenticated" guard. None covered.
+- `packages/weather_api_client` — fetch + alert subscription CRUD, untested.
+- `packages/auth_api_client` — login/signup/refresh request building + parsing,
+  untested (security-relevant).
+- `packages/messaging_api_client` — untested.
+- `packages/geocoding_api_client` — untested.
 
-```dart
-blocTest<MapCubit, MapState>(
-  'selectModality re-evaluates the current selection',
-  build: () => MapCubit(repository),
-  act: (cubit) => cubit..checkPoint(...)..selectModality(...),
-  verify: (cubit) { /* assertions on cubit.state */ },
-);
-```
+The pattern already exists in `madhel_zones_api_client_test.dart` (fake
+`http.BaseClient`); replicate it for each client covering success, non-200
+errors, malformed body, and the unauthenticated guard.
 
-**Recommendation:** Add `expect: () => [isA<MapState>(), …]` where reassessment should emit exactly one update, and use a `MockSettingsRepository` (mocktail is already in `pubspec.yaml` but unused) for persistence tests.
+### C3. Backend — most services and nearly all routes are untested
 
-### `lib/settings/settings_cubit.dart` — **Missing tests**
+`backend/lib/services/` has 11 services; only 3 are tested
+(`geocoding_service`, `weather_service`, `jwt_service`). Untested, including
+security-critical ones:
 
-No `test/settings_cubit_test.dart`. Required coverage:
+- `auth_service.dart` (login/signup/session) — **untested**
+- `password_hasher.dart` (credential hashing/verification) — **untested**
+- `zone_service.dart`, `zone_ingest_service.dart`, `notification_service.dart`,
+  `weather_alert_service.dart`, `post_service.dart`, `messaging_service.dart` — untested
 
-- Initial state maps `SettingsRepository` locale + theme.
-- `setLanguage(null)` clears locale (`clearLocale: true`).
-- `setLanguage('es')` persists and emits `Locale('es')`.
-- `setThemeMode` round-trip with `AppThemeMode` mapping.
-
-Use `bloc_test` + mocktail `MockSettingsRepository` (or in-memory fake `Storage`).
-
----
-
-## Repository & Package Test Quality
-
-### `packages/flight_rules_repository/test/flight_rules_repository_test.dart` — **Pass (strongest suite)**
-
-**Strengths**
-
-- Spec-style names tied to regulation scenarios.
-- Uses `FlightRulesRepository.fromZoneData` for isolated altitude fixtures — excellent pattern.
-- Covers `skippedByAltitude`, mid-band overlap, and MSL floor exclusion — behavior that directly affects user safety messaging.
-
-**Gaps**
-
-| Area | Risk |
-| --- | --- |
-| `FlightRulesRepository.load` | Untested — merge by id, `_safe` swallowing errors, bundled fallback |
-| `FlyZone.contains` / `overlapsAltitudeRange` | No direct unit tests — haversine boundary bugs would only surface via integration |
-| `zonesAt` / `zonesAtAltitude` | Untested public helpers |
-
-### `packages/zones_api_client/test/openaip_altitude_parser_test.dart` — **Pass (narrow)**
-
-**Strengths**
-
-- Tests GND vs MSL datum behavior and conservative default when limits missing.
-
-**Gaps**
-
-- No tests for string limits (`GND`, `UNL`, `3000FT AMSL`), `_parseLimit` map shapes, or feet→meters conversion edge cases.
-- No tests for `OpenAipZonesApiClient` polygon→circle approximation, `_categoryFor` (CTR/TMA/SAR naming), excluded type filtering, or `maxRadiusMeters` drop — **high regulatory impact**.
-
-### Untested network / persistence layers — **Critical gap**
-
-**`GeocodingApiClient`**
-
-- Photon response parsing (`_parseFeature`, `_formatLabel`, Argentina bbox filter).
-- Failure mapping: transport error → `GeocodingFailure.network`, empty features → `noResults`.
-- Non-AR `countrycode` rejection.
-
-**`GeocodingRepository`**
-
-- Cache write on successful search.
-- Offline fallback: network exception returns cached result.
-- `reverse` passthrough (currently untested).
-
-**`SettingsRepository`**
-
-- `flightAltitudeRangeAgl` legacy key migration (`_altitudeLegacyKey`).
-- Invalid stored values → defaults.
-- `min > max` correction branch.
-
-These should use `mocktail` + `package:http` `MockClient` or injected fakes, matching VGV data-layer conventions.
+Routes: ~30 route files under `backend/routes/`; only `index`/`health` is
+tested. Auth (`login`, `signup`, `refresh`, `password_reset`, `verify_email`),
+`posts`, `users`, `messages`, `notifications`, `reports`, and cron endpoints
+have no route tests. Auth and password handling being untested is the highest
+risk here.
 
 ---
 
-## UI Component Test Quality
+## Important Findings
 
-**No widget tests exist** in `test/` or package `test/` folders.
+### I1. Repository layer coverage is thin / indirect
 
-For a safety-oriented map app, minimum widget coverage should include:
+- `messaging_repository`, `social_repository`, `weather_repository`,
+  `location_repository`, `storage`, `settings_repository` have **no test files
+  in their own package**.
+- `social_repository`/`weather_repository` are thin pass-throughs (lower risk),
+  but `settings_repository` (persistence + theme/locale parsing) and `storage`
+  (the foundational wrapper everything depends on) carry real logic and are only
+  exercised *indirectly* via `settings_cubit_test.dart`. They should have direct
+  unit tests.
 
-1. **`ZoneDetailCard`** — renders `FlightVerdict.allowed`, `notAllowed`, `allowedWithPermission`; shows blocking zones vs empty.
-2. **`ConfigSheet` / `ConfigBar`** — selecting permission/modality/altitude dispatches cubit callbacks (with `BlocProvider` + mock cubit or `MockMapCubit` via `mocktail` when using `Cubit` — prefer real `MapCubit` with fake repository).
-3. **`MapPage` search UX** — debounce, error banner for `GeocodingFailure`, empty results (can pump with mocked `GeocodingRepository`).
+### I2. Misplaced package test (VGV layering violation)
 
-`google_maps_flutter` complicates full `MapPage` tests; extract search/overlay subtree into testable widgets or use `GoogleMap` mocking patterns (platform channel fakes) for focused tests.
+`test/geocoding_repository_test.dart` tests `GeocodingRepository` (caching on
+network failure) but lives in the **app's** `test/` folder. Per VGV monorepo
+conventions, package tests belong in `packages/geocoding_repository/test/`.
+`packages/geocoding_repository/` currently has no `test/` directory. Move the
+file so the package owns its own coverage.
+
+### I3. UI layer coverage is sparse
+
+39 files under `lib/**/view/`; only a handful have widget tests
+(`zone_detail_card`, `settings_page`, `resources_page`, `map_view`, plus
+navigation-focused tests touching `login_page`/`signup_page`). Untested widgets
+with rendering/state logic include: `post_card`, `reel_video_background`,
+`feed_page`, `profile_page`, `create_post_page`, `post_detail_page`,
+`chat_page`, `messages_page`, `explore_page`, `me_tab_page`, `config_sheet`,
+`map_legend`, `wind_speed_legend`, `weather_advisory_card`, `map_zoom_controls`,
+`search_results_overlay`, `map_fab_column`, `zone_stale_banner`. Each should
+have at least a smoke + key-state widget test (using `AppLocalizations`
+delegates as in `zone_detail_card_test.dart`).
+
+### I4. No coverage enforcement
+
+`coverage/lcov.info` is stale (single file). There is no CI/threshold gate
+visible to keep coverage honest. Without enforcement, the gaps above will
+silently grow. Recommend `flutter test --coverage` (and `dart test --coverage`
+for backend/packages) wired into CI with a minimum threshold.
 
 ---
 
-## Anti-Patterns Found
+## Suggestions
 
-| Location | Anti-pattern | Issue | Fix |
-| --- | --- | --- | --- |
-| `test/map_cubit_test.dart:9–66` | **Duplicate test suite** | Same `FlightRulesRepository` scenarios as package test; package version is strictly better | Remove repository group from app test; keep only `MapCubit` group |
-| `pubspec.yaml` + all tests | **Unused mocktail** | Dependency declared, zero `Mock` classes — settings/geocoding tests cannot isolate I/O | Add mocks for `SettingsRepository`, `GeocodingApiClient`, `http.Client` |
-| `test/map_cubit_test.dart` blocTests | **Verify-only bloc tests** | No `expect` on state sequence | Add `expect` where emission count matters |
-| N/A (missing tests) | **False confidence via integration only** | Core geometry (`FlyZone.contains`) not unit-tested | Add focused `fly_zone_test.dart` with known radius edge cases |
+### S1. Weak `isNotNull`-only assertions
 
-No tautological assertions (`expect(true, isTrue)`) or empty tests were found in existing files.
+A few tests assert only existence rather than behavior/value:
 
----
+- `test/om_wasm_load_test.dart:12,18` — `expect(module, isNotNull)` as the sole
+  assertion.
+- `test/open_meteo_wind_tile_test.dart:22` — `expect(byteData, isNotNull)`.
+- `packages/zones_api_client/test/madhel_zone_mapper_test.dart:20,39,…` —
+  `expect(zone, isNotNull)` (though some are followed by stronger checks).
 
-## Quality Signals (existing tests)
+Where `isNotNull` is the only assertion, add value/shape assertions (e.g. decode
+a known byte, assert a mapped field) so the test catches regressions, not just
+crashes. (In `map_cubit_test.dart` the `isNotNull` checks are paired with
+verdict assertions, which is fine.)
 
-| File | Success | Failure / edge | Assertions | Names |
-| --- | --- | --- | --- | --- |
-| `flight_rules_repository_test.dart` | Yes | Prohibited, controlled, altitude skip | Meaningful verdict/zone lists | Spec-style |
-| `openaip_altitude_parser_test.dart` | Yes | Missing limits, MSL floor | `appliesAt` behavior | Clear |
-| `map_cubit_test.dart` | Yes | Prohibited point | Final state only | Good for cubit |
+### S2. Add model (de)serialization tests for API client models
+
+`social_api_client`, `weather_api_client`, `messaging_api_client`, and
+`auth_api_client` ship hand-written `fromJson` models (`SocialPost`,
+`SocialProfile`, `SocialComment`, `WeatherSnapshot`, `WeatherAlertSubscription`,
+`ChatMessage`, `AuthSession`, etc.). Add round-trip/`fromJson` tests covering
+missing/optional fields and `whereType` filtering, since parsing bugs surface
+only at runtime today.
+
+### S3. Track and document the test command
+
+No `CLAUDE.md`/`AGENTS.md` documents how tests are run per workspace (root
+Flutter app vs. Dart packages vs. Dart Frog backend each have separate
+contexts). A short contributor note + a script that runs all three would reduce
+the chance of whole sub-projects being skipped.
 
 ---
 
 ## Recommendations (priority order)
 
-1. **Add `test/settings_cubit_test.dart`** with mocktail-backed `SettingsRepository` — unblocks theme/locale regressions.
-2. **Extend `map_cubit_test.dart`** (or split `map_cubit_settings_test.dart`) for `selectAltitudeRange`, `clearSelection`, and hydrated initial state from settings; remove duplicate `FlightRulesRepository` group.
-3. **Add `packages/geocoding_api_client/test/geocoding_api_client_test.dart`** with `MockClient` and fixture JSON bodies for search/reverse.
-4. **Add `packages/geocoding_repository/test/geocoding_repository_test.dart`** for cache fallback on network failure.
-5. **Add `packages/zones_api_client/test/openaip_zones_api_client_test.dart`** with minimal airspace JSON fixtures for `_parse` and category mapping.
-6. **Add `packages/flight_rules_repository/test/fly_zone_test.dart`** for `contains` and `overlapsAltitudeRange` boundaries.
-7. **Add widget tests** for `ZoneDetailCard` and config UI (highest user-visible risk).
-8. **Wire CI** — `very_good test --recursive --coverage --min_coverage 80` (or staged ramp-up) once baseline improves.
-
----
+1. **Add `blocTest` suites for the 7 fully-untested cubits + AuthCubit's
+   session/error paths** (C1) — highest behavioral value, pattern already
+   established in the repo.
+2. **Unit-test the API clients** (C2) using the `http.BaseClient` fake pattern;
+   prioritize `auth_api_client` and `social_api_client`.
+3. **Test backend `auth_service` and `password_hasher`, then the auth routes**
+   (C3) — security-critical.
+4. **Move `geocoding_repository_test.dart` into its package** and add direct
+   tests for `storage` and `settings_repository` (I1, I2).
+5. **Add smoke/state widget tests for untested pages and widgets** (I3).
+6. **Wire `--coverage` with a threshold into CI** (I4).
 
 ## Verdict
 
-**Fix 8+ issues before merging** — existing tests are well-written where they exist, but coverage is far below VGV’s non-negotiable bar for a production safety app. The domain repository and altitude parser tests are a solid foundation; the presentation layer, settings, geocoding, and OpenAIP ingestion paths are effectively untested and are the highest regression risk.
+**Needs work.** The tests that exist are well-written and idiomatic (VGV
+conventions, `bloc_test`, `mocktail`, behavioral matchers), so the bar is set
+correctly — but coverage breadth is the problem. Roughly half the state layer,
+the majority of the data layer (API clients/repositories), most of the UI, and
+most of the backend (including auth and password handling) are untested. Address
+the 3 critical gaps (untested cubits, untested API clients, untested backend
+auth/services) before treating the suite as merge-ready.

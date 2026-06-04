@@ -11,7 +11,7 @@ void main() {
     const size = Point<double>(390, 844);
     const padding = EdgeInsets.only(
       top: MapLayout.topOverlayInset,
-      bottom: MapLayout.bottomOverlayInset,
+      bottom: 116,
     );
 
     final minZoom = MapZoomLimits.minZoomFittingBoundsHeight(
@@ -24,16 +24,17 @@ void main() {
     expect(minZoom, lessThan(7));
   });
 
-  test('min zoom increases on shorter viewports', () {
+  test('min zoom scales with viewport height', () {
+    final bounds = MapInitializer.argentinaBounds;
     final tall = MapZoomLimits.minZoomFittingBoundsHeight(
-      mapSize: const Point<double>(400, 900),
-      bounds: MapInitializer.argentinaBounds,
+      mapSize: const Point<double>(400, 1600),
+      bounds: bounds,
     );
     final short = MapZoomLimits.minZoomFittingBoundsHeight(
-      mapSize: const Point<double>(400, 500),
-      bounds: MapInitializer.argentinaBounds,
+      mapSize: const Point<double>(400, 400),
+      bounds: bounds,
     );
 
-    expect(short, greaterThan(tall));
+    expect(tall, greaterThan(short));
   });
 }

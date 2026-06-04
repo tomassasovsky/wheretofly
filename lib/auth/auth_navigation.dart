@@ -37,7 +37,7 @@ String loginReturnDestination(BuildContext context) {
 
 /// Opens login and remembers the active shell tab for post-auth navigation.
 void openLogin(BuildContext context) {
-  if (AppMode.mapOnly) return;
+  if (AppMode.isMapOnly) return;
   final router = GoRouter.of(context);
   final currentPath = router.state.uri.path;
   final returnTo = router.state.uri.queryParameters[returnToQueryKey] ??
@@ -69,7 +69,7 @@ void openSignUp(BuildContext context) {
 
 /// Resolves where to send an already-authenticated user leaving auth screens.
 String resolveAuthReturnPath(Uri uri) {
-  if (AppMode.mapOnly) return const MapTabRoute().location;
+  if (AppMode.isMapOnly) return const MapTabRoute().location;
   final returnTo = uri.queryParameters[returnToQueryKey];
   if (returnTo != null && _shellTabPaths.contains(returnTo)) {
     return returnTo;
@@ -90,7 +90,7 @@ void navigateAfterAuthentication(BuildContext context) {
   final router = GoRouter.of(context);
   final fallback = authReturnDestination(router);
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
+  Future.microtask(() {
     if (!context.mounted) return;
     if (!router.state.uri.path.startsWith('/auth/')) return;
 

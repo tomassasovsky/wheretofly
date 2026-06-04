@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' show Point;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,11 +14,14 @@ import 'package:where_to_fly/map/map_visible_bounds.dart';
 import 'package:where_to_fly/map/map_zone_flutter_map_markers.dart';
 import 'package:where_to_fly/map/map_zoom_limits.dart';
 import 'package:where_to_fly/map/wind/open_meteo_wind_tile_provider.dart';
-import 'package:where_to_fly/map/wind/wind_direction_overlay.dart';
 import 'package:where_to_fly/map/wind_map_config.dart';
 
 /// Full-screen [FlutterMap] with zone overlays and camera tracking.
 class FlutterMapLayer extends StatefulWidget {
+  /// When true, skips network [TileLayer] loads (widget tests).
+  @visibleForTesting
+  static bool debugSkipNetworkTiles = false;
+
   const FlutterMapLayer({
     required this.controller,
     required this.brightness,
@@ -241,6 +245,7 @@ class _FlutterMapLayerState extends State<FlutterMapLayer>
             mapController: _mapController,
             options: MapOptions(
               minZoom: effectiveMinZoom,
+              backgroundColor: Colors.transparent,
               maxZoom: 18,
               initialCenter: MapInitializer.argentinaCenter,
               initialZoom: effectiveMinZoom,
@@ -252,11 +257,12 @@ class _FlutterMapLayerState extends State<FlutterMapLayer>
               onPositionChanged: _onPositionChanged,
             ),
             children: [
-              TileLayer(
-                urlTemplate: _tileUrlTemplate,
-                subdomains: MapConfig.cartoSubdomains,
-                userAgentPackageName: MapConfig.tileUserAgentPackageName,
-              ),
+              if (!FlutterMapLayer.debugSkipNetworkTiles)
+                TileLayer(
+                  urlTemplate: _tileUrlTemplate,
+                  subdomains: MapConfig.cartoSubdomains,
+                  userAgentPackageName: MapConfig.tileUserAgentPackageName,
+                ),
               if (WindMapConfig.enabled && _windLayerRetained)
                 _WindGustTileLayer(
                   visible: widget.showWindLayer,
@@ -272,14 +278,6 @@ class _FlutterMapLayerState extends State<FlutterMapLayer>
                   brightness: widget.brightness,
                 ),
               ),
-              if (widget.showWindLayer &&
-                  _windLayerRetained &&
-                  WindMapConfig.arrowsEnabled)
-                WindDirectionOverlay(
-                  mapController: _mapController,
-                  data: _windTileProvider.data,
-                  brightness: widget.brightness,
-                ),
             ],
           );
         },

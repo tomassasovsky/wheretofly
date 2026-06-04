@@ -16,15 +16,18 @@ bool _isSocialPath(String path) {
   return false;
 }
 
-GoRouter createAppRouter({required Listenable refreshListenable}) {
+GoRouter createAppRouter({
+  required Listenable refreshListenable,
+  String? initialLocation,
+}) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: const MapTabRoute().location,
+    initialLocation: initialLocation ?? _mapLocation,
     refreshListenable: refreshListenable,
     redirect: (context, state) {
       final path = state.uri.path;
       if (path == '/') return _mapLocation;
-      if (AppMode.mapOnly) {
+      if (AppMode.isMapOnly) {
         if (_isSocialPath(path)) return _mapLocation;
         if (path.startsWith('/auth/')) return _mapLocation;
       }

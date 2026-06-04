@@ -20,7 +20,7 @@ class SplashPage extends StatelessWidget {
         if (state.isAuthenticated) {
           const MapTabRoute().replace(context);
         } else if (state.status == AuthStatus.unauthenticated) {
-          if (AppMode.mapOnly ||
+          if (AppMode.isMapOnly ||
               const bool.fromEnvironment('AUTH_LAND_ON_MAP')) {
             const MapTabRoute().replace(context);
           } else {

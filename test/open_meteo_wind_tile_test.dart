@@ -32,6 +32,8 @@ void main() {
       );
       image.dispose();
     },
+    skip:
+        'Requires live Open-Meteo HTTP; flutter test blocks outbound requests',
     timeout: const Timeout(Duration(minutes: 2)),
   );
 }

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:social_api_client/social_api_client.dart';
+import 'package:social_repository/social_repository.dart';
 
 /// Full-bleed photo or looping video for reels.
 class PostMediaView extends StatefulWidget {

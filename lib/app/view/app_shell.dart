@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:where_to_fly/app/app_mode.dart';
+import 'package:where_to_fly/app/view/shell_provider_scope.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 
@@ -26,7 +27,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _ensureMapBranch() {
-    if (!AppMode.mapOnly && context.read<AuthCubit>().state.isAuthenticated) {
+    if (!AppMode.isMapOnly && context.read<AuthCubit>().state.isAuthenticated) {
       return;
     }
     if (widget.navigationShell.currentIndex == AppShellTab.map) return;
@@ -51,13 +52,13 @@ class _AppShellState extends State<AppShell> {
       listener: (context, state) => _ensureMapBranch(),
       child: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, authState) {
-          final showTabBar = !AppMode.mapOnly && authState.isAuthenticated;
+          final showTabBar = !AppMode.isMapOnly && authState.isAuthenticated;
 
           return Scaffold(
             // Pages manage their own keyboard insets (the map overlays the
             // keyboard rather than resizing, which blanks flutter_map tiles).
             resizeToAvoidBottomInset: false,
-            body: widget.navigationShell,
+            body: ShellProviderScope(child: widget.navigationShell),
             bottomNavigationBar: showTabBar
                 ? NavigationBarTheme(
                     data: NavigationBarThemeData(

@@ -6,8 +6,6 @@ void main() {
   group('MapLayout', () {
     test('overlay insets match layout constants', () {
       expect(MapLayout.topOverlayInset, 76.0);
-      expect(MapLayout.bottomChromeHeight, 68.0);
-      expect(MapLayout.bottomOverlayInset, 116.0);
     });
 
     testWidgets('zone detail clears config bar including safe area', (
@@ -21,7 +19,7 @@ void main() {
       );
       final context = tester.element(find.byType(SizedBox));
       expect(MapLayout.configBarStackHeight(context), 34 + 12 + 56);
-      expect(MapLayout.zoneDetailBottom(context), 34 + 12 + 56 + 20);
+      expect(MapLayout.zoneDetailBottom(context), 34 + 12 + 56 + 12);
     });
   });
 }

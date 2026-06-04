@@ -32,10 +32,4 @@ abstract final class MapInitializer {
       ThemeMode.system => MediaQuery.platformBrightnessOf(context),
     };
   }
-
-  static String mapTileTemplateFor(Brightness brightness) =>
-      MapTheme.tileUrlTemplateFor(brightness);
-
-  /// No-op — flutter_map initializes with the first map widget.
-  static Future<void> initializePlatform() async {}
 }

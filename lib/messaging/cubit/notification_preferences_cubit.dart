@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:messaging_api_client/messaging_api_client.dart';
 import 'package:messaging_repository/messaging_repository.dart';
 
 enum NotificationPreferencesStatus { initial, loading, loaded, error }
@@ -20,6 +19,19 @@ class NotificationPreferencesState extends Equatable {
   final NotificationPreferencesStatus status;
   final NotificationPreferences preferences;
   final String? errorMessage;
+
+  NotificationPreferencesState copyWith({
+    NotificationPreferencesStatus? status,
+    NotificationPreferences? preferences,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return NotificationPreferencesState(
+      status: status ?? this.status,
+      preferences: preferences ?? this.preferences,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
 
   @override
   List<Object?> get props => [status, preferences, errorMessage];
@@ -88,20 +100,5 @@ class NotificationPreferencesCubit extends Cubit<NotificationPreferencesState> {
 
   void reset() {
     emit(const NotificationPreferencesState());
-  }
-}
-
-extension on NotificationPreferencesState {
-  NotificationPreferencesState copyWith({
-    NotificationPreferencesStatus? status,
-    NotificationPreferences? preferences,
-    String? errorMessage,
-    bool clearError = false,
-  }) {
-    return NotificationPreferencesState(
-      status: status ?? this.status,
-      preferences: preferences ?? this.preferences,
-      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-    );
   }
 }

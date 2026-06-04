@@ -1,4 +1,3 @@
-import 'package:auth_api_client/auth_api_client.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +10,8 @@ import 'package:where_to_fly/auth/auth_navigation.dart';
 import 'package:where_to_fly/auth/view/login_page.dart';
 import 'package:where_to_fly/auth/view/signup_page.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
+
+import 'helpers/app_mode_test_helper.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -53,10 +54,13 @@ void main() {
   late _MockAuthRepository authRepository;
 
   setUp(() {
+    withFullAppModeForTests();
     authRepository = _MockAuthRepository();
     when(() => authRepository.currentSession()).thenAnswer((_) async => null);
     authCubit = AuthCubit(authRepository);
   });
+
+  tearDown(restoreAppModeAfterTests);
 
   Future<GoRouter> pumpAuthRouter(
     WidgetTester tester, {
@@ -134,7 +138,7 @@ void main() {
     openLogin(tester.element(find.text('Messages tab')));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Need an account? Sign up'));
+    openSignUp(tester.element(find.byType(LoginPage)));
     await tester.pumpAndSettle();
     expect(router.state.uri.path, '/auth/signup');
     expect(find.byType(LoginPage), findsNothing);

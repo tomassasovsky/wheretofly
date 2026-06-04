@@ -1,5 +1,7 @@
 PODS:
   - Flutter (1.0.0)
+  - flutter_secure_storage (6.0.0):
+    - Flutter
   - media_kit_libs_ios_video (1.0.4):
     - Flutter
   - media_kit_video (0.0.1):
@@ -8,6 +10,7 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - media_kit_libs_ios_video (from `.symlinks/plugins/media_kit_libs_ios_video/ios`)
   - media_kit_video (from `.symlinks/plugins/media_kit_video/ios`)
   - wasm_run_flutter (from `.symlinks/plugins/wasm_run_flutter/ios`)
@@ -15,6 +18,8 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  flutter_secure_storage:
+    :path: ".symlinks/plugins/flutter_secure_storage/ios"
   media_kit_libs_ios_video:
     :path: ".symlinks/plugins/media_kit_libs_ios_video/ios"
   media_kit_video:
@@ -24,10 +29,11 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_secure_storage: d33dac7ae2ea08509be337e775f6b59f1ff45f12
   media_kit_libs_ios_video: a5fe24bc7875ccd6378a0978c13185e1344651c1
   media_kit_video: 5da63f157170e5bf303bf85453b7ef6971218a2e
   wasm_run_flutter: 2f91e8869ddce786e92e3ec99175647fea2284a4
 
-PODFILE CHECKSUM: b2dff7a15acba03204de0b17992f5525d550d405
+PODFILE CHECKSUM: 288656d4464589360115d6f81dd5d8f559352730
 
 COCOAPODS: 1.16.2
