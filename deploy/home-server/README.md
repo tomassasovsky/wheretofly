@@ -69,25 +69,40 @@ Save. NPM terminates HTTPS; the API stays on plain HTTP inside Docker.
 
 ### 3. Verify
 
+**Inside the API container** (should return JSON with `"status":"ok"`):
+
+```bash
+docker exec dondevolar-api wget -qO- http://127.0.0.1:9080/health
+```
+
+**From the NPM container** (shared Docker network required):
+
+```bash
+docker exec nginx-proxy-manager wget -qO- http://dondevolar-api:9080/health
+```
+
+**Public URL:**
+
 ```bash
 curl -sS https://dondevolar.aquiles.dev/health | jq .
 ```
 
-From the NPM container (optional):
+### Troubleshooting “Running on http://:::9080” but nothing works
 
-```bash
-docker exec nginx-proxy-manager curl -sS http://dondevolar-api:9080/health
-```
+| Symptom | Cause | Fix |
+|--------|--------|-----|
+| Log shows `:::9080` | Old image bound IPv6 only | **Rebuild** the `api` image (Dockerfile now uses IPv4 / `0.0.0.0`). |
+| NPM → `dondevolar-api` fails | API not on NPM’s network | Add `docker-compose.override.yml` (NPM network) or connect `dondevolar-api` in Portainer **Networks**. |
+| NPM → host IP:9080 fails | Port published only on `127.0.0.1` | Set `API_BIND=0.0.0.0` in stack env and redeploy (default in compose now). |
+| `wget` from container works, NPM does not | Wrong NPM forward target | Forward host **`dondevolar-api`**, port **9080**, scheme **http** (not https to the container). |
+
+After redeploy, logs should show something like `Running on http://0.0.0.0:9080` (not `:::`).
 
 ### If you cannot share a Docker network
 
-Publishing `127.0.0.1:9080` is **not** reachable from NPM in another container
-(that loopback is inside each container). Either use the override network above, or:
-
-- Set stack env `API_BIND=0.0.0.0` and redeploy, then in NPM forward to your
-  **host LAN IP** (e.g. `192.168.1.x`) port `9080`, or
-- In Portainer, connect the `dondevolar-api` container to the NPM network manually
-  (**Networks** → connect container).
+- Set `API_BIND=0.0.0.0`, redeploy, then in NPM forward to your **host LAN IP**
+  (e.g. `192.168.1.x`) port `9080`, or
+- In Portainer, connect `dondevolar-api` to the NPM network manually.
 
 Do not expose Postgres, Redis, MinIO, or Photon on the public internet.
 
