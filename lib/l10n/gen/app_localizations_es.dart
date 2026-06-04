@@ -503,58 +503,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get openMeteoAttribution => '© Open-Meteo · DWD ICON';
 
   @override
-  String get mapWindLoadFailed =>
-      'Mapa de viento no disponible. Revisá tu conexión e intentá de nuevo.';
-
-  @override
-  String get mapWindErrorOpenOverlay => 'No se pudo abrir la capa de viento.';
-
-  @override
-  String get mapWindErrorReachTiles =>
-      'No se pudieron cargar los tiles de viento de Open-Meteo.';
-
-  @override
-  String get mapWindScriptsNotLoaded =>
-      'No se cargaron los scripts del mapa de viento. Probá reiniciar la app.';
-
-  @override
-  String get mapWindBridgeError => 'Error del puente del mapa de viento.';
-
-  @override
-  String get mapWindBasemapTimeout =>
-      'El estilo base expiró. Revisá tu conexión a internet.';
-
-  @override
-  String get mapWindTilesTimeout =>
-      'Las ráfagas tardan más de lo habitual. Esperá un momento o tocá Reintentar.';
-
-  @override
-  String get mapWindMaplibreMissing => 'Falta el script de MapLibre GL.';
-
-  @override
-  String get mapWindOmLayerMissing =>
-      'Falta el script de capa meteorológica de Open-Meteo.';
-
-  @override
-  String get mapWindOverlayPartialFailed =>
-      'No se pudo cargar la capa de viento.';
-
-  @override
-  String mapWindMetadataFailed(int statusCode) {
-    return 'Falló la metadata de Open-Meteo ($statusCode).';
-  }
-
-  @override
-  String get mapWindVariableNotInFeed =>
-      'Los datos de viento no están disponibles en Open-Meteo para este campo.';
-
-  @override
-  String get mapWindTileWarning => 'Algunos tiles de viento no se cargaron.';
-
-  @override
-  String get mapWindRetry => 'Reintentar';
-
-  @override
   String get weatherLoading => 'Cargando clima…';
 
   @override

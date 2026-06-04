@@ -5,6 +5,9 @@ analyzer:
     - "**/*.g.dart"
     - "packages/argentina_bounds/lib/argentina_border_path.dart"
     - "tooling/**"
+    # Separate Dart Frog package with its own pubspec/analysis_options; it is
+    # analyzed in its own context, not by the root Flutter project.
+    - "backend/**"
   language:
     strict-casts: true
     strict-raw-types: true

@@ -33,9 +33,6 @@ abstract final class MapInitializer {
     };
   }
 
-  static String mapStyleFor(Brightness brightness) =>
-      MapTheme.styleUrlFor(brightness);
-
   static String mapTileTemplateFor(Brightness brightness) =>
       MapTheme.tileUrlTemplateFor(brightness);
 

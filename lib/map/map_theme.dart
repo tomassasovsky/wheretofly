@@ -3,9 +3,6 @@ import 'package:where_to_fly/map/map_config.dart';
 
 /// Map basemap and overlay styling aligned with the app Material theme.
 abstract final class MapTheme {
-  static const lightStyleUrl = MapConfig.cartoVoyagerStyleUrl;
-  static const darkStyleUrl = MapConfig.cartoDarkMatterStyleUrl;
-
   /// Shown behind the map while the style loads (matches basemap land color).
   static const lightPlaceholder = Color(0xFFF4F1EC);
 
@@ -14,10 +11,6 @@ abstract final class MapTheme {
 
   static String tileUrlTemplateFor(Brightness brightness) =>
       MapConfig.tileUrlTemplateFor(brightness);
-
-  /// MapLibre style URL (wind WebView only).
-  static String styleUrlFor(Brightness brightness) =>
-      MapConfig.styleUrlFor(brightness);
 
   static Color placeholderFor(Brightness brightness) =>
       brightness == Brightness.dark ? darkPlaceholder : lightPlaceholder;

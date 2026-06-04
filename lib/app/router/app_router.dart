@@ -19,7 +19,7 @@ bool _isSocialPath(String path) {
 GoRouter createAppRouter({required Listenable refreshListenable}) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: const SplashRoute().location,
+    initialLocation: const MapTabRoute().location,
     refreshListenable: refreshListenable,
     redirect: (context, state) {
       final path = state.uri.path;

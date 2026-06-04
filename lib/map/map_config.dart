@@ -35,23 +35,4 @@ abstract final class MapConfig {
     );
     return brightness == Brightness.dark ? darkUrl : lightUrl;
   }
-
-  /// Legacy MapLibre style URLs (wind WebView shell only).
-  static const cartoVoyagerStyleUrl =
-      'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
-
-  static const cartoDarkMatterStyleUrl =
-      'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
-
-  static String styleUrlFor(Brightness brightness) {
-    const lightUrl = String.fromEnvironment(
-      'MAP_STYLE_URL_LIGHT',
-      defaultValue: cartoVoyagerStyleUrl,
-    );
-    const darkUrl = String.fromEnvironment(
-      'MAP_STYLE_URL_DARK',
-      defaultValue: cartoDarkMatterStyleUrl,
-    );
-    return brightness == Brightness.dark ? darkUrl : lightUrl;
-  }
 }

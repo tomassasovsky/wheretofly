@@ -19,7 +19,6 @@ dependencies:
   backend_zones_api_client:
     path: packages/backend_zones_api_client
   bloc: ^8.1.4
-  cupertino_icons: ^1.0.9
   equatable: ^2.0.5
   flight_rules_repository:
     path: packages/flight_rules_repository
@@ -47,7 +46,6 @@ dependencies:
     path: packages/messaging_api_client
   messaging_repository:
     path: packages/messaging_repository
-  pointer_interceptor: ^0.10.1+2
   settings_repository:
     path: packages/settings_repository
   social_api_client:

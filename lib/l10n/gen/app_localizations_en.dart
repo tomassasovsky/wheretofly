@@ -504,56 +504,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openMeteoAttribution => '© Open-Meteo · DWD ICON';
 
   @override
-  String get mapWindLoadFailed =>
-      'Wind map unavailable. Check your connection and try again.';
-
-  @override
-  String get mapWindErrorOpenOverlay => 'Could not open wind overlay.';
-
-  @override
-  String get mapWindErrorReachTiles => 'Could not reach Open-Meteo wind tiles.';
-
-  @override
-  String get mapWindScriptsNotLoaded =>
-      'Wind overlay scripts did not load. Try a full app restart.';
-
-  @override
-  String get mapWindBridgeError => 'Wind map bridge error.';
-
-  @override
-  String get mapWindBasemapTimeout =>
-      'Basemap style timed out. Check your internet connection.';
-
-  @override
-  String get mapWindTilesTimeout =>
-      'Wind gusts are taking longer than usual. Wait a moment or tap Retry.';
-
-  @override
-  String get mapWindMaplibreMissing => 'MapLibre GL script missing.';
-
-  @override
-  String get mapWindOmLayerMissing =>
-      'Open-Meteo weather map layer script missing.';
-
-  @override
-  String get mapWindOverlayPartialFailed => 'Wind overlay could not load.';
-
-  @override
-  String mapWindMetadataFailed(int statusCode) {
-    return 'Open-Meteo metadata failed ($statusCode).';
-  }
-
-  @override
-  String get mapWindVariableNotInFeed =>
-      'Wind data is not available from Open-Meteo for this field.';
-
-  @override
-  String get mapWindTileWarning => 'Some wind tiles failed to load.';
-
-  @override
-  String get mapWindRetry => 'Retry';
-
-  @override
   String get weatherLoading => 'Loading weather…';
 
   @override

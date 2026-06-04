@@ -31,17 +31,6 @@ abstract final class WindMapConfig {
   /// Gust overlay strength (0–1). Lower values keep the basemap more visible.
   static const windLayerOpacity = 0.55;
 
-  /// Open-Meteo minimal style (official wind example).
-  /// Slower on first WebView open.
-  static const openMeteoStyleUrl =
-      'https://map-assets.open-meteo.com/styles/minimal-planet-maps.json';
-
-  /// Basemap shell must load before the map is interactive (not wind tiles).
-  static const shellTimeout = Duration(seconds: 45);
-
-  /// Open-Meteo om:// tiles can take longer on mobile WebViews.
-  static const windTilesCheckTimeout = Duration(seconds: 45);
-
   /// iOS/Wasmi cannot run the SIMD OM decoder. Point at a dev tile server
   /// (`dart run tooling/om_tile_server/bin/server.dart`) — Mac or Linux.
   ///

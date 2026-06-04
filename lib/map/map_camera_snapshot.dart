@@ -1,4 +1,4 @@
-/// Center and zoom of the map camera (native MapLibre or wind WebView).
+/// Center and zoom of the map camera.
 class MapCameraSnapshot {
   const MapCameraSnapshot({
     required this.lat,

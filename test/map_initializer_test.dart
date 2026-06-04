@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_to_fly/map/map_config.dart';
 import 'package:where_to_fly/map/map_initializer.dart';
-import 'package:where_to_fly/map/map_theme.dart';
 
 void main() {
   test('argentina center and geographic bounds', () {
@@ -35,17 +34,6 @@ void main() {
     expect(
       MapInitializer.mapBrightnessFor(context, ThemeMode.dark),
       Brightness.dark,
-    );
-  });
-
-  test('mapStyleFor uses CARTO basemap defaults', () {
-    expect(
-      MapInitializer.mapStyleFor(Brightness.light),
-      MapTheme.lightStyleUrl,
-    );
-    expect(
-      MapInitializer.mapStyleFor(Brightness.dark),
-      MapTheme.darkStyleUrl,
     );
   });
 

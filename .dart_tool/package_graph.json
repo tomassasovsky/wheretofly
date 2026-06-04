@@ -12,7 +12,6 @@
         "auth_repository",
         "backend_zones_api_client",
         "bloc",
-        "cupertino_icons",
         "equatable",
         "flight_rules_repository",
         "flutter",
@@ -32,7 +31,6 @@
         "media_kit_video",
         "messaging_api_client",
         "messaging_repository",
-        "pointer_interceptor",
         "settings_repository",
         "social_api_client",
         "social_repository",
@@ -264,17 +262,6 @@
       ]
     },
     {
-      "name": "pointer_interceptor",
-      "version": "0.10.1+2",
-      "dependencies": [
-        "flutter",
-        "flutter_web_plugins",
-        "pointer_interceptor_ios",
-        "pointer_interceptor_platform_interface",
-        "pointer_interceptor_web"
-      ]
-    },
-    {
       "name": "messaging_repository",
       "version": "1.0.0",
       "dependencies": [
@@ -464,11 +451,6 @@
         "collection",
         "meta"
       ]
-    },
-    {
-      "name": "cupertino_icons",
-      "version": "1.0.9",
-      "dependencies": []
     },
     {
       "name": "bloc",
@@ -1081,34 +1063,6 @@
         "flutter",
         "meta",
         "url_launcher_platform_interface"
-      ]
-    },
-    {
-      "name": "pointer_interceptor_web",
-      "version": "0.10.3",
-      "dependencies": [
-        "flutter",
-        "flutter_web_plugins",
-        "plugin_platform_interface",
-        "pointer_interceptor_platform_interface",
-        "web"
-      ]
-    },
-    {
-      "name": "pointer_interceptor_platform_interface",
-      "version": "0.10.0+1",
-      "dependencies": [
-        "flutter",
-        "plugin_platform_interface"
-      ]
-    },
-    {
-      "name": "pointer_interceptor_ios",
-      "version": "0.10.1+1",
-      "dependencies": [
-        "flutter",
-        "plugin_platform_interface",
-        "pointer_interceptor_platform_interface"
       ]
     },
     {
