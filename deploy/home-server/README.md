@@ -113,9 +113,10 @@ current setup).
 5. First Photon start downloads ~3.9 GB Argentina index; geocoding works after
    Photon logs `Listening on http://0.0.0.0:2322/`.
 
-**Git deploy note:** the checkout must include `feed/zones.geojson` and `backend/`
-(API build context). If paths fail, adjust compose `context` / volume paths for your
-Portainer clone layout.
+**Git deploy note:** the stack builds from the **repository root** (`context: ../..`)
+so path dependencies (`packages/argentina_bounds`, `packages/zones_api_client`) resolve.
+The volume mount still needs `feed/zones.geojson` at `../../feed/zones.geojson` relative
+to `deploy/home-server/`.
 
 ## API port
 
