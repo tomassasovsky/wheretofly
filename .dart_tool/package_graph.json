@@ -7,6 +7,7 @@
       "name": "where_to_fly",
       "version": "1.0.0+1",
       "dependencies": [
+        "argentina_bounds",
         "auth_api_client",
         "auth_repository",
         "backend_zones_api_client",
@@ -37,11 +38,10 @@
         "social_repository",
         "storage",
         "url_launcher",
+        "wasm_run",
+        "wasm_run_flutter",
         "weather_api_client",
         "weather_repository",
-        "webview_flutter",
-        "webview_flutter_android",
-        "webview_flutter_wkwebview",
         "zones_api_client"
       ],
       "devDependencies": [
@@ -183,35 +183,6 @@
       ]
     },
     {
-      "name": "webview_flutter_wkwebview",
-      "version": "3.25.1",
-      "dependencies": [
-        "flutter",
-        "meta",
-        "path",
-        "webview_flutter_platform_interface"
-      ]
-    },
-    {
-      "name": "webview_flutter_android",
-      "version": "4.12.2",
-      "dependencies": [
-        "flutter",
-        "meta",
-        "webview_flutter_platform_interface"
-      ]
-    },
-    {
-      "name": "webview_flutter",
-      "version": "4.13.1",
-      "dependencies": [
-        "flutter",
-        "webview_flutter_android",
-        "webview_flutter_platform_interface",
-        "webview_flutter_wkwebview"
-      ]
-    },
-    {
       "name": "weather_repository",
       "version": "1.0.0",
       "dependencies": [
@@ -224,6 +195,29 @@
       "version": "1.0.0",
       "dependencies": [
         "http"
+      ]
+    },
+    {
+      "name": "wasm_run_flutter",
+      "version": "0.1.0",
+      "dependencies": [
+        "flutter",
+        "flutter_web_plugins",
+        "plugin_platform_interface",
+        "wasm_run"
+      ]
+    },
+    {
+      "name": "wasm_run",
+      "version": "0.1.0+2",
+      "dependencies": [
+        "collection",
+        "ffi",
+        "flutter_rust_bridge",
+        "freezed_annotation",
+        "logging",
+        "meta",
+        "wasm_interop"
       ]
     },
     {
@@ -509,6 +503,13 @@
       ]
     },
     {
+      "name": "argentina_bounds",
+      "version": "1.0.0",
+      "dependencies": [
+        "latlong2"
+      ]
+    },
+    {
       "name": "shared_preferences_windows",
       "version": "2.4.1",
       "dependencies": [
@@ -752,13 +753,11 @@
     },
     {
       "name": "web_socket_channel",
-      "version": "3.0.3",
+      "version": "2.4.0",
       "dependencies": [
         "async",
         "crypto",
-        "stream_channel",
-        "web",
-        "web_socket"
+        "stream_channel"
       ]
     },
     {
@@ -776,7 +775,7 @@
     },
     {
       "name": "shelf_web_socket",
-      "version": "3.0.0",
+      "version": "1.0.4",
       "dependencies": [
         "shelf",
         "stream_channel",
@@ -971,13 +970,59 @@
       "dependencies": []
     },
     {
-      "name": "webview_flutter_platform_interface",
-      "version": "2.15.1",
+      "name": "flutter_web_plugins",
+      "version": "0.0.0",
       "dependencies": [
-        "flutter",
-        "meta",
-        "plugin_platform_interface"
+        "flutter"
       ]
+    },
+    {
+      "name": "plugin_platform_interface",
+      "version": "2.1.8",
+      "dependencies": [
+        "meta"
+      ]
+    },
+    {
+      "name": "wasm_interop",
+      "version": "2.0.1",
+      "dependencies": [
+        "js",
+        "meta"
+      ]
+    },
+    {
+      "name": "freezed_annotation",
+      "version": "2.4.4",
+      "dependencies": [
+        "collection",
+        "json_annotation",
+        "meta"
+      ]
+    },
+    {
+      "name": "flutter_rust_bridge",
+      "version": "1.82.6",
+      "dependencies": [
+        "args",
+        "build_cli_annotations",
+        "js",
+        "meta",
+        "path",
+        "puppeteer",
+        "shelf",
+        "shelf_static",
+        "shelf_web_socket",
+        "tuple",
+        "uuid",
+        "web_socket_channel",
+        "yaml"
+      ]
+    },
+    {
+      "name": "ffi",
+      "version": "2.2.0",
+      "dependencies": []
     },
     {
       "name": "url_launcher_windows",
@@ -1067,23 +1112,9 @@
       ]
     },
     {
-      "name": "flutter_web_plugins",
-      "version": "0.0.0",
-      "dependencies": [
-        "flutter"
-      ]
-    },
-    {
       "name": "web",
       "version": "1.1.1",
       "dependencies": []
-    },
-    {
-      "name": "plugin_platform_interface",
-      "version": "2.1.8",
-      "dependencies": [
-        "meta"
-      ]
     },
     {
       "name": "universal_platform",
@@ -1387,13 +1418,6 @@
       ]
     },
     {
-      "name": "web_socket",
-      "version": "1.0.1",
-      "dependencies": [
-        "web"
-      ]
-    },
-    {
       "name": "typed_data",
       "version": "1.4.0",
       "dependencies": [
@@ -1479,6 +1503,41 @@
         "stack_trace",
         "vm_service",
         "yaml"
+      ]
+    },
+    {
+      "name": "js",
+      "version": "0.6.7",
+      "dependencies": [
+        "meta"
+      ]
+    },
+    {
+      "name": "tuple",
+      "version": "2.0.2",
+      "dependencies": []
+    },
+    {
+      "name": "puppeteer",
+      "version": "3.23.0",
+      "dependencies": [
+        "archive",
+        "async",
+        "collection",
+        "http",
+        "logging",
+        "path",
+        "petitparser",
+        "pool",
+        "web"
+      ]
+    },
+    {
+      "name": "build_cli_annotations",
+      "version": "2.1.1",
+      "dependencies": [
+        "args",
+        "meta"
       ]
     },
     {
@@ -1574,11 +1633,6 @@
       ]
     },
     {
-      "name": "ffi",
-      "version": "2.2.0",
-      "dependencies": []
-    },
-    {
       "name": "platform",
       "version": "3.1.6",
       "dependencies": []
@@ -1638,6 +1692,14 @@
       ]
     },
     {
+      "name": "petitparser",
+      "version": "7.0.2",
+      "dependencies": [
+        "collection",
+        "meta"
+      ]
+    },
+    {
       "name": "package_info_plus_platform_interface",
       "version": "4.1.0",
       "dependencies": [
@@ -1651,14 +1713,6 @@
       "version": "0.1.2",
       "dependencies": [
         "ffi"
-      ]
-    },
-    {
-      "name": "petitparser",
-      "version": "7.0.2",
-      "dependencies": [
-        "collection",
-        "meta"
       ]
     },
     {

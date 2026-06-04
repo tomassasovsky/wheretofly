@@ -49,7 +49,9 @@ class WeatherSnapshot {
   /// Active SMN alert payloads.
   final List<Map<String, dynamic>> alerts;
 
-  /// Computed advisory level and human-readable reasons.
+  /// Computed advisory level and machine-readable reason codes.
+  ///
+  /// Reason codes are localized client-side (e.g. `windHigh`, `favorable`).
   final Map<String, dynamic> advisory;
 
   /// Serializes the snapshot for JSON API responses.
@@ -180,7 +182,7 @@ class WeatherService {
     if (alerts.isNotEmpty) {
       return {
         'level': WeatherAdvisoryLevel.notRecommended.name,
-        'reasons': ['Alerta meteorológica activa (SMN)'],
+        'reasons': ['smnAlert'],
       };
     }
     final wind = (current['wind_speed'] as num?)?.toDouble() ?? 0;
@@ -189,18 +191,16 @@ class WeatherService {
     WeatherAdvisoryLevel level;
     if (wind > 10.7 || gust > 12) {
       level = WeatherAdvisoryLevel.notRecommended;
-      reasons.add(
-        'Viento ${wind.toStringAsFixed(1)} m/s, ráfagas ${gust.toStringAsFixed(1)} m/s',
-      );
+      reasons.add('windHigh');
     } else if (wind > 8 || gust > 10) {
       level = WeatherAdvisoryLevel.highCaution;
-      reasons.add('Viento elevado para drones ligeros');
+      reasons.add('windElevated');
     } else if (wind > 5 || gust > 7) {
       level = WeatherAdvisoryLevel.caution;
-      reasons.add('Precaución por viento moderado');
+      reasons.add('windModerate');
     } else {
       level = WeatherAdvisoryLevel.good;
-      reasons.add('Condiciones favorables');
+      reasons.add('favorable');
     }
     return {'level': level.name, 'reasons': reasons};
   }

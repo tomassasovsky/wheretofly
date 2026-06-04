@@ -43,7 +43,6 @@ class GeocodingService {
     final results = features
         .map(_parseFeature)
         .whereType<GeocodeHit>()
-        .where((result) => _isInArgentina(result.latitude, result.longitude))
         .take(limit)
         .toList();
 
@@ -70,9 +69,7 @@ class GeocodingService {
     final features = _readFeatures(response);
     for (final feature in features) {
       final result = _parseFeature(feature);
-      if (result != null && _isInArgentina(result.latitude, result.longitude)) {
-        return result;
-      }
+      if (result != null) return result;
     }
     throw const GeocodingServiceException('no results');
   }
@@ -192,9 +189,6 @@ class GeocodingService {
     }
     return street ?? '';
   }
-
-  static bool _isInArgentina(double lat, double lon) =>
-      lat >= -56 && lat <= -21 && lon >= -74 && lon <= -53;
 }
 
 /// A geocoding hit returned by [GeocodingService].
