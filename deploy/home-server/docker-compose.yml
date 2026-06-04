@@ -71,7 +71,11 @@ services:
     environment:
       APP_ENV: production
       PORT: ${API_PORT:-9080}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-dondevolar}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-dondevolar}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER:-dondevolar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-dondevolar}
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in Portainer stack environment}
       PHOTON_BASE_URL: http://photon:2322
@@ -83,8 +87,7 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
       ZONE_FEED_PATH: /app/data/zones.geojson
-    volumes:
-      - ../../feed/zones.geojson:/app/data/zones.geojson:ro
+    # Zone feed is baked into the API image (feed/zones.geojson at build time).
     # Omit ports when NPM uses the shared Docker network (dondevolar-api:9080).
     # For NPM via host LAN IP, publish on all interfaces (not 127.0.0.1).
     ports:

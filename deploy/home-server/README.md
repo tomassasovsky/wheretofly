@@ -91,6 +91,8 @@ curl -sS https://dondevolar.aquiles.dev/health | jq .
 
 | Symptom | Cause | Fix |
 |--------|--------|-----|
+| `zones.geojson` Is a directory | Host file missing at deploy; Docker created a folder | See **Zone feed** fix below; **rebuild** `api` (feed is in the image now). |
+| `FormatException: Invalid port` on `/health` | `DATABASE_URL` with special chars in password (`@`, `:`, …) | Use current compose (`POSTGRES_*` vars, no `DATABASE_URL`). **Rebuild** `api`. |
 | Log shows `:::9080` | Old image bound IPv6 only | **Rebuild** the `api` image (Dockerfile now uses IPv4 / `0.0.0.0`). |
 | NPM → `dondevolar-api` fails | API not on NPM’s network | Add `docker-compose.override.yml` (NPM network) or connect `dondevolar-api` in Portainer **Networks**. |
 | NPM → host IP:9080 fails | Port published only on `127.0.0.1` | Set `API_BIND=0.0.0.0` in stack env and redeploy (default in compose now). |
@@ -123,15 +125,15 @@ current setup).
    paste from [`.env.example`](.env.example) and replace placeholders. You do **not**
    need a `.env` file on disk — Portainer injects these into Compose substitution.
    Required: `POSTGRES_PASSWORD`, `JWT_SECRET`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`.
-   `DATABASE_URL` is built automatically from the Postgres variables.
+   Postgres uses `POSTGRES_*` variables (password may contain `@`, `:`, etc.).
 4. Add `docker-compose.override.yml` (NPM network) and redeploy.
 5. First Photon start downloads ~3.9 GB Argentina index; geocoding works after
    Photon logs `Listening on http://0.0.0.0:2322/`.
 
 **Git deploy note:** the stack builds from the **repository root** (`context: ../..`)
 so path dependencies (`packages/argentina_bounds`, `packages/zones_api_client`) resolve.
-The volume mount still needs `feed/zones.geojson` at `../../feed/zones.geojson` relative
-to `deploy/home-server/`.
+The zone feed is **baked into the API image** at build time (`feed/zones.geojson`).
+Rebuild `api` after updating that file in git.
 
 ## API port
 
@@ -168,5 +170,5 @@ Use `backend/docker-compose.yaml` (published ports for Postgres, Photon, etc.).
 
 ## Updating
 
-Pull latest Git → **Update the stack** in Portainer (rebuilds `api`). Zone feed is
-bind-mounted from `feed/zones.geojson`.
+Pull latest Git → **Update the stack** in Portainer (rebuilds `api`). To refresh zones,
+commit an updated `feed/zones.geojson` and rebuild the image.

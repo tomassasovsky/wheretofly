@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:backend/config/app_config.dart';
+import 'package:backend/db/postgres_endpoint.dart';
 import 'package:postgres/postgres.dart';
 
 /// PostgreSQL access and migration runner.
@@ -12,19 +13,9 @@ class Database {
 
   /// Opens a Postgres connection using the configured database URL.
   static Future<Database> connect(AppConfig config) async {
-    final uri = Uri.parse(config.databaseUrl);
+    final endpoint = postgresEndpointFor(config);
     final connection = await Connection.open(
-      Endpoint(
-        host: uri.host,
-        port: uri.port == 0 ? 5432 : uri.port,
-        database: uri.pathSegments.isNotEmpty
-            ? uri.pathSegments.first.replaceFirst('/', '')
-            : 'dondevolar',
-        username: uri.userInfo.split(':').first,
-        password: uri.userInfo.contains(':')
-            ? uri.userInfo.split(':').last
-            : null,
-      ),
+      endpoint,
       settings: const ConnectionSettings(sslMode: SslMode.disable),
     );
     return Database(connection);

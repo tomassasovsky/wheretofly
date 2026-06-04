@@ -5,6 +5,11 @@ class AppConfig {
   /// Creates config from explicit values (used in tests and fromEnvironment).
   const AppConfig({
     required this.databaseUrl,
+    this.postgresHost,
+    this.postgresPort = 5432,
+    this.postgresUser = 'dondevolar',
+    this.postgresPassword,
+    this.postgresDatabase = 'dondevolar',
     required this.redisUrl,
     required this.jwtSecret,
     required this.openAipApiKey,
@@ -45,11 +50,23 @@ class AppConfig {
       return value == null || value.isEmpty ? devDefault : value;
     }
 
+    final postgresHost = env['POSTGRES_HOST'];
+    final usesPostgresEnv = postgresHost != null && postgresHost.isNotEmpty;
+
     return AppConfig(
-      databaseUrl: require(
-        'DATABASE_URL',
-        'postgresql://dondevolar:dondevolar@localhost:5432/dondevolar',
-      ),
+      databaseUrl: usesPostgresEnv
+          ? ''
+          : require(
+              'DATABASE_URL',
+              'postgresql://dondevolar:dondevolar@localhost:5432/dondevolar',
+            ),
+      postgresHost: usesPostgresEnv ? postgresHost : null,
+      postgresPort: int.tryParse(env['POSTGRES_PORT'] ?? '') ?? 5432,
+      postgresUser: env['POSTGRES_USER'] ?? 'dondevolar',
+      postgresPassword: usesPostgresEnv
+          ? require('POSTGRES_PASSWORD', 'dondevolar', secret: true)
+          : null,
+      postgresDatabase: env['POSTGRES_DB'] ?? 'dondevolar',
       redisUrl: env['REDIS_URL'] ?? 'redis://localhost:6379',
       jwtSecret: require('JWT_SECRET', 'dev-secret-change-me', secret: true),
       openAipApiKey: env['OPENAIP_API_KEY'] ?? '',
@@ -65,8 +82,23 @@ class AppConfig {
     );
   }
 
-  /// PostgreSQL connection URI.
+  /// PostgreSQL connection URI (local dev). Ignored when [postgresHost] is set.
   final String databaseUrl;
+
+  /// Postgres host when set via `POSTGRES_*` (Docker / Portainer).
+  final String? postgresHost;
+
+  /// Postgres port when using [postgresHost].
+  final int postgresPort;
+
+  /// Postgres user when using [postgresHost].
+  final String postgresUser;
+
+  /// Postgres password when using [postgresHost] (not embedded in a URI).
+  final String? postgresPassword;
+
+  /// Postgres database name when using [postgresHost].
+  final String postgresDatabase;
 
   /// Redis connection URI for caching and queues.
   final String redisUrl;

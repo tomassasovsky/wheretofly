@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:backend/config/app_config.dart';
 import 'package:backend/db/database.dart';
+import 'package:backend/util/zone_feed_path.dart';
 import 'package:postgres/postgres.dart';
 
 /// Serves the zone GeoJSON feed with versioning metadata.
@@ -27,11 +28,8 @@ class ZoneService {
     if (ifNoneMatch == etag) {
       return ZoneFeedResponse.notModified(etag: etag, version: version);
     }
-    final file = File(_config.zoneFeedPath);
-    if (!file.existsSync()) {
-      return ZoneFeedResponse.empty(etag: etag, version: version);
-    }
-    final geojson = await file.readAsString();
+    validateZoneFeedPath(_config.zoneFeedPath);
+    final geojson = await File(_config.zoneFeedPath).readAsString();
     return ZoneFeedResponse(
       etag: etag,
       version: version,

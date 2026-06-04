@@ -60,7 +60,11 @@ services:
       photon:
         condition: service_started
     environment:
-      DATABASE_URL: postgresql://dondevolar:dondevolar@postgres:5432/dondevolar
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: dondevolar
+      POSTGRES_PASSWORD: dondevolar
+      POSTGRES_DB: dondevolar
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       PHOTON_BASE_URL: http://photon:2322

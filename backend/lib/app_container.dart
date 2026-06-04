@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:backend/config/app_config.dart';
 import 'package:backend/db/database.dart';
+import 'package:backend/util/zone_feed_path.dart';
 import 'package:backend/services/auth_service.dart';
 import 'package:backend/services/geocoding_service.dart';
 import 'package:backend/services/jwt_service.dart';
@@ -82,6 +83,7 @@ class AppContainer {
   static Future<AppContainer> initialize() async {
     if (_instance != null) return _instance!;
     final config = AppConfig.fromEnvironment();
+    validateZoneFeedPath(config.zoneFeedPath);
     final database = await Database.connect(config);
     await database.runMigrations();
     final jwtService = JwtService(config);

@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install -y ca-certificates wget && rm -rf /var/lib
 WORKDIR /app
 COPY --from=build /workspace/backend/server /app/server
 COPY --from=build /workspace/backend/lib/db/migrations /app/lib/db/migrations
+COPY feed/zones.geojson /app/data/zones.geojson
 ENV PORT=9080
 EXPOSE 9080
 CMD ["/app/server"]
