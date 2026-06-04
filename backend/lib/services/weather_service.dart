@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
@@ -68,10 +70,14 @@ class WeatherSnapshot {
 /// Proxies Open-Meteo forecast data and SMN CAP alerts with advisory scoring.
 class WeatherService {
   /// Creates a weather proxy with optional HTTP client for tests.
-  WeatherService({http.Client? httpClient})
-    : _http = httpClient ?? http.Client();
+  WeatherService({
+    http.Client? httpClient,
+    Duration cacheDuration = const Duration(minutes: 15),
+  }) : _http = httpClient ?? http.Client(),
+       _cacheDuration = cacheDuration;
 
   final http.Client _http;
+  final Duration _cacheDuration;
   final _cache = <String, _CacheEntry>{};
 
   static const _openMeteoHost = 'api.open-meteo.com';
@@ -89,24 +95,16 @@ class WeatherService {
       return cached.snapshot;
     }
 
-    final uri = Uri.https(_openMeteoHost, '/v1/forecast', {
-      'latitude': '$lat',
-      'longitude': '$lon',
-      'current':
-          'wind_speed_10m,wind_gusts_10m,wind_direction_10m,'
-          'relative_humidity_2m',
-      'hourly': 'wind_speed_10m,wind_gusts_10m,wind_direction_10m',
-      'wind_speed_unit': 'ms',
-      'forecast_days': '2',
-      'timezone': 'auto',
-    });
-    final response = await _http.get(uri).timeout(const Duration(seconds: 10));
-    if (response.statusCode != 200) {
-      throw WeatherServiceException(
-        'Weather upstream error ${response.statusCode}',
-      );
+    Map<String, dynamic> body;
+    try {
+      body = await _fetchOpenMeteoForecast(lat: lat, lon: lon);
+    } on WeatherServiceException {
+      final stale = _cache[cacheKey];
+      if (stale != null) {
+        return stale.snapshot;
+      }
+      rethrow;
     }
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
     final current = _mapCurrent(body['current']);
     final hourly = _mapHourly(body['hourly'] as Map<String, dynamic>?);
     final alerts = await _fetchSmnAlerts();
@@ -123,7 +121,7 @@ class WeatherService {
     );
     _cache[cacheKey] = _CacheEntry(
       snapshot: snapshot,
-      expiresAt: DateTime.now().add(const Duration(minutes: 15)),
+      expiresAt: DateTime.now().add(_cacheDuration),
     );
     return snapshot;
   }
@@ -203,6 +201,57 @@ class WeatherService {
       reasons.add('favorable');
     }
     return {'level': level.name, 'reasons': reasons};
+  }
+
+  Future<Map<String, dynamic>> _fetchOpenMeteoForecast({
+    required double lat,
+    required double lon,
+  }) async {
+    final uri = Uri.https(_openMeteoHost, '/v1/forecast', {
+      'latitude': '$lat',
+      'longitude': '$lon',
+      'current':
+          'wind_speed_10m,wind_gusts_10m,wind_direction_10m,'
+          'relative_humidity_2m',
+      'hourly': 'wind_speed_10m,wind_gusts_10m,wind_direction_10m',
+      'wind_speed_unit': 'ms',
+      'forecast_days': '2',
+      'timezone': 'auto',
+    });
+
+    const attempts = 2;
+    Object? lastError;
+    for (var attempt = 0; attempt < attempts; attempt++) {
+      if (attempt > 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      }
+      try {
+        final response = await _http
+            .get(uri)
+            .timeout(const Duration(seconds: 10));
+        if (response.statusCode != 200) {
+          throw WeatherServiceException(
+            'Weather upstream error ${response.statusCode}',
+          );
+        }
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } on WeatherServiceException {
+        rethrow;
+      } on TimeoutException catch (e) {
+        lastError = e;
+      } on SocketException catch (e) {
+        lastError = e;
+      } on HandshakeException catch (e) {
+        lastError = e;
+      } on TlsException catch (e) {
+        lastError = e;
+      } on http.ClientException catch (e) {
+        lastError = e;
+      }
+    }
+    throw WeatherServiceException(
+      'Weather upstream unavailable (${lastError.runtimeType})',
+    );
   }
 
   Future<List<Map<String, dynamic>>> _fetchSmnAlerts() async {

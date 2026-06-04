@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:backend/services/weather_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
@@ -30,6 +32,49 @@ void main() {
       expect(snapshot.current['wind_speed'], 3.0);
       expect(snapshot.hourly, isNotEmpty);
     });
+
+    test('throws when Open-Meteo is unreachable', () async {
+      when(() => httpClient.get(any())).thenThrow(
+        const HandshakeException('Connection terminated during handshake'),
+      );
+
+      final service = WeatherService(httpClient: httpClient);
+
+      expect(
+        () => service.getWeather(lat: -29.9653, lon: -63.6171),
+        throwsA(isA<WeatherServiceException>()),
+      );
+    });
+
+    test(
+      'returns stale cache when Open-Meteo fails after a prior fetch',
+      () async {
+        var callCount = 0;
+        when(() => httpClient.get(any())).thenAnswer((invocation) async {
+          callCount++;
+          final uri = invocation.positionalArguments.first as Uri;
+          if (uri.host == 'api.open-meteo.com') {
+            if (callCount == 1) {
+              return http.Response(_calmOpenMeteoJson, 200);
+            }
+            throw const HandshakeException(
+              'Connection terminated during handshake',
+            );
+          }
+          return http.Response(_emptyRss, 200);
+        });
+
+        final service = WeatherService(
+          httpClient: httpClient,
+          cacheDuration: Duration.zero,
+        );
+        final first = await service.getWeather(lat: -34.6, lon: -58.4);
+        final second = await service.getWeather(lat: -34.6, lon: -58.4);
+
+        expect(second.current, first.current);
+        expect(second.advisory['level'], first.advisory['level']);
+      },
+    );
 
     test('returns not recommended when SMN alerts are present', () async {
       when(() => httpClient.get(any())).thenAnswer((invocation) async {
