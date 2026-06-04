@@ -46,6 +46,23 @@ void main() {
     expect(find.text('System default'), findsOneWidget);
   });
 
+  testWidgets('hides log in while map-only mode', (tester) async {
+    await pumpSettingsPage(tester);
+
+    expect(find.text('Log in'), findsNothing);
+    expect(find.text('Account'), findsNothing);
+  });
+
+  testWidgets('shows permits and resources entry', (tester) async {
+    await pumpSettingsPage(tester);
+
+    expect(find.text('Permits and resources'), findsOneWidget);
+    expect(
+      find.text('Permits, guides, and official links'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('shows sponsor me button', (tester) async {
     await pumpSettingsPage(tester);
 

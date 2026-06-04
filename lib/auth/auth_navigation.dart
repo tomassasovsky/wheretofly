@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:where_to_fly/app/app_mode.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/app/view/app_shell.dart';
 
@@ -36,6 +37,7 @@ String loginReturnDestination(BuildContext context) {
 
 /// Opens login and remembers the active shell tab for post-auth navigation.
 void openLogin(BuildContext context) {
+  if (AppMode.mapOnly) return;
   final router = GoRouter.of(context);
   final currentPath = router.state.uri.path;
   final returnTo = router.state.uri.queryParameters[returnToQueryKey] ??
@@ -67,6 +69,7 @@ void openSignUp(BuildContext context) {
 
 /// Resolves where to send an already-authenticated user leaving auth screens.
 String resolveAuthReturnPath(Uri uri) {
+  if (AppMode.mapOnly) return const MapTabRoute().location;
   final returnTo = uri.queryParameters[returnToQueryKey];
   if (returnTo != null && _shellTabPaths.contains(returnTo)) {
     return returnTo;

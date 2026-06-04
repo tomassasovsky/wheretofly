@@ -2,9 +2,9 @@ import 'package:flight_rules_repository/flight_rules_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
-import 'package:where_to_fly/theme/app_snack_bar.dart';
 import 'package:where_to_fly/l10n/localized_labels.dart';
 import 'package:where_to_fly/resources/view/permit_resources.dart';
+import 'package:where_to_fly/theme/app_snack_bar.dart';
 
 /// Screen listing how to obtain each permission level, with links to the
 /// official ANAC / government resources to request them.

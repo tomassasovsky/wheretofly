@@ -15,7 +15,7 @@ abstract final class MapLayout {
   static const detailAboveChromeGap = 12.0;
 
   /// Gap between the config bar and the right FAB column.
-  static const fabAboveConfigBar = 12.0;
+  static const fabAboveConfigBar = 18.0;
 
   /// Legacy name: config bar block without safe area (≈68px).
   static const bottomChromeHeight =

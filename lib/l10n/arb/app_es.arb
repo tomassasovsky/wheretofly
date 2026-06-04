@@ -22,7 +22,7 @@
   "locationPermissionDeniedForever": "Permiso de ubicación denegado permanentemente. Habilitalo en la configuración del sistema.",
   "locationUnavailable": "No se pudo obtener tu ubicación.",
   "outsideArgentina": "Este punto puede estar fuera de Argentina. Los datos de zonas pueden estar incompletos o no estar disponibles.",
-  "searchHint": "Buscá una ciudad o dirección en Argentina",
+  "searchHint": "Ciudad o dirección",
   "searchNoResults": "No se encontraron resultados.",
   "searchNetworkError": "No se pudo buscar. Revisá tu conexión.",
   "language": "Idioma",

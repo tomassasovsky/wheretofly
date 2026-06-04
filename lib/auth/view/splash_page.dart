@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:where_to_fly/app/app_mode.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
@@ -19,7 +20,8 @@ class SplashPage extends StatelessWidget {
         if (state.isAuthenticated) {
           const MapTabRoute().replace(context);
         } else if (state.status == AuthStatus.unauthenticated) {
-          if (const bool.fromEnvironment('AUTH_LAND_ON_MAP')) {
+          if (AppMode.mapOnly ||
+              const bool.fromEnvironment('AUTH_LAND_ON_MAP')) {
             const MapTabRoute().replace(context);
           } else {
             const LoginRoute().replace(context);

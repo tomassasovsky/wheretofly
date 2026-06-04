@@ -85,7 +85,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'This location may be outside Argentina. Zone data may be incomplete or unavailable.';
 
   @override
-  String get searchHint => 'Search a city or address in Argentina';
+  String get searchHint => 'City or address';
 
   @override
   String get searchNoResults => 'No results found.';

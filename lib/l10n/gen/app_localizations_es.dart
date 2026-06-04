@@ -85,7 +85,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Este punto puede estar fuera de Argentina. Los datos de zonas pueden estar incompletos o no estar disponibles.';
 
   @override
-  String get searchHint => 'Buscá una ciudad o dirección en Argentina';
+  String get searchHint => 'Ciudad o dirección';
 
   @override
   String get searchNoResults => 'No se encontraron resultados.';

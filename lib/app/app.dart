@@ -14,6 +14,7 @@ import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/app/router/app_router.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/app/router/root_navigator_key.dart';
+import 'package:where_to_fly/app/app_mode.dart';
 import 'package:where_to_fly/app/router/router_auth_refresh.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
@@ -120,7 +121,11 @@ class _AppState extends State<App> {
                       unawaited(widget.pushRegistrationService.unregister());
                       final navContext = rootNavigatorKey.currentContext;
                       if (navContext != null) {
-                        const LoginRoute().go(navContext);
+                        if (AppMode.mapOnly) {
+                          const MapTabRoute().go(navContext);
+                        } else {
+                          const LoginRoute().go(navContext);
+                        }
                       }
                     },
                   ),

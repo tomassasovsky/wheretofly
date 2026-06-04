@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:where_to_fly/map/view/widgets/map_transient_message.dart';
 
 /// Visual intent for transient messages.
 enum AppSnackBarIntent { neutral, warning, error, success }

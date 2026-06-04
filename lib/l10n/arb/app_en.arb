@@ -26,7 +26,7 @@
   "locationPermissionDeniedForever": "Location permission permanently denied. Enable it in system settings.",
   "locationUnavailable": "Could not get your location.",
   "outsideArgentina": "This location may be outside Argentina. Zone data may be incomplete or unavailable.",
-  "searchHint": "Search a city or address in Argentina",
+  "searchHint": "City or address",
   "searchNoResults": "No results found.",
   "searchNetworkError": "Could not search. Check your connection.",
   "language": "Language",

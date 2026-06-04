@@ -2,6 +2,7 @@ import 'package:flight_rules_repository/flight_rules_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:where_to_fly/app/app_mode.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/auth/auth_navigation.dart';
@@ -220,12 +221,14 @@ class ZoneDetailCard extends StatelessWidget {
                   ),
                 ),
               ],
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () => _shareFlyCheck(context),
-                icon: const Icon(Icons.share_outlined),
-                label: Text(l10n.socialShareFlyCheck),
-              ),
+              if (!AppMode.mapOnly) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => _shareFlyCheck(context),
+                  icon: const Icon(Icons.share_outlined),
+                  label: Text(l10n.socialShareFlyCheck),
+                ),
+              ],
               if (assessment.verdict == FlightVerdict.notAllowed) ...[
                 const SizedBox(height: 12),
                 FilledButton.icon(

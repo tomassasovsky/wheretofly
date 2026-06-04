@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:where_to_fly/app/app_mode.dart';
 import 'package:where_to_fly/auth/auth_cubit.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
 
-/// Instagram-style bottom navigation wrapping the main app tabs.
+/// Bottom navigation for main tabs (hidden in map-only mode).
 class AppShell extends StatefulWidget {
   const AppShell({
     required this.navigationShell,
@@ -21,17 +22,17 @@ class _AppShellState extends State<AppShell> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _ensureGuestOnMapBranch();
+    _ensureMapBranch();
   }
 
-  void _ensureGuestOnMapBranch() {
-    final isGuest = !context.read<AuthCubit>().state.isAuthenticated;
-    if (!isGuest) return;
+  void _ensureMapBranch() {
+    if (!AppMode.mapOnly && context.read<AuthCubit>().state.isAuthenticated) {
+      return;
+    }
     if (widget.navigationShell.currentIndex == AppShellTab.map) return;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (context.read<AuthCubit>().state.isAuthenticated) return;
       widget.navigationShell.goBranch(
         AppShellTab.map,
         initialLocation: true,
@@ -47,16 +48,15 @@ class _AppShellState extends State<AppShell> {
     return BlocListener<AuthCubit, AuthState>(
       listenWhen: (previous, current) =>
           previous.isAuthenticated != current.isAuthenticated,
-      listener: (context, state) => _ensureGuestOnMapBranch(),
+      listener: (context, state) => _ensureMapBranch(),
       child: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, authState) {
-          final isGuest = !authState.isAuthenticated;
+          final showTabBar = !AppMode.mapOnly && authState.isAuthenticated;
 
           return Scaffold(
             body: widget.navigationShell,
-            bottomNavigationBar: isGuest
-                ? null
-                : NavigationBarTheme(
+            bottomNavigationBar: showTabBar
+                ? NavigationBarTheme(
                     data: NavigationBarThemeData(
                       height: 56,
                       labelBehavior:
@@ -109,7 +109,8 @@ class _AppShellState extends State<AppShell> {
                         ),
                       ],
                     ),
-                  ),
+                  )
+                : null,
           );
         },
       ),
