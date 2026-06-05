@@ -57,7 +57,7 @@ abstract final class WindColorScale {
 
   // 512 entries cover 0–64 m/s at 0.125 m/s resolution (2 KB total).
   static const int _lutEntries = 512;
-  static const double _lutMaxMps = 64.0;
+  static const double _lutMaxMps = 64;
 
   static final Uint8List _lut = _buildLut();
 
