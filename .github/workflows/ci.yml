@@ -60,3 +60,41 @@ jobs:
               fi
             fi
           done
+
+  docker-validate:
+    name: Docker validate & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate docker-compose
+        working-directory: deploy/home-server
+        run: docker compose -f docker-compose.yml config --quiet
+        env:
+          POSTGRES_PASSWORD: ci-dummy
+          JWT_SECRET: ci-dummy
+          MINIO_ACCESS_KEY: ci-dummy
+          MINIO_SECRET_KEY: ci-dummy
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: false
+          load: true
+          tags: dondevolar-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke-test image artefacts
+        run: |
+          docker run --rm dondevolar-api:ci \
+            ls /app/server \
+               /app/lib/db/migrations \
+               /app/assets/om \
+               /app/libwasm_run_dart.so \
+               /app/data/zones.geojson
