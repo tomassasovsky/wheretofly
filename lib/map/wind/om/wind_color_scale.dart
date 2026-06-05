@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui';
 
 /// Wind gust colorscale (`wind` alias for `wind_gusts_10m`).
@@ -53,6 +54,44 @@ abstract final class WindColorScale {
     Color.fromRGBO(128, 0, 64, 1),
     Color.fromRGBO(64, 0, 64, 1),
   ];
+
+  // 512 entries cover 0–64 m/s at 0.125 m/s resolution (2 KB total).
+  static const int _lutEntries = 512;
+  static const double _lutMaxMps = 64;
+
+  static final Uint8List _lut = _buildLut();
+
+  static Uint8List _buildLut() {
+    final buf = Uint8List(_lutEntries * 4);
+    for (var i = 0; i < _lutEntries; i++) {
+      final mps = i * _lutMaxMps / _lutEntries;
+      final c = colorFor(mps);
+      buf[i * 4]     = (c.r * 255).round();
+      buf[i * 4 + 1] = (c.g * 255).round();
+      buf[i * 4 + 2] = (c.b * 255).round();
+      buf[i * 4 + 3] = (c.a * 255).round();
+    }
+    return buf;
+  }
+
+  /// Writes the RGBA color for [mps] into [pixels] at [offset] using a
+  /// precomputed lookup table — O(1) vs the O(n) linear scan in [colorFor].
+  static void writePixel(Uint8List pixels, int offset, double mps) {
+    if (!mps.isFinite) {
+      pixels[offset]     = 0;
+      pixels[offset + 1] = 0;
+      pixels[offset + 2] = 0;
+      pixels[offset + 3] = 0;
+      return;
+    }
+    final i =
+        (mps * (_lutEntries / _lutMaxMps)).toInt().clamp(0, _lutEntries - 1) *
+            4;
+    pixels[offset]     = _lut[i];
+    pixels[offset + 1] = _lut[i + 1];
+    pixels[offset + 2] = _lut[i + 2];
+    pixels[offset + 3] = _lut[i + 3];
+  }
 
   static Color colorFor(double mps) {
     if (!mps.isFinite) return colors.first;

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 /// Wind gust colorscale (matches `lib/map/wind/om/wind_color_scale.dart`).
 abstract final class WindColorScale {
   static const breakpoints = [
@@ -72,6 +74,44 @@ abstract final class WindColorScale {
       _lerpInt(a.$3, b.$3, t),
       (255 * _lerp(a.$4, b.$4, t)).round(),
     );
+  }
+
+  // 512 entries cover 0–64 m/s at 0.125 m/s resolution (2 KB total).
+  static const int _lutEntries = 512;
+  static const double _lutMaxMps = 64.0;
+
+  static final Uint8List _lut = _buildLut();
+
+  static Uint8List _buildLut() {
+    final buf = Uint8List(_lutEntries * 4);
+    for (var i = 0; i < _lutEntries; i++) {
+      final mps = i * _lutMaxMps / _lutEntries;
+      final (r, g, b, a) = colorFor(mps);
+      buf[i * 4]     = r;
+      buf[i * 4 + 1] = g;
+      buf[i * 4 + 2] = b;
+      buf[i * 4 + 3] = a;
+    }
+    return buf;
+  }
+
+  /// Writes the RGBA color for [mps] into [pixels] at [offset] using a
+  /// precomputed lookup table — O(1) vs the O(n) linear scan in [colorFor].
+  static void writePixel(Uint8List pixels, int offset, double mps) {
+    if (!mps.isFinite) {
+      pixels[offset]     = 0;
+      pixels[offset + 1] = 0;
+      pixels[offset + 2] = 0;
+      pixels[offset + 3] = 0;
+      return;
+    }
+    final i =
+        (mps * (_lutEntries / _lutMaxMps)).toInt().clamp(0, _lutEntries - 1) *
+            4;
+    pixels[offset]     = _lut[i];
+    pixels[offset + 1] = _lut[i + 1];
+    pixels[offset + 2] = _lut[i + 2];
+    pixels[offset + 3] = _lut[i + 3];
   }
 
   static (int r, int g, int b, int a) _toBytes((int, int, int, double) c) =>
