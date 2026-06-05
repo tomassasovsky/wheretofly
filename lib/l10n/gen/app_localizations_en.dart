@@ -514,6 +514,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Weather unavailable. Zone check still applies.';
 
   @override
+  String get weatherNetworkTimeout =>
+      'Weather timed out. Try again in a moment.';
+
+  @override
+  String get weatherRateLimited =>
+      'Weather service is busy. Wait a minute and try again.';
+
+  @override
+  String get weatherUpstreamUnavailable =>
+      'Weather service is temporarily down. Zone check still applies.';
+
+  @override
   String zoneFeedStale(Object version) {
     return 'Zone data may be outdated (version $version).';
   }

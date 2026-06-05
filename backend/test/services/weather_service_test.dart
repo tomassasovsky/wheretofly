@@ -76,6 +76,25 @@ void main() {
       },
     );
 
+    test('throws when Open-Meteo returns rate limited', () async {
+      when(() => httpClient.get(any())).thenAnswer(
+        (_) async => http.Response('rate limited', 429),
+      );
+
+      final service = WeatherService(httpClient: httpClient);
+
+      expect(
+        () => service.getWeather(lat: -34.6, lon: -58.4),
+        throwsA(
+          isA<WeatherServiceException>().having(
+            (e) => e.message,
+            'message',
+            'Weather upstream rate limited',
+          ),
+        ),
+      );
+    });
+
     test('returns not recommended when SMN alerts are present', () async {
       when(() => httpClient.get(any())).thenAnswer((invocation) async {
         final uri = invocation.positionalArguments.first as Uri;

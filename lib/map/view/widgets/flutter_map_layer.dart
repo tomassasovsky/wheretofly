@@ -243,6 +243,7 @@ class _FlutterMapLayerState extends State<FlutterMapLayer>
           return FlutterMap(
             mapController: _mapController,
             options: MapOptions(
+              interactionOptions: MapConfig.interactionOptions,
               minZoom: effectiveMinZoom,
               backgroundColor: Colors.transparent,
               maxZoom: 18,

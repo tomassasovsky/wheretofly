@@ -275,15 +275,21 @@ class _WeatherSection extends StatelessWidget {
           showSaveAlert: isAuthenticated,
         );
       case MapWeatherStatus.error:
-        return _InfoBanner(
-          text: state.errorMessage == 'weather_fetch_failed'
-              ? l10n.weatherFetchFailed
-              : (state.errorMessage ?? l10n.weatherFetchFailed),
-        );
+        return _InfoBanner(text: _weatherErrorText(l10n, state.errorMessage));
       case MapWeatherStatus.idle:
         return const SizedBox.shrink();
     }
   }
+}
+
+String _weatherErrorText(AppLocalizations l10n, String? code) {
+  return switch (code) {
+    'weather_network_timeout' => l10n.weatherNetworkTimeout,
+    'weather_rate_limited' => l10n.weatherRateLimited,
+    'weather_upstream_unavailable' => l10n.weatherUpstreamUnavailable,
+    'weather_fetch_failed' => l10n.weatherFetchFailed,
+    _ => l10n.weatherFetchFailed,
+  };
 }
 
 class _InfoBanner extends StatelessWidget {

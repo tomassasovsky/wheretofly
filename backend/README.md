@@ -9,7 +9,7 @@ Self-hosted backend for weather, social features, hybrid zone sync, and messagin
 - **Redis** — cache / pub-sub (compose service ready)
 - **MinIO** — photo/video storage
 - **Photon** — self-hosted OpenStreetMap geocoding (Argentina index)
-- **Open-Meteo** — forecast + wind at point (no API key)
+- **Open-Meteo** — forecast + wind at point (public API or `OPEN_METEO_BASE_URL`; 30 min server cache)
 - **SMN CAP RSS** — Argentina weather alerts
 - **Docker Compose** — home server deployment
 

@@ -36,13 +36,21 @@ class WeatherApiClient {
     );
     http.Response response;
     try {
-      response = await _http.get(uri).timeout(const Duration(seconds: 10));
+      response = await _http.get(uri).timeout(const Duration(seconds: 25));
     } on TimeoutException {
       throw const WeatherApiException('Network timeout', statusCode: 408);
     }
+    if (response.statusCode == 429) {
+      throw const WeatherApiException(
+        'Weather service rate limited',
+        statusCode: 429,
+      );
+    }
     if (response.statusCode >= 400) {
       throw WeatherApiException(
-        'Weather request failed',
+        response.statusCode == 502
+            ? 'Weather service unavailable'
+            : 'Weather request failed',
         statusCode: response.statusCode,
       );
     }

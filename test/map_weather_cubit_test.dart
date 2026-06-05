@@ -36,7 +36,10 @@ void main() {
       );
       return MapWeatherCubit(weatherRepository: repository);
     },
-    act: (cubit) => cubit.fetchFor(const LatLng(-34.6, -58.4)),
+    act: (cubit) async {
+      await cubit.fetchFor(const LatLng(-34.6, -58.4));
+      await Future<void>.delayed(const Duration(milliseconds: 450));
+    },
     expect: () => [
       isA<MapWeatherState>().having(
         (s) => s.status,

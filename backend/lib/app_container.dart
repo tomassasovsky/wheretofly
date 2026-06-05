@@ -88,7 +88,10 @@ class AppContainer {
     await database.runMigrations();
     final jwtService = JwtService(config);
     final authService = AuthService(database: database, config: config);
-    final weatherService = WeatherService();
+    final weatherService = WeatherService(
+      openMeteoHost: config.openMeteoHost,
+      cacheDuration: config.weatherCacheDuration,
+    );
     final geocodingService = GeocodingService(config: config);
     final zoneService = ZoneService(database: database, config: config);
     final openAip = config.openAipApiKey.isEmpty

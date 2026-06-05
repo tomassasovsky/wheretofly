@@ -187,6 +187,9 @@
   "weatherLoading": "Loading weather…",
   "weatherRequiresAuth": "Sign in to see weather for this point.",
   "weatherFetchFailed": "Weather unavailable. Zone check still applies.",
+  "weatherNetworkTimeout": "Weather timed out. Try again in a moment.",
+  "weatherRateLimited": "Weather service is busy. Wait a minute and try again.",
+  "weatherUpstreamUnavailable": "Weather service is temporarily down. Zone check still applies.",
   "zoneFeedStale": "Zone data may be outdated (version {version}).",
   "@zoneFeedStale": {
     "placeholders": { "version": {} }

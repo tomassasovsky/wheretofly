@@ -13,6 +13,8 @@ void main() {
         jwtSecret: 'jwt',
         openAipApiKey: '',
         photonBaseUrl: '',
+        openMeteoHost: 'api.open-meteo.com',
+        weatherCacheDuration: Duration(minutes: 30),
         minioEndpoint: '',
         minioAccessKey: '',
         minioSecretKey: '',

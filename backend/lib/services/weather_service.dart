@@ -72,17 +72,24 @@ class WeatherService {
   /// Creates a weather proxy with optional HTTP client for tests.
   WeatherService({
     http.Client? httpClient,
-    Duration cacheDuration = const Duration(minutes: 15),
+    String openMeteoHost = 'api.open-meteo.com',
+    Duration cacheDuration = const Duration(minutes: 30),
   }) : _http = httpClient ?? http.Client(),
+       _openMeteoHost = openMeteoHost,
        _cacheDuration = cacheDuration;
 
   final http.Client _http;
+  final String _openMeteoHost;
   final Duration _cacheDuration;
   final _cache = <String, _CacheEntry>{};
+  final _inFlight = <String, Future<WeatherSnapshot>>{};
 
-  static const _openMeteoHost = 'api.open-meteo.com';
+  List<Map<String, dynamic>>? _smnAlertsCache;
+  DateTime? _smnAlertsFetchedAt;
+
   static const _smnCapUrl =
       'http://www.smn.gov.ar/feeds/CAP/avisocortoplazo/rss_acpCAP.xml';
+  static const _openMeteoTimeout = Duration(seconds: 8);
 
   /// Fetches (or returns cached) weather for [lat]/[lon].
   Future<WeatherSnapshot> getWeather({
@@ -95,9 +102,36 @@ class WeatherService {
       return cached.snapshot;
     }
 
-    Map<String, dynamic> body;
+    final inFlight = _inFlight[cacheKey];
+    if (inFlight != null) {
+      return inFlight;
+    }
+
+    final future = _loadWeather(lat: lat, lon: lon, cacheKey: cacheKey);
+    _inFlight[cacheKey] = future;
     try {
-      body = await _fetchOpenMeteoForecast(lat: lat, lon: lon);
+      return await future;
+    } finally {
+      if (identical(_inFlight[cacheKey], future)) {
+        _inFlight.remove(cacheKey);
+      }
+    }
+  }
+
+  Future<WeatherSnapshot> _loadWeather({
+    required double lat,
+    required double lon,
+    required String cacheKey,
+  }) async {
+    Map<String, dynamic> body;
+    List<Map<String, dynamic>> alerts;
+    try {
+      final results = await Future.wait<Object>([
+        _fetchOpenMeteoForecast(lat: lat, lon: lon),
+        _fetchSmnAlerts(),
+      ]);
+      body = results[0] as Map<String, dynamic>;
+      alerts = results[1] as List<Map<String, dynamic>>;
     } on WeatherServiceException {
       final stale = _cache[cacheKey];
       if (stale != null) {
@@ -105,10 +139,9 @@ class WeatherService {
       }
       rethrow;
     }
+
     final current = _mapCurrent(body['current']);
     final hourly = _mapHourly(body['hourly'] as Map<String, dynamic>?);
-    final alerts = await _fetchSmnAlerts();
-
     final advisory = _scoreAdvisory(current: current, alerts: alerts);
     final snapshot = WeatherSnapshot(
       lat: lat,
@@ -223,12 +256,13 @@ class WeatherService {
     Object? lastError;
     for (var attempt = 0; attempt < attempts; attempt++) {
       if (attempt > 0) {
-        await Future<void>.delayed(const Duration(milliseconds: 300));
+        await Future<void>.delayed(const Duration(milliseconds: 500));
       }
       try {
-        final response = await _http
-            .get(uri)
-            .timeout(const Duration(seconds: 10));
+        final response = await _http.get(uri).timeout(_openMeteoTimeout);
+        if (response.statusCode == 429) {
+          throw WeatherServiceException('Weather upstream rate limited');
+        }
         if (response.statusCode != 200) {
           throw WeatherServiceException(
             'Weather upstream error ${response.statusCode}',
@@ -255,13 +289,21 @@ class WeatherService {
   }
 
   Future<List<Map<String, dynamic>>> _fetchSmnAlerts() async {
+    final fetchedAt = _smnAlertsFetchedAt;
+    final cached = _smnAlertsCache;
+    if (cached != null &&
+        fetchedAt != null &&
+        DateTime.now().difference(fetchedAt) < _cacheDuration) {
+      return cached;
+    }
+
     try {
       final response = await _http
           .get(Uri.parse(_smnCapUrl))
-          .timeout(const Duration(seconds: 8));
-      if (response.statusCode != 200) return [];
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode != 200) return cached ?? [];
       final document = XmlDocument.parse(response.body);
-      return document.findAllElements('item').map((item) {
+      final alerts = document.findAllElements('item').map((item) {
         final title = item.getElement('title')?.innerText ?? 'Alerta SMN';
         final description = item.getElement('description')?.innerText ?? '';
         return {
@@ -270,8 +312,11 @@ class WeatherService {
           'description': description,
         };
       }).toList();
+      _smnAlertsCache = alerts;
+      _smnAlertsFetchedAt = DateTime.now();
+      return alerts;
     } on Object {
-      return [];
+      return cached ?? [];
     }
   }
 }

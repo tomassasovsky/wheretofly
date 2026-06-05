@@ -14,6 +14,8 @@ class AppConfig {
     required this.jwtSecret,
     required this.openAipApiKey,
     required this.photonBaseUrl,
+    required this.openMeteoHost,
+    required this.weatherCacheDuration,
     required this.minioEndpoint,
     required this.minioAccessKey,
     required this.minioSecretKey,
@@ -71,6 +73,10 @@ class AppConfig {
       jwtSecret: require('JWT_SECRET', 'dev-secret-change-me', secret: true),
       openAipApiKey: env['OPENAIP_API_KEY'] ?? '',
       photonBaseUrl: env['PHOTON_BASE_URL'] ?? 'http://localhost:2322',
+      openMeteoHost: _openMeteoHostFromEnv(env['OPEN_METEO_BASE_URL']),
+      weatherCacheDuration: Duration(
+        minutes: int.tryParse(env['WEATHER_CACHE_MINUTES'] ?? '') ?? 30,
+      ),
       minioEndpoint: env['MINIO_ENDPOINT'] ?? 'localhost:9000',
       minioAccessKey: require('MINIO_ACCESS_KEY', 'minioadmin', secret: true),
       minioSecretKey: require('MINIO_SECRET_KEY', 'minioadmin', secret: true),
@@ -112,6 +118,12 @@ class AppConfig {
   /// Base URL for the self-hosted Photon geocoder (no trailing slash).
   final String photonBaseUrl;
 
+  /// Open-Meteo forecast API hostname (default public `api.open-meteo.com`).
+  final String openMeteoHost;
+
+  /// In-memory TTL for weather and SMN alert proxy caches.
+  final Duration weatherCacheDuration;
+
   /// MinIO/S3-compatible object storage host.
   final String minioEndpoint;
 
@@ -147,4 +159,13 @@ class AppConfig {
 
   /// Minimum supported client app version.
   static const minClientVersion = '1.0.0';
+
+  static String _openMeteoHostFromEnv(String? raw) {
+    final trimmed = raw?.trim() ?? '';
+    if (trimmed.isEmpty) return 'api.open-meteo.com';
+    final uri = trimmed.contains('://')
+        ? Uri.parse(trimmed)
+        : Uri(scheme: 'https', host: trimmed);
+    return uri.host.isEmpty ? 'api.open-meteo.com' : uri.host;
+  }
 }

@@ -514,6 +514,18 @@ class AppLocalizationsEs extends AppLocalizations {
       'Clima no disponible. La verificación de zona sigue vigente.';
 
   @override
+  String get weatherNetworkTimeout =>
+      'El clima tardó demasiado. Probá de nuevo en un momento.';
+
+  @override
+  String get weatherRateLimited =>
+      'El servicio de clima está saturado. Esperá un minuto y probá de nuevo.';
+
+  @override
+  String get weatherUpstreamUnavailable =>
+      'El servicio de clima no responde. La verificación de zona sigue vigente.';
+
+  @override
   String zoneFeedStale(Object version) {
     return 'Los datos de zonas pueden estar desactualizados (versión $version).';
   }

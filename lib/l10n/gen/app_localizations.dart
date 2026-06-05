@@ -980,6 +980,24 @@ abstract class AppLocalizations {
   /// **'Weather unavailable. Zone check still applies.'**
   String get weatherFetchFailed;
 
+  /// No description provided for @weatherNetworkTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather timed out. Try again in a moment.'**
+  String get weatherNetworkTimeout;
+
+  /// No description provided for @weatherRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather service is busy. Wait a minute and try again.'**
+  String get weatherRateLimited;
+
+  /// No description provided for @weatherUpstreamUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather service is temporarily down. Zone check still applies.'**
+  String get weatherUpstreamUnavailable;
+
   /// No description provided for @zoneFeedStale.
   ///
   /// In en, this message translates to:

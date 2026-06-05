@@ -9,6 +9,7 @@ import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/app/router/root_navigator_key.dart';
 import 'package:where_to_fly/map/cubit/map_cubit.dart';
 import 'package:where_to_fly/map/cubit/map_search_cubit.dart';
+import 'package:where_to_fly/map/view/map_page.dart';
 
 /// Pumps frames for [duration] without `pumpAndSettle`
 /// (map tiles never settle).

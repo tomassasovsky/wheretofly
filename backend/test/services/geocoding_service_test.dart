@@ -110,6 +110,8 @@ AppConfig _testConfig({String photonBaseUrl = 'http://localhost:2322'}) {
     jwtSecret: '',
     openAipApiKey: '',
     photonBaseUrl: photonBaseUrl,
+    openMeteoHost: 'api.open-meteo.com',
+    weatherCacheDuration: Duration(minutes: 30),
     minioEndpoint: '',
     minioAccessKey: '',
     minioSecretKey: '',

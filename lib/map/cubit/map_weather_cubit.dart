@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
@@ -41,8 +43,13 @@ class MapWeatherCubit extends Cubit<MapWeatherState> {
         super(const MapWeatherState());
 
   final WeatherRepository _weatherRepository;
+  Timer? _debounce;
+  int _requestGeneration = 0;
 
+  /// Debounces rapid map taps so Open-Meteo is not hammered on every move.
   Future<void> fetchFor(LatLng point) async {
+    _debounce?.cancel();
+    final generation = ++_requestGeneration;
     emit(
       state.copyWith(
         status: MapWeatherStatus.loading,
@@ -51,8 +58,17 @@ class MapWeatherCubit extends Cubit<MapWeatherState> {
       ),
     );
 
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      unawaited(_fetchFor(point, generation));
+    });
+  }
+
+  Future<void> _fetchFor(LatLng point, int generation) async {
+    if (generation != _requestGeneration) return;
+
     try {
       final snapshot = await _weatherRepository.getWeather(point);
+      if (generation != _requestGeneration) return;
       emit(
         MapWeatherState(
           status: MapWeatherStatus.loaded,
@@ -60,13 +76,21 @@ class MapWeatherCubit extends Cubit<MapWeatherState> {
         ),
       );
     } on WeatherApiException catch (e) {
+      if (generation != _requestGeneration) return;
       emit(
         MapWeatherState(
           status: MapWeatherStatus.error,
-          errorMessage: e.message,
+          errorMessage: e.statusCode == 408
+              ? 'weather_network_timeout'
+              : e.statusCode == 429
+                  ? 'weather_rate_limited'
+                  : e.statusCode == 502
+                      ? 'weather_upstream_unavailable'
+                      : e.message,
         ),
       );
     } catch (_) {
+      if (generation != _requestGeneration) return;
       emit(
         const MapWeatherState(
           status: MapWeatherStatus.error,
@@ -76,5 +100,15 @@ class MapWeatherCubit extends Cubit<MapWeatherState> {
     }
   }
 
-  void clear() => emit(const MapWeatherState());
+  void clear() {
+    _debounce?.cancel();
+    _requestGeneration++;
+    emit(const MapWeatherState());
+  }
+
+  @override
+  Future<void> close() {
+    _debounce?.cancel();
+    return super.close();
+  }
 }
