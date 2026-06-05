@@ -22,8 +22,9 @@ class WindTileService {
 
   final String? _wasmPath;
   final Duration _readerTtl;
+  final _omBackend = OmHttpBackend();
   final _pngCache = <String, Future<Uint8List>>{};
-  Future<OmFileReader>? _gustReader;
+  Future<OmFileReader>? _gustReaderFuture;
   DateTime? _gustReaderOpenedAt;
   var _tilesRendered = 0;
 
@@ -90,19 +91,15 @@ class WindTileService {
     if (DateTime.now().difference(openedAt) < _readerTtl) return;
     // ignore: avoid_print
     print('[wind] gust reader TTL expired; refreshing OM file and PNG cache');
-    _gustReader = null;
+    _gustReaderFuture = null;
     _gustReaderOpenedAt = null;
     _pngCache.clear();
   }
 
   Future<OmFileReader> _openGustReader() async {
     await _refreshGustReaderIfExpired();
-    final existing = _gustReader;
-    if (existing != null) return existing;
-
-    final future = _initGustReader();
-    _gustReader = future;
-    return future;
+    // `??=` prevents parallel tile requests from each opening the OM file.
+    return _gustReaderFuture ??= _initGustReader();
   }
 
   Future<OmFileReader> _initGustReader() async {
@@ -112,8 +109,7 @@ class WindTileService {
     final omUrl = await OmSpatialUrlResolver().resolveOmFileUrl();
     // ignore: avoid_print
     print('[wind] opening OM file: $omUrl');
-    final backend = OmHttpBackend();
-    final readers = await openWindReaders(Uri.parse(omUrl), backend);
+    final readers = await openWindReaders(Uri.parse(omUrl), _omBackend);
     _gustReaderOpenedAt = DateTime.now();
     return readers.gust;
   }

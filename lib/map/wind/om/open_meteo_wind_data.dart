@@ -124,11 +124,7 @@ class OpenMeteoWindData {
 
   Future<OpenMeteoWindSession> _openSession() async {
     await _refreshSessionIfExpired();
-    final existing = _sessionFuture;
-    if (existing != null) return existing;
-    final future = _createSession();
-    _sessionFuture = future;
-    return future;
+    return _sessionFuture ??= _createSession();
   }
 
   Future<OpenMeteoWindSession> _createSession() async {
