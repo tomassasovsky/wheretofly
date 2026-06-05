@@ -42,13 +42,19 @@ Uint8List encodeWindTilePng({
     }
   }
 
+  return rgbaToPng(pixels, tileSize: tileSize);
+}
+
+/// Encodes a raw RGBA buffer produced by [encodeWindTilePng] or the GPU path
+/// into a PNG with fast (level 1) compression.
+Uint8List rgbaToPng(Uint8List rgba, {int tileSize = 256}) {
   // Compression level 1 (fast): perceptually identical for noisy wind
   // rasters, roughly 2–3× faster than the default level 6.
   return img.encodePng(
     img.Image.fromBytes(
       width: tileSize,
       height: tileSize,
-      bytes: pixels.buffer,
+      bytes: rgba.buffer,
       numChannels: 4,
     ),
     level: 1,

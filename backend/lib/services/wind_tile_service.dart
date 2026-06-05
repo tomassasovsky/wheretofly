@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:backend/gpu/gust_tile_gpu.dart';
 import 'package:om_smoke/om/dwd_icon_grid.dart';
 import 'package:om_smoke/om/om_file_reader.dart';
 import 'package:om_smoke/om/om_http_backend.dart';
 import 'package:om_smoke/om/om_spatial_url.dart';
 import 'package:om_smoke/om/om_wasm_module.dart';
 import 'package:om_smoke/om/wasm_run_cli.dart';
-import 'package:om_tile_server/wind_arrow_json.dart';
+import 'package:om_tile_server/wind_color_scale.dart';
 import 'package:om_tile_server/wind_tile_png.dart';
 
 /// Serves Open-Meteo gust raster tiles as PNG (OM decode via WASM).
@@ -18,6 +19,8 @@ class WindTileService {
   final String? _wasmPath;
   final _pngCache = <String, Future<Uint8List>>{};
   Future<OmFileReader>? _gustReader;
+  GustTileGpu? _gpu;
+  bool _gpuInitialized = false;
 
   /// Renders a 256×256 gust PNG for slippy tile ([z], [x], [y]).
   Future<Uint8List> gustPng({
@@ -40,7 +43,37 @@ class WindTileService {
       gustReader.readFloat32,
       tileRead,
     );
+
+    // Try GPU path; fall back to CPU if unavailable or kernel fails.
+    final gpu = _getGpu();
+    if (gpu != null) {
+      final grid = tileRead.toGrid();
+      final rgba = gpu.renderRgba(
+        values: values,
+        gridNx: grid.nx,
+        gridNy: grid.ny,
+        dx: grid.dx,
+        dy: grid.dy,
+        lonMin: grid.bounds[0],
+        latMin: grid.bounds[1],
+        lonMax: grid.bounds[2],
+        latMax: grid.bounds[3],
+        tileX: tileRead.x,
+        tileY: tileRead.y,
+        tileZ: tileRead.z,
+      );
+      if (rgba != null) return rgbaToPng(rgba);
+    }
+
     return encodeWindTilePng(values: values, tileRead: tileRead);
+  }
+
+  GustTileGpu? _getGpu() {
+    if (!_gpuInitialized) {
+      _gpuInitialized = true;
+      _gpu = GustTileGpu.tryCreate(lutRgba: WindColorScale.lut);
+    }
+    return _gpu;
   }
 
   Future<OmFileReader> _openGustReader() async {

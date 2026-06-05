@@ -82,6 +82,12 @@ abstract final class WindColorScale {
 
   static final Uint8List _lut = _buildLut();
 
+  /// The precomputed RGBA LUT — exposed so the GPU FFI layer can upload it.
+  static Uint8List get lut => _lut;
+
+  /// Number of entries in [lut] (each entry is 4 bytes RGBA).
+  static int get lutEntries => _lutEntries;
+
   static Uint8List _buildLut() {
     final buf = Uint8List(_lutEntries * 4);
     for (var i = 0; i < _lutEntries; i++) {

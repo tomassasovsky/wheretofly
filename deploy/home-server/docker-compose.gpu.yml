@@ -1,0 +1,30 @@
+# GPU override — apply on top of docker-compose.yml when the host has an
+# NVIDIA GPU and nvidia-container-toolkit installed.
+#
+# Steps:
+#   1. Build the CUDA kernel on the host:
+#        cd backend/native/gust_tile_gpu && ./build.sh
+#   2. Set GPU_LIB_DIR to the directory containing libgust_tile_gpu.so:
+#        export GPU_LIB_DIR=/path/to/wheretofly/backend/native/gust_tile_gpu
+#   3. Start the stack with both compose files:
+#        docker compose \
+#          -f deploy/home-server/docker-compose.yml \
+#          -f deploy/home-server/docker-compose.gpu.yml \
+#          up -d
+
+name: dondevolar
+
+services:
+  api:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      # Dart FFI looks here for libgust_tile_gpu.so before LD_LIBRARY_PATH.
+      GUST_TILE_GPU_LIB_PATH: /app/libgust_tile_gpu.so
+    volumes:
+      - ${GPU_LIB_DIR:?Set GPU_LIB_DIR to the dir containing libgust_tile_gpu.so}/libgust_tile_gpu.so:/app/libgust_tile_gpu.so:ro
