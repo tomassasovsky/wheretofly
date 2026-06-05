@@ -23,9 +23,9 @@ import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/app/app.dart';
 import 'package:where_to_fly/config/api_config.dart';
 import 'package:where_to_fly/legal/register_app_licenses.dart';
-import 'package:where_to_fly/map/wind_map_config.dart';
 import 'package:where_to_fly/map/wind/om/om_wasm_module.dart';
 import 'package:where_to_fly/map/wind/om/wind_decode_support.dart';
+import 'package:where_to_fly/map/wind_map_config.dart';
 import 'package:where_to_fly/messaging/push/push_registration_service.dart';
 import 'package:where_to_fly/zone_sync/zone_sync_service.dart';
 
