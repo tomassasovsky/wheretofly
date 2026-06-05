@@ -70,6 +70,7 @@ void main() {
   testWidgets('shows sponsor me button', (tester) async {
     await pumpSettingsPage(tester);
 
+    await tester.scrollUntilVisible(find.text('Sponsor me'), 200);
     expect(find.text('Sponsor me'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Support development on Cafecito.'),
