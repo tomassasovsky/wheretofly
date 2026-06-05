@@ -11,6 +11,7 @@ import 'package:backend/services/notification_service.dart';
 import 'package:backend/services/post_service.dart';
 import 'package:backend/services/weather_alert_service.dart';
 import 'package:backend/services/weather_service.dart';
+import 'package:backend/services/wind_tile_service.dart';
 import 'package:backend/services/zone_ingest_service.dart';
 import 'package:backend/services/zone_service.dart';
 import 'package:zones_api_client/zones_api_client.dart';
@@ -23,6 +24,7 @@ class AppContainer {
     required this.jwtService,
     required this.authService,
     required this.weatherService,
+    required this.windTileService,
     required this.weatherAlertService,
     required this.geocodingService,
     required this.zoneService,
@@ -48,6 +50,9 @@ class AppContainer {
 
   /// Open-Meteo and SMN weather proxy.
   final WeatherService weatherService;
+
+  /// Open-Meteo gust raster tiles (`/v1/wind/tiles/...`).
+  final WindTileService windTileService;
 
   /// Saved weather alert subscriptions and worker.
   final WeatherAlertService weatherAlertService;
@@ -92,6 +97,9 @@ class AppContainer {
       openMeteoHost: config.openMeteoHost,
       cacheDuration: config.weatherCacheDuration,
     );
+    final windTileService = WindTileService(
+      wasmPath: config.windOmWasmPath,
+    );
     final geocodingService = GeocodingService(config: config);
     final zoneService = ZoneService(database: database, config: config);
     final openAip = config.openAipApiKey.isEmpty
@@ -117,6 +125,7 @@ class AppContainer {
       jwtService: jwtService,
       authService: authService,
       weatherService: weatherService,
+      windTileService: windTileService,
       weatherAlertService: weatherAlertService,
       geocodingService: geocodingService,
       zoneService: zoneService,

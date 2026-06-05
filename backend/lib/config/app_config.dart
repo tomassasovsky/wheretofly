@@ -16,6 +16,7 @@ class AppConfig {
     required this.photonBaseUrl,
     required this.openMeteoHost,
     required this.weatherCacheDuration,
+    this.windOmWasmPath,
     required this.minioEndpoint,
     required this.minioAccessKey,
     required this.minioSecretKey,
@@ -77,6 +78,7 @@ class AppConfig {
       weatherCacheDuration: Duration(
         minutes: int.tryParse(env['WEATHER_CACHE_MINUTES'] ?? '') ?? 30,
       ),
+      windOmWasmPath: _optionalPath(env['WIND_OM_WASM_PATH']),
       minioEndpoint: env['MINIO_ENDPOINT'] ?? 'localhost:9000',
       minioAccessKey: require('MINIO_ACCESS_KEY', 'minioadmin', secret: true),
       minioSecretKey: require('MINIO_SECRET_KEY', 'minioadmin', secret: true),
@@ -124,6 +126,9 @@ class AppConfig {
   /// In-memory TTL for weather and SMN alert proxy caches.
   final Duration weatherCacheDuration;
 
+  /// Path to `om_reader_wasm.wasm` for gust tile decode (optional).
+  final String? windOmWasmPath;
+
   /// MinIO/S3-compatible object storage host.
   final String minioEndpoint;
 
@@ -159,6 +164,11 @@ class AppConfig {
 
   /// Minimum supported client app version.
   static const minClientVersion = '1.0.0';
+
+  static String? _optionalPath(String? raw) {
+    final trimmed = raw?.trim() ?? '';
+    return trimmed.isEmpty ? null : trimmed;
+  }
 
   static String _openMeteoHostFromEnv(String? raw) {
     final trimmed = raw?.trim() ?? '';

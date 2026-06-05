@@ -22,10 +22,10 @@ import 'package:weather_api_client/weather_api_client.dart';
 import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/app/app.dart';
 import 'package:where_to_fly/config/api_config.dart';
+import 'package:where_to_fly/map/wind_map_config.dart';
 import 'package:where_to_fly/legal/register_app_licenses.dart';
 import 'package:where_to_fly/map/wind/om/om_wasm_module.dart';
 import 'package:where_to_fly/map/wind/om/wind_decode_support.dart';
-import 'package:where_to_fly/map/wind_map_config.dart';
 import 'package:where_to_fly/messaging/push/push_registration_service.dart';
 import 'package:where_to_fly/zone_sync/zone_sync_service.dart';
 
@@ -69,19 +69,18 @@ Future<void> initializeAppPlatform() async {
         if (kDebugMode) {
           log('Open-Meteo om WASM ready (local decode)');
         }
-      } else if (WindDecodeSupport.hasRemoteTileServer) {
+      } else {
+        const explicitWindTiles = String.fromEnvironment('WIND_TILE_BASE_URL');
+        if (explicitWindTiles.isEmpty) {
+          final api = resolveApiBaseUri();
+          WindMapConfig.useRemoteTileBaseUrl('${api.origin}/v1/wind/tiles');
+        }
         if (kDebugMode) {
           log(
-            'Wind layer will use WIND_TILE_BASE_URL='
+            'Wind layer will fetch PNG tiles from '
             '${WindMapConfig.windTileBaseUrl}',
           );
         }
-      } else if (kDebugMode) {
-        log(
-          'Wind OM decode unavailable (no WASM SIMD). '
-          'Start: dart run tooling/om_tile_server/bin/server.dart '
-          '(iOS debug defaults to http://127.0.0.1:8765 when server is up).',
-        );
       }
     } on Object catch (error, stackTrace) {
       log('Open-Meteo om WASM init failed: $error', stackTrace: stackTrace);

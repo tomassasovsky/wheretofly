@@ -94,7 +94,7 @@ flutter run \
 
 ### Wind field (Open-Meteo)
 
-Toggle with the **wind** FAB. Decodes `.om` tiles via WASM in `assets/om/` (GPL-2.0-only). Needs network to `map-tiles.open-meteo.com` unless you run the local tile server in `tooling/om_tile_server/`.
+Toggle with the **wind** FAB. Android/desktop decode `.om` tiles in-app (WASM in `assets/om/`, GPL-2.0-only). iOS and other targets fetch PNG tiles from the backend at `GET /v1/wind/tiles/{z}/{x}/{y}.png` (same API host as weather). Optional dev server: `dart run tooling/om_tile_server/bin/server.dart` with `--dart-define=WIND_TILE_BASE_URL=http://127.0.0.1:8765`.
 
 ```bash
 flutter run --dart-define=WIND_MAP_ENABLED=false   # hide FAB

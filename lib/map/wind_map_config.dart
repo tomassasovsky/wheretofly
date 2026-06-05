@@ -28,21 +28,23 @@ abstract final class WindMapConfig {
   /// Gust overlay strength (0–1). Lower values keep the basemap more visible.
   static const windLayerOpacity = 0.55;
 
-  /// iOS/Wasmi cannot run the SIMD OM decoder. Point at a dev tile server
-  /// (`dart run tooling/om_tile_server/bin/server.dart`) — Mac or Linux.
+  /// Remote gust PNG base URL (no trailing slash).
   ///
-  /// Serves `/<z>/<x>/<y>.png` (gust) and `/<z>/<x>/<y>.json` (u/v samples).
-  /// Override with `--dart-define=WIND_TILE_BASE_URL=http://127.0.0.1:8765`
-  /// (simulator) or `http://<host-lan-ip>:8765` (physical device).
+  /// Set at startup when WASM decode is unavailable (typical on iOS).
+  /// Defaults to `{API_BASE_URL}/v1/wind/tiles` via [useRemoteTileBaseUrl].
   ///
-  /// In debug on iOS, defaults to `http://127.0.0.1:8765` when unset so the
-  /// simulator works if the tile server is running (no dart-define required).
+  /// Override with `--dart-define=WIND_TILE_BASE_URL=...` (e.g. dev
+  /// `http://127.0.0.1:8765` from `tooling/om_tile_server`).
+  static String? _remoteBaseUrl;
+
+  /// Points gust PNG fetches at the backend tile proxy (no trailing slash).
+  static void useRemoteTileBaseUrl(String baseUrl) {
+    _remoteBaseUrl = baseUrl;
+  }
+
   static String get windTileBaseUrl {
     const env = String.fromEnvironment('WIND_TILE_BASE_URL');
     if (env.isNotEmpty) return env;
-    if (kDebugMode && !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-      return 'http://127.0.0.1:8765';
-    }
-    return '';
+    return _remoteBaseUrl ?? '';
   }
 }

@@ -66,6 +66,7 @@ The Flutter app uses that URL in **release** builds by default (`lib/config/api_
 | POST | `/v1/auth/login` | No | Login |
 | POST | `/v1/auth/refresh` | No | Refresh tokens |
 | GET | `/v1/weather?lat=&lon=` | No | Open-Meteo proxy + SMN advisory |
+| GET | `/v1/wind/tiles/{z}/{x}/{y}.png` | No | Gust raster tiles (OM decode) |
 | GET | `/v1/zones` | No | GeoJSON zone feed (ETag) |
 | GET | `/v1/geocoding/search?q=&limit=` | No | Map search (self-hosted Photon) |
 | GET | `/v1/geocoding/reverse?lat=&lon=` | No | Reverse geocoding |

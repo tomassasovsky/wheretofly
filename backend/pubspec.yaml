@@ -15,7 +15,12 @@ dependencies:
   dart_frog_web_socket: ^1.0.0
   dart_jsonwebtoken: ^3.1.1
   http: ^1.2.0
+  image: ^4.5.4
   jose: ^0.3.4
+  om_smoke:
+    path: ../tooling/om_smoke
+  om_tile_server:
+    path: ../tooling/om_tile_server
   postgres: ^3.4.5
   redis: ^4.0.0
   uuid: ^4.5.1
