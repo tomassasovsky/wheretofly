@@ -17,6 +17,17 @@ web
 test
 docs
 deploy
-tooling
+tooling/argentina_bounds
+tooling/build_om_wasmi_wasm.sh
+tooling/inspect_om_wasm.dart
+tooling/render_wind_tile.dart
+tooling/smoke_om_decode.dart
+tooling/smoke_wind_tile.dart
+tooling/store_assets
+tooling/test_om_read.mjs
+tooling/test_om_wasm_inst.dart
+tooling/test_om_wasm_wasmi.dart
+tooling/verify_om_wasm_exports.dart
+tooling/wasm_run_android_16k
 lib
 # feed/zones.geojson is required by backend/Dockerfile (zone API snapshot)
