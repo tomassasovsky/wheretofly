@@ -31,16 +31,11 @@ abstract final class WindMapConfig {
   /// Remote gust PNG base URL (no trailing slash).
   ///
   /// Set at startup when WASM decode is unavailable (typical on iOS).
-  /// Defaults to `{API_BASE_URL}/v1/wind/tiles` via [useRemoteTileBaseUrl].
-  ///
   /// Override with `--dart-define=WIND_TILE_BASE_URL=...` (e.g. dev
   /// `http://127.0.0.1:8765` from `tooling/om_tile_server`).
   static String? _remoteBaseUrl;
 
-  /// Points gust PNG fetches at the backend tile proxy (no trailing slash).
-  static void useRemoteTileBaseUrl(String baseUrl) {
-    _remoteBaseUrl = baseUrl;
-  }
+  static set windTileBaseUrl(String baseUrl) => _remoteBaseUrl = baseUrl;
 
   static String get windTileBaseUrl {
     const env = String.fromEnvironment('WIND_TILE_BASE_URL');

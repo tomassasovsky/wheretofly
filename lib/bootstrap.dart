@@ -22,8 +22,8 @@ import 'package:weather_api_client/weather_api_client.dart';
 import 'package:weather_repository/weather_repository.dart';
 import 'package:where_to_fly/app/app.dart';
 import 'package:where_to_fly/config/api_config.dart';
-import 'package:where_to_fly/map/wind_map_config.dart';
 import 'package:where_to_fly/legal/register_app_licenses.dart';
+import 'package:where_to_fly/map/wind_map_config.dart';
 import 'package:where_to_fly/map/wind/om/om_wasm_module.dart';
 import 'package:where_to_fly/map/wind/om/wind_decode_support.dart';
 import 'package:where_to_fly/messaging/push/push_registration_service.dart';
@@ -73,7 +73,7 @@ Future<void> initializeAppPlatform() async {
         const explicitWindTiles = String.fromEnvironment('WIND_TILE_BASE_URL');
         if (explicitWindTiles.isEmpty) {
           final api = resolveApiBaseUri();
-          WindMapConfig.useRemoteTileBaseUrl('${api.origin}/v1/wind/tiles');
+          WindMapConfig.windTileBaseUrl = '${api.origin}/v1/wind/tiles';
         }
         if (kDebugMode) {
           log(
