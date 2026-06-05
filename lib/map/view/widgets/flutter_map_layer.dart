@@ -311,6 +311,9 @@ class _WindGustTileLayer extends StatelessWidget {
           // scaled up. Do not cap [maxZoom] to 12 or the layer disappears when
           // the map zooms in further.
           maxNativeZoom: WindMapConfig.windMaxZoom,
+          // Slow OM decodes can fail on first attempt; allow retries when tiles
+          // leave the viewport instead of pinning error placeholders forever.
+          evictErrorTileStrategy: EvictErrorTileStrategy.notVisible,
           tileDisplay: const TileDisplay.fadeIn(
             duration: Duration(milliseconds: 120),
           ),

@@ -29,15 +29,24 @@ class OpenMeteoWindData {
   Future<bool>? _localDecodeWorks;
 
   Future<OpenMeteoWindSession>? _sessionFuture;
+  DateTime? _sessionOpenedAt;
+  static const _sessionTtl = Duration(minutes: 25);
   final _tileCache = <String, Future<ui.Image>>{};
   final _remotePngCache = <String, Future<Uint8List>>{};
 
   Future<ui.Image> tileImage(TileCoordinates coordinates) async {
     final key = '${coordinates.z}/${coordinates.x}/${coordinates.y}';
-    return _tileCache.putIfAbsent(
-      key,
-      () => _loadTile(coordinates),
+    final existing = _tileCache[key];
+    if (existing != null) return existing;
+
+    final future = _loadTile(coordinates).catchError(
+      (Object error, StackTrace stackTrace) {
+        _tileCache.remove(key);
+        Error.throwWithStackTrace(error, stackTrace);
+      },
     );
+    _tileCache[key] = future;
+    return future;
   }
 
   Future<ui.Image> _loadTile(TileCoordinates coordinates) async {
@@ -68,7 +77,17 @@ class OpenMeteoWindData {
 
   Future<Uint8List> tilePngBytes(TileCoordinates coordinates) async {
     final key = '${coordinates.z}/${coordinates.x}/${coordinates.y}';
-    return _remotePngCache.putIfAbsent(key, () => _fetchRemotePng(coordinates));
+    final existing = _remotePngCache[key];
+    if (existing != null) return existing;
+
+    final future = _fetchRemotePng(coordinates).catchError(
+      (Object error, StackTrace stackTrace) {
+        _remotePngCache.remove(key);
+        Error.throwWithStackTrace(error, stackTrace);
+      },
+    );
+    _remotePngCache[key] = future;
+    return future;
   }
 
   Future<Uint8List> _fetchRemotePng(TileCoordinates coordinates) async {
@@ -93,7 +112,18 @@ class OpenMeteoWindData {
     return frame.image;
   }
 
+  Future<void> _refreshSessionIfExpired() async {
+    final openedAt = _sessionOpenedAt;
+    if (openedAt == null) return;
+    if (DateTime.now().difference(openedAt) < _sessionTtl) return;
+    _sessionFuture = null;
+    _sessionOpenedAt = null;
+    _tileCache.clear();
+    _remotePngCache.clear();
+  }
+
   Future<OpenMeteoWindSession> _openSession() async {
+    await _refreshSessionIfExpired();
     final existing = _sessionFuture;
     if (existing != null) return existing;
     final future = _createSession();
@@ -106,6 +136,7 @@ class OpenMeteoWindData {
     final root = await OmFileReader.open(Uri.parse(omUrl), backend: _backend);
     final gustReader = await root.childByName(WindMapConfig.variable);
     root.dispose();
+    _sessionOpenedAt = DateTime.now();
     return OpenMeteoWindSession(
       gustReader: gustReader,
       backend: _backend,

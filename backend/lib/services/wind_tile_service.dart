@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:om_smoke/om/dwd_icon_grid.dart';
@@ -13,11 +14,18 @@ import 'package:om_tile_server/wind_tile_png.dart';
 /// Serves Open-Meteo gust raster tiles as PNG (OM decode via WASM).
 class WindTileService {
   /// Creates a service; [wasmPath] overrides auto-discovery of the WASM asset.
-  WindTileService({String? wasmPath}) : _wasmPath = wasmPath;
+  WindTileService({
+    String? wasmPath,
+    Duration readerTtl = const Duration(minutes: 25),
+  }) : _wasmPath = wasmPath,
+       _readerTtl = readerTtl;
 
   final String? _wasmPath;
+  final Duration _readerTtl;
   final _pngCache = <String, Future<Uint8List>>{};
   Future<OmFileReader>? _gustReader;
+  DateTime? _gustReaderOpenedAt;
+  var _tilesRendered = 0;
 
   /// Renders a 256×256 gust PNG for slippy tile ([z], [x], [y]).
   Future<Uint8List> gustPng({
@@ -25,8 +33,19 @@ class WindTileService {
     required int x,
     required int y,
   }) async {
+    await _refreshGustReaderIfExpired();
     final key = '$z/$x/$y';
-    return _pngCache.putIfAbsent(key, () => _renderGustPng(z: z, x: x, y: y));
+    final existing = _pngCache[key];
+    if (existing != null) return existing;
+
+    final future = _renderGustPng(z: z, x: x, y: y).catchError(
+      (Object error, StackTrace stackTrace) {
+        _pngCache.remove(key);
+        Error.throwWithStackTrace(error, stackTrace);
+      },
+    );
+    _pngCache[key] = future;
+    return future;
   }
 
   Future<Uint8List> _renderGustPng({
@@ -34,16 +53,50 @@ class WindTileService {
     required int x,
     required int y,
   }) async {
+    final sw = Stopwatch()..start();
     final gustReader = await _openGustReader();
     final tileRead = DwdIconTileRead.forTile(z, x, y);
     final values = await DwdIconTileRead.readValues(
       gustReader.readFloat32,
       tileRead,
     );
-    return encodeWindTilePng(values: values, tileRead: tileRead);
+    final fetchMs = sw.elapsedMilliseconds;
+    sw.reset();
+    final png = await Isolate.run(
+      () => encodeWindTilePng(values: values, tileRead: tileRead),
+    );
+    final encodeMs = sw.elapsedMilliseconds;
+    _tilesRendered++;
+    // ignore: avoid_print
+    final gridH = tileRead.yRange.end - tileRead.yRange.start;
+    print(
+      '[wind] $z/$x/$y  fetch=${fetchMs}ms  encode=${encodeMs}ms'
+      '  grid=${tileRead.totalNx}×$gridH',
+    );
+    if (_tilesRendered % 10 == 0) {
+      // ignore: avoid_print
+      print(
+        '[om-cache] hits=${_LruBlockCacheStats.hits} '
+        'misses=${_LruBlockCacheStats.misses} '
+        'hit_rate=${(_LruBlockCacheStats.hitRate * 100).toStringAsFixed(1)}%',
+      );
+    }
+    return png;
+  }
+
+  Future<void> _refreshGustReaderIfExpired() async {
+    final openedAt = _gustReaderOpenedAt;
+    if (openedAt == null) return;
+    if (DateTime.now().difference(openedAt) < _readerTtl) return;
+    // ignore: avoid_print
+    print('[wind] gust reader TTL expired; refreshing OM file and PNG cache');
+    _gustReader = null;
+    _gustReaderOpenedAt = null;
+    _pngCache.clear();
   }
 
   Future<OmFileReader> _openGustReader() async {
+    await _refreshGustReaderIfExpired();
     final existing = _gustReader;
     if (existing != null) return existing;
 
@@ -57,8 +110,11 @@ class WindTileService {
     final wasmPath = _wasmPath ?? _resolveWasmPath();
     await OmWasmModule.ensureInitialized(wasmPath: wasmPath);
     final omUrl = await OmSpatialUrlResolver().resolveOmFileUrl();
+    // ignore: avoid_print
+    print('[wind] opening OM file: $omUrl');
     final backend = OmHttpBackend();
     final readers = await openWindReaders(Uri.parse(omUrl), backend);
+    _gustReaderOpenedAt = DateTime.now();
     return readers.gust;
   }
 
@@ -82,6 +138,13 @@ class WindTileService {
       'run from repo root.',
     );
   }
+}
+
+/// Exposes block-cache stats from [OmHttpBackend] for wind tile logging.
+abstract final class _LruBlockCacheStats {
+  static int get hits => OmHttpBackend.blockCacheHits;
+  static int get misses => OmHttpBackend.blockCacheMisses;
+  static double get hitRate => OmHttpBackend.blockCacheHitRate;
 }
 
 /// Thrown when gust tile rendering fails.

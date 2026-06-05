@@ -6,8 +6,17 @@ import 'package:http/http.dart' as http;
 class OmHttpBackend {
   OmHttpBackend({http.Client? client}) : _client = client ?? http.Client();
 
+  /// Block-cache hits since process start.
+  static int get blockCacheHits => _LruBlockCache.hits;
+
+  /// Block-cache misses since process start.
+  static int get blockCacheMisses => _LruBlockCache.misses;
+
+  /// Block-cache hit rate since process start (0–1).
+  static double get blockCacheHitRate => _LruBlockCache.hitRate;
+
   final http.Client _client;
-  final _blockCache = _LruBlockCache(blockSize: 64 * 1024, maxBlocks: 128);
+  final _blockCache = _LruBlockCache(blockSize: 64 * 1024, maxBlocks: 512);
 
   int? _fileSize;
   String? _eTag;
@@ -98,15 +107,26 @@ class _LruBlockCache {
   final int maxBlocks;
   final _map = <String, Uint8List>{};
 
+  static int hits = 0;
+  static int misses = 0;
+
+  /// Block-cache hit rate since process start (0–1).
+  static double get hitRate {
+    final total = hits + misses;
+    return total == 0 ? 0 : hits / total;
+  }
+
   Future<Uint8List> get(
     Future<Uint8List> Function() loader, {
     required String key,
   }) async {
     final cached = _map.remove(key);
     if (cached != null) {
+      hits++;
       _map[key] = cached;
       return cached;
     }
+    misses++;
     final value = await loader();
     _map[key] = value;
     while (_map.length > maxBlocks) {

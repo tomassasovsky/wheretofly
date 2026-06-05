@@ -200,6 +200,7 @@ class OmFileReader {
   }
 
   Future<Float32List> readFloat32(List<OmDimensionRange> ranges) async {
+    var httpCalls = 0;
     final fileDims = getDimensions();
     if (fileDims.length != ranges.length) {
       throw OmFileReaderException('Dimension mismatch');
@@ -253,6 +254,7 @@ class OmFileReader {
           )) {
             final indexOffset = OmWasmModule.getI64(indexReadPtr);
             final indexCount = OmWasmModule.getI64(indexReadPtr + 8);
+            httpCalls++;
             final indexBytes = await backend.getBytes(
               url,
               indexOffset,
@@ -280,6 +282,7 @@ class OmFileReader {
                 final dataOffset = OmWasmModule.getI64(dataReadPtr);
                 final dataCount = OmWasmModule.getI64(dataReadPtr + 8);
                 final chunkIndexPtr = dataReadPtr + 32;
+                httpCalls++;
                 final blockBytes = await backend.getBytes(
                   url,
                   dataOffset,
@@ -323,6 +326,8 @@ class OmFileReader {
       }
       // Copy before freeing WASM heap — `finally` runs before the return value
       // is delivered to callers; a sublistView would point at freed memory.
+      // ignore: avoid_print
+      print('[om] http_calls=$httpCalls  total_values=$total');
       return Float32List.fromList(
         OmWasmModule.heap.buffer.asFloat32List(outputPtr, total),
       );
