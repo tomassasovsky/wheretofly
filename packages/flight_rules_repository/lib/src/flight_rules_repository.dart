@@ -118,6 +118,9 @@ class FlightRulesRepository {
         category: ZoneCategory.fromId(data.categoryId),
         center: LatLng(data.latitude, data.longitude),
         radiusMeters: data.radiusMeters,
+        boundary: data.polygon
+            ?.map((p) => LatLng(p[1], p[0]))
+            .toList(growable: false),
         permissionsThatAllowFlight:
             data.allowedPermissionIds.map(PermissionLevel.fromId).toSet(),
         details: data.details,

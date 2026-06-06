@@ -14,10 +14,13 @@ class RemoteZonesException implements Exception {
 
 /// Data client that loads the authoritative zone feed at runtime.
 ///
-/// Expects a GeoJSON `FeatureCollection` of `Point` features. Each feature's
-/// `properties` should contain: `id`, `name`, `categoryId`, `radiusMeters`,
-/// `details`, and `allowedPermissionIds` (a list of permission id strings).
-/// Geometry coordinates are `[longitude, latitude]` per the GeoJSON spec.
+/// Expects a GeoJSON `FeatureCollection` of `Point` or `Polygon` features.
+/// Each feature's `properties` should contain: `id`, `name`, `categoryId`,
+/// `radiusMeters`, `details`, and `allowedPermissionIds` (a list of permission
+/// id strings); polygon features should also carry `latitude`/`longitude` for
+/// the bounding-circle centre. Coordinates are `[longitude, latitude]` per the
+/// GeoJSON spec; `Polygon` rings are preserved in [ZoneData.polygon] for
+/// vertex-exact rendering and containment.
 ///
 /// Point this at an official ANAC/AIP-derived GeoJSON export to make the app a
 /// live source of truth; otherwise the app uses `BundledZonesApiClient`.
@@ -74,11 +77,11 @@ class RemoteZonesApiClient implements ZonesFeedClient {
     if (props is! Map<String, dynamic> || geometry is! Map<String, dynamic>) {
       return null;
     }
-    final coords = geometry['coordinates'];
-    if (coords is! List || coords.length < 2) return null;
 
-    final lon = (coords[0] as num).toDouble();
-    final lat = (coords[1] as num).toDouble();
+    final polygon = _parsePolygon(geometry);
+    final center = _parseCenter(geometry, props, polygon);
+    if (center == null) return null;
+    final (lat, lon) = center;
 
     final permissions = (props['allowedPermissionIds'] as List?)
             ?.map((e) => e.toString())
@@ -92,6 +95,7 @@ class RemoteZonesApiClient implements ZonesFeedClient {
       latitude: lat,
       longitude: lon,
       radiusMeters: (props['radiusMeters'] as num?)?.toDouble() ?? 3000,
+      polygon: polygon,
       allowedPermissionIds: permissions,
       details: (props['details'] ?? '').toString(),
       lowerLimitMetersAgl: _optionalDouble(props['lowerLimitMetersAgl']),
@@ -99,6 +103,48 @@ class RemoteZonesApiClient implements ZonesFeedClient {
       lowerLimitMetersMsl: _optionalDouble(props['lowerLimitMetersMsl']),
       upperLimitMetersMsl: _optionalDouble(props['upperLimitMetersMsl']),
     );
+  }
+
+  /// Exterior ring as `[lon, lat]` pairs, or `null` for non-polygon geometry.
+  List<List<double>>? _parsePolygon(Map<String, dynamic> geometry) {
+    if (geometry['type'] != 'Polygon') return null;
+    final coords = geometry['coordinates'];
+    if (coords is! List || coords.isEmpty) return null;
+    final ring = coords.first;
+    if (ring is! List || ring.length < 3) return null;
+    final out = <List<double>>[];
+    for (final p in ring) {
+      if (p is List && p.length >= 2) {
+        out.add([(p[0] as num).toDouble(), (p[1] as num).toDouble()]);
+      }
+    }
+    return out.length < 3 ? null : out;
+  }
+
+  /// Bounding-circle centre as `(lat, lon)`: explicit properties, then a Point
+  /// geometry, then the polygon centroid.
+  (double, double)? _parseCenter(
+    Map<String, dynamic> geometry,
+    Map<String, dynamic> props,
+    List<List<double>>? polygon,
+  ) {
+    final propLat = _optionalDouble(props['latitude']);
+    final propLon = _optionalDouble(props['longitude']);
+    if (propLat != null && propLon != null) return (propLat, propLon);
+
+    final coords = geometry['coordinates'];
+    if (geometry['type'] == 'Point' && coords is List && coords.length >= 2) {
+      return ((coords[1] as num).toDouble(), (coords[0] as num).toDouble());
+    }
+
+    if (polygon != null && polygon.isNotEmpty) {
+      final lon =
+          polygon.map((p) => p[0]).reduce((a, b) => a + b) / polygon.length;
+      final lat =
+          polygon.map((p) => p[1]).reduce((a, b) => a + b) / polygon.length;
+      return (lat, lon);
+    }
+    return null;
   }
 
   double? _optionalDouble(Object? value) =>

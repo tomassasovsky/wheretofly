@@ -5,7 +5,9 @@ import 'package:flight_rules_repository/src/models/permission_level.dart';
 import 'package:flight_rules_repository/src/models/zone_category.dart';
 import 'package:latlong2/latlong.dart';
 
-/// Domain model: a circular geofenced area with a flight restriction.
+/// Domain model: a geofenced area with a flight restriction. The footprint is
+/// the [boundary] polygon when present, otherwise a circle of [radiusMeters]
+/// around [center].
 class FlyZone extends Equatable {
   const FlyZone({
     required this.id,
@@ -15,6 +17,7 @@ class FlyZone extends Equatable {
     required this.radiusMeters,
     required this.permissionsThatAllowFlight,
     required this.details,
+    this.boundary,
     this.lowerLimitMetersAgl,
     this.upperLimitMetersAgl,
     this.lowerLimitMetersMsl,
@@ -24,8 +27,17 @@ class FlyZone extends Equatable {
   final String id;
   final String name;
   final ZoneCategory category;
+
+  /// Bounding-circle centre. With [boundary] set this is the approximate
+  /// centroid, retained for culling and as a circular fallback.
   final LatLng center;
+
+  /// Bounding-circle radius in metres. See [center].
   final double radiusMeters;
+
+  /// True boundary ring (exterior), or `null` for circular zones. Points are in
+  /// order; the ring need not repeat its first vertex.
+  final List<LatLng>? boundary;
 
   /// The permission levels under which flight in this zone is allowed. An empty
   /// set means flight is never allowed here without a bespoke clearance.
@@ -44,8 +56,33 @@ class FlyZone extends Equatable {
       lowerLimitMetersMsl != null ||
       upperLimitMetersMsl != null;
 
-  /// Whether [point] falls inside this zone (haversine distance).
-  bool contains(LatLng point) => _distanceMeters(center, point) <= radiusMeters;
+  /// Whether [point] falls inside this zone: point-in-polygon against
+  /// [boundary] when present, otherwise haversine distance to [center].
+  bool contains(LatLng point) {
+    final ring = boundary;
+    if (ring == null || ring.length < 3) {
+      return _distanceMeters(center, point) <= radiusMeters;
+    }
+    return _pointInRing(point, ring);
+  }
+
+  /// Even-odd ray casting in lon/lat space. Adequate at zone scale, where the
+  /// planar approximation error is far below the source data resolution.
+  static bool _pointInRing(LatLng p, List<LatLng> ring) {
+    final x = p.longitude;
+    final y = p.latitude;
+    var inside = false;
+    for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      final xi = ring[i].longitude;
+      final yi = ring[i].latitude;
+      final xj = ring[j].longitude;
+      final yj = ring[j].latitude;
+      final intersects = (yi > y) != (yj > y) &&
+          x < (xj - xi) * (y - yi) / (yj - yi) + xi;
+      if (intersects) inside = !inside;
+    }
+    return inside;
+  }
 
   /// Whether any part of [[minAgl], [maxAgl]] overlaps this zone vertically.
   bool overlapsAltitudeRange(
@@ -116,6 +153,7 @@ class FlyZone extends Equatable {
         center.latitude,
         center.longitude,
         radiusMeters,
+        boundary,
         permissionsThatAllowFlight,
         details,
         lowerLimitMetersAgl,

@@ -269,20 +269,34 @@ class _FlutterMapLayerState extends State<FlutterMapLayer>
                   tileProvider: _windTileProvider,
                   reset: _windLayerReset.stream,
                 ),
-              CircleLayer(
-                circles: MapZoneFlutterMapMarkers.build(
-                  state: widget.state,
-                  visibleBounds: _visibleBounds,
-                  zoom: _zoom,
-                  isDark: widget.brightness == Brightness.dark,
-                  brightness: widget.brightness,
-                ),
-              ),
+              ..._buildZoneLayers(),
             ],
           );
         },
       ),
     );
+  }
+
+  /// Zone overlays: exact polygons (drawn first, beneath) and true-meter
+  /// circles for point-only zones, plus the selection marker.
+  List<Widget> _buildZoneLayers() {
+    final layers = MapZoneFlutterMapMarkers.build(
+      state: widget.state,
+      visibleBounds: _visibleBounds,
+      zoom: _zoom,
+      isDark: widget.brightness == Brightness.dark,
+      brightness: widget.brightness,
+    );
+    return [
+      if (layers.polygons.isNotEmpty)
+        PolygonLayer(
+          polygons: layers.polygons,
+          // Render every vertex exactly — no Douglas-Peucker simplification,
+          // so shapes/sizes match the source geometry 1:1.
+          simplificationTolerance: 0,
+        ),
+      CircleLayer(circles: layers.circles),
+    ];
   }
 }
 

@@ -71,10 +71,14 @@ class ZoneIngestService {
   }
 
   Map<String, Object?> _toFeature(ZoneData zone) {
+    // Centre/radius live in properties so the client always has the bounding
+    // circle, independent of whether geometry is a Point or a Polygon.
     final properties = <String, Object?>{
       'id': zone.id,
       'name': zone.name,
       'categoryId': zone.categoryId,
+      'latitude': zone.latitude,
+      'longitude': zone.longitude,
       'radiusMeters': zone.radiusMeters,
       'allowedPermissionIds': zone.allowedPermissionIds.toList(),
       'details': zone.details,
@@ -87,10 +91,29 @@ class ZoneIngestService {
     return {
       'type': 'Feature',
       'properties': properties,
-      'geometry': {
+      'geometry': _geometry(zone),
+    };
+  }
+
+  /// Polygon geometry when the source supplied a real boundary ring (closed
+  /// per the GeoJSON spec), otherwise a Point at the bounding-circle centre.
+  Map<String, Object?> _geometry(ZoneData zone) {
+    final ring = zone.polygon;
+    if (ring == null || ring.length < 3) {
+      return {
         'type': 'Point',
         'coordinates': [zone.longitude, zone.latitude],
-      },
+      };
+    }
+    final closed = [for (final p in ring) [p[0], p[1]]];
+    final first = closed.first;
+    final last = closed.last;
+    if (first[0] != last[0] || first[1] != last[1]) {
+      closed.add([first[0], first[1]]);
+    }
+    return {
+      'type': 'Polygon',
+      'coordinates': [closed],
     };
   }
 

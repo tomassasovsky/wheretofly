@@ -17,10 +17,11 @@ class OpenAipException implements Exception {
 /// Data client that loads airspaces from the OpenAIP API and adapts them to
 /// the app's circular [ZoneData] model.
 ///
-/// OpenAIP returns polygonal airspaces; this client approximates each as a
-/// circle (centroid + enclosing radius). It complements the self-hosted
-/// GeoJSON feed (which also covers parks, government and infrastructure that
-/// OpenAIP does not).
+/// OpenAIP returns polygonal airspaces; this client preserves the full
+/// boundary ring in [ZoneData.polygon] and additionally derives a bounding
+/// circle (centroid + enclosing radius) used for viewport culling and as a
+/// fallback. It complements the self-hosted GeoJSON feed (which also covers
+/// parks, government and infrastructure that OpenAIP does not).
 ///
 /// Requires an OpenAIP API key (https://www.openaip.net/, free tier available).
 class OpenAipZonesApiClient {
@@ -142,6 +143,10 @@ class OpenAipZonesApiClient {
       latitude: lat,
       longitude: lon,
       radiusMeters: radiusMeters,
+      // Preserve the true boundary. The centre/radius above remain as a
+      // bounding circle for culling and as a fallback; rendering and
+      // containment use this ring when present.
+      polygon: points,
       allowedPermissionIds: allowedPermissionIds,
       details: _detailsFor(name, altitude),
       lowerLimitMetersAgl: altitude.lowerMetersAgl,
