@@ -109,6 +109,7 @@ class AppContainer {
       database: database,
       zoneService: zoneService,
       openaip: openAip,
+      aipZonesPath: config.aipZonesPath,
     );
     await _ensureZoneFeedPublished(config, zoneIngestService);
     final notificationService = NotificationService(database: database);

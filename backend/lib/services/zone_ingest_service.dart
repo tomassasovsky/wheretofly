@@ -10,12 +10,17 @@ import 'package:zones_api_client/zones_api_client.dart';
 /// feeds.
 class ZoneIngestService {
   /// Creates an ingest pipeline with optional zone source clients.
+  ///
+  /// [aipZonesPath] is the path to the pre-generated ANAC AIP GeoJSON file
+  /// produced by `tooling/anac_aip_parser`. When present its polygon zones
+  /// override any matching id from the other sources (highest priority).
   ZoneIngestService({
     required Database database,
     required ZoneService zoneService,
     BundledZonesApiClient? bundled,
     MadhelZonesApiClient? madhel,
     OpenAipZonesApiClient? openaip,
+    this.aipZonesPath,
   }) : _db = database,
        _zoneService = zoneService,
        _bundled = bundled ?? const BundledZonesApiClient(),
@@ -28,16 +33,26 @@ class ZoneIngestService {
   final MadhelZonesApiClient _madhel;
   final OpenAipZonesApiClient? _openaip;
 
-  /// Merges bundled, MADHEL, and OpenAIP zones, writes [outputPath], bumps
-  /// version.
+  /// Optional path to `anac_aip_zones.geojson` (from the parser tool).
+  final String? aipZonesPath;
+
+  /// Merges bundled, MADHEL, OpenAIP, and AIP-parsed zones, writes
+  /// [outputPath], bumps version. AIP zones take highest precedence so their
+  /// exact polygon boundaries win over any same-id circle approximations.
   Future<String> ingestAndPublish({required String outputPath}) async {
     final bundledZones = await _bundled.fetchZones();
     final liveMadhel = await _safeMadhel();
     final liveOpenAip = await _safeOpenAip();
+    final aipZones = await _safeAipFile();
+
+    // Merge order: bundled → MADHEL/OpenAIP → AIP polygons (highest wins).
     final merged = <String, ZoneData>{
       for (final zone in bundledZones) zone.id: zone,
     };
     for (final zone in [...liveMadhel, ...liveOpenAip]) {
+      merged[zone.id] = zone;
+    }
+    for (final zone in aipZones) {
       merged[zone.id] = zone;
     }
 
@@ -142,4 +157,82 @@ class ZoneIngestService {
       return const [];
     }
   }
+
+  /// Reads and parses the pre-generated ANAC AIP GeoJSON file. Returns an
+  /// empty list if the file doesn't exist or cannot be parsed.
+  Future<List<ZoneData>> _safeAipFile() async {
+    final path = aipZonesPath;
+    if (path == null) return const [];
+    final file = File(path);
+    if (!file.existsSync()) return const [];
+    try {
+      final body = await file.readAsString();
+      final decoded = jsonDecode(body);
+      if (decoded is! Map<String, dynamic>) return const [];
+      final features = decoded['features'];
+      if (features is! List) return const [];
+      final parser = _AipGeoJsonParser();
+      return [
+        for (final f in features.whereType<Map<String, dynamic>>())
+          if (parser.parseFeature(f) case final z?) z,
+      ];
+    } on Object {
+      return const [];
+    }
+  }
+}
+
+/// Parses a GeoJSON feature from the AIP parser output into [ZoneData].
+/// Handles Polygon geometry with `latitude`/`longitude` in properties.
+class _AipGeoJsonParser {
+  ZoneData? parseFeature(Map<String, dynamic> feature) {
+    final props = feature['properties'];
+    final geometry = feature['geometry'];
+    if (props is! Map<String, dynamic> || geometry is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final polygon = _parsePolygon(geometry);
+    final lat = _d(props['latitude']);
+    final lon = _d(props['longitude']);
+    if (lat == null || lon == null) return null;
+
+    final permissions = (props['allowedPermissionIds'] as List?)
+            ?.map((e) => e.toString())
+            .toSet() ??
+        const <String>{};
+
+    return ZoneData(
+      id: (props['id'] ?? '').toString(),
+      name: (props['name'] ?? '').toString(),
+      categoryId: (props['categoryId'] ?? 'restricted').toString(),
+      latitude: lat,
+      longitude: lon,
+      radiusMeters: _d(props['radiusMeters']) ?? 3000,
+      polygon: polygon,
+      allowedPermissionIds: permissions,
+      details: (props['details'] ?? '').toString(),
+      lowerLimitMetersAgl: _d(props['lowerLimitMetersAgl']),
+      upperLimitMetersAgl: _d(props['upperLimitMetersAgl']),
+      lowerLimitMetersMsl: _d(props['lowerLimitMetersMsl']),
+      upperLimitMetersMsl: _d(props['upperLimitMetersMsl']),
+    );
+  }
+
+  List<List<double>>? _parsePolygon(Map<String, dynamic> geometry) {
+    if (geometry['type'] != 'Polygon') return null;
+    final coords = geometry['coordinates'];
+    if (coords is! List || coords.isEmpty) return null;
+    final ring = coords.first;
+    if (ring is! List || ring.length < 3) return null;
+    final out = <List<double>>[];
+    for (final p in ring) {
+      if (p is List && p.length >= 2) {
+        out.add([(p[0] as num).toDouble(), (p[1] as num).toDouble()]);
+      }
+    }
+    return out.length < 3 ? null : out;
+  }
+
+  double? _d(Object? v) => v == null ? null : (v as num).toDouble();
 }
