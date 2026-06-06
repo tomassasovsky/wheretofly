@@ -40,7 +40,7 @@ const List<AipZoneEntry> zoneDatabase = [
     boundaryText: '''
       335428S-0582732W, 335958S-0582402W, 343458S-0575002W,
       345258S-0570602W, 350358S-0564302W, 350358S-0572802W,
-      siguiendo un arco de 55 NM de radio con centro en $eze
+      siguiendo un arco de 55 NM de radio con centro en $_eze
       hacia el SO hasta 335428S-0582732W.
     ''',
   ),
@@ -61,7 +61,7 @@ const List<AipZoneEntry> zoneDatabase = [
     // Límites laterales (ENR 2.1 + IVAO SAEZ briefing v1.4):
     boundaryText: '''
       343658S-0582802W, 345258S-0580802W,
-      siguiendo un arco de 20 NM de radio con centro en $eze
+      siguiendo un arco de 20 NM de radio con centro en $_eze
       hacia el Sur hasta 344158S-0585420W,
       344304S-0584320W, 343734S-0584308W,
       343810S-0583514W hasta 343658S-0582802W.
@@ -85,7 +85,7 @@ const List<AipZoneEntry> zoneDatabase = [
     // Eastern boundary follows the EZEIZA/MONTEVIDEO FIR limit (Río de la Plata).
     boundaryText: '''
       341846S-0584608W,
-      siguiendo un arco de 33 NM de radio con centro en $eze
+      siguiendo un arco de 33 NM de radio con centro en $_eze
       hacia el Este hasta 342058S-0581202W,
       342058S-0580302W,
       siguiendo el límite FIR hacia el Sur hasta 343058S-0575402W,

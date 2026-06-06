@@ -22,10 +22,10 @@ class ArcSegment extends AipSegment {
   const ArcSegment({
     required this.center,
     required this.radiusNm,
-    required super.to,
+    required AipCoord to,
     this.directionHint,
     this.clockwise,
-  });
+  }) : super(to);
 
   final AipCoord center;
   final double radiusNm;
