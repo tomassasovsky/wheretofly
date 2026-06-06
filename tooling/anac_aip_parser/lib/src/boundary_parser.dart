@@ -75,6 +75,15 @@ class BoundaryParser {
     final allMatches = _coordRe.allMatches(normalised).toList();
     if (allMatches.isEmpty) return null;
 
+    // Full-circle zone: single coordinate = the centre, whole text is a circle.
+    // The coord appears inside (or after) the "circunferencia" clause, so it
+    // is never the start of a multi-vertex ring — handle it before the loop.
+    if (allMatches.length == 1 && _circleRe.hasMatch(normalised)) {
+      final radius = _parseRadius(normalised, _circleRe);
+      final centre = _coordFrom(allMatches.first);
+      return (centre, [CircleSegment(center: centre, radiusNm: radius)]);
+    }
+
     final start = _coordFrom(allMatches.first);
     final segments = <AipSegment>[];
     var pos = allMatches.first.end;
