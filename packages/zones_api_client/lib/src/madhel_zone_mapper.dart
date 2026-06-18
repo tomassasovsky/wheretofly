@@ -1,5 +1,6 @@
 import 'package:zones_api_client/src/models/zone_data.dart';
 import 'package:zones_api_client/src/zone_permission_ids.dart';
+import 'package:zones_api_client/src/zone_source_ids.dart';
 
 /// Maps ANAC MADHEL aerodrome/heliport records to [ZoneData] circles.
 ///
@@ -40,6 +41,7 @@ class MadhelZoneMapper {
       radiusMeters: profile.radiusMeters,
       allowedPermissionIds: profile.allowedPermissionIds,
       details: profile.details,
+      source: ZoneSourceIds.madhel,
     );
   }
 

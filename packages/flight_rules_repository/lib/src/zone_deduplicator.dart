@@ -21,15 +21,17 @@ abstract final class ZoneDeduplicator {
     return zones.map((zone) => zone.id).toSet().map((id) => byId[id]!).toList();
   }
 
-  static int _sourcePriority(ZoneData zone) {
-    if (zone.id.startsWith('openaip_')) return 40;
-    if (zone.id.startsWith('prohibited_') ||
-        zone.id.startsWith('military_') ||
-        zone.id.startsWith('park_') ||
-        zone.id.startsWith('infra_')) {
-      return 30;
-    }
-    if (zone.id.startsWith('madhel_')) return 10;
-    return 20;
-  }
+  /// When two records share an id, the higher-priority source wins. An active
+  /// temporary NOTAM restriction ranks highest for safety; below it OpenAIP
+  /// (vertex-exact geometry) outranks AIP, then curated/bundled; live MADHEL
+  /// ranks lowest so a same-id curated override or a real polygon takes
+  /// precedence over a plain aerodrome circle.
+  static int _sourcePriority(ZoneData zone) => switch (zone.source) {
+        ZoneSourceIds.notam => 50,
+        ZoneSourceIds.openaip => 40,
+        ZoneSourceIds.aip => 35,
+        ZoneSourceIds.bundled => 30,
+        ZoneSourceIds.madhel => 10,
+        _ => 20,
+      };
 }

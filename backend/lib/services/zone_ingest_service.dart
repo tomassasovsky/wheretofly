@@ -100,11 +100,19 @@ class ZoneIngestService {
       'radiusMeters': zone.radiusMeters,
       'allowedPermissionIds': zone.allowedPermissionIds.toList(),
       'details': zone.details,
+      'source': zone.source,
     };
     _putIfNotNull(properties, 'lowerLimitMetersAgl', zone.lowerLimitMetersAgl);
     _putIfNotNull(properties, 'upperLimitMetersAgl', zone.upperLimitMetersAgl);
     _putIfNotNull(properties, 'lowerLimitMetersMsl', zone.lowerLimitMetersMsl);
     _putIfNotNull(properties, 'upperLimitMetersMsl', zone.upperLimitMetersMsl);
+    if (zone.confirmedBy != null) properties['confirmedBy'] = zone.confirmedBy;
+    if (zone.activeFrom != null) {
+      properties['activeFrom'] = zone.activeFrom!.toUtc().toIso8601String();
+    }
+    if (zone.activeTo != null) {
+      properties['activeTo'] = zone.activeTo!.toUtc().toIso8601String();
+    }
 
     return {
       'type': 'Feature',
@@ -170,82 +178,18 @@ class ZoneIngestService {
     }
   }
 
-  /// Reads and parses the pre-generated ANAC AIP GeoJSON file. Returns an
-  /// empty list if the file doesn't exist or cannot be parsed.
+  /// Reads and parses the pre-generated ANAC AIP GeoJSON file via the shared
+  /// [AipGeoJsonReader] (which sets `source = aip` and repairs UTF-8 names).
+  /// Returns an empty list if the file doesn't exist or cannot be parsed.
   Future<List<ZoneData>> _safeAipFile() async {
     final path = aipZonesPath;
     if (path == null) return const [];
     final file = File(path);
     if (!file.existsSync()) return const [];
     try {
-      final body = await file.readAsString();
-      final decoded = jsonDecode(body);
-      if (decoded is! Map<String, dynamic>) return const [];
-      final features = decoded['features'];
-      if (features is! List) return const [];
-      final parser = _AipGeoJsonParser();
-      return [
-        for (final f in features.whereType<Map<String, dynamic>>())
-          if (parser.parseFeature(f) case final z?) z,
-      ];
+      return const AipGeoJsonReader().parse(await file.readAsString());
     } on Object {
       return const [];
     }
   }
-}
-
-/// Parses a GeoJSON feature from the AIP parser output into [ZoneData].
-/// Handles Polygon geometry with `latitude`/`longitude` in properties.
-class _AipGeoJsonParser {
-  ZoneData? parseFeature(Map<String, dynamic> feature) {
-    final props = feature['properties'];
-    final geometry = feature['geometry'];
-    if (props is! Map<String, dynamic> || geometry is! Map<String, dynamic>) {
-      return null;
-    }
-
-    final polygon = _parsePolygon(geometry);
-    final lat = _d(props['latitude']);
-    final lon = _d(props['longitude']);
-    if (lat == null || lon == null) return null;
-
-    final permissions =
-        (props['allowedPermissionIds'] as List?)
-            ?.map((e) => e.toString())
-            .toSet() ??
-        const <String>{};
-
-    return ZoneData(
-      id: (props['id'] ?? '').toString(),
-      name: (props['name'] ?? '').toString(),
-      categoryId: (props['categoryId'] ?? 'restricted').toString(),
-      latitude: lat,
-      longitude: lon,
-      radiusMeters: _d(props['radiusMeters']) ?? 3000,
-      polygon: polygon,
-      allowedPermissionIds: permissions,
-      details: (props['details'] ?? '').toString(),
-      lowerLimitMetersAgl: _d(props['lowerLimitMetersAgl']),
-      upperLimitMetersAgl: _d(props['upperLimitMetersAgl']),
-      lowerLimitMetersMsl: _d(props['lowerLimitMetersMsl']),
-      upperLimitMetersMsl: _d(props['upperLimitMetersMsl']),
-    );
-  }
-
-  List<List<double>>? _parsePolygon(Map<String, dynamic> geometry) {
-    if (geometry['type'] != 'Polygon') return null;
-    final coords = geometry['coordinates'];
-    if (coords is! List || coords.isEmpty) return null;
-    final ring = coords.first;
-    if (ring is! List || ring.length < 3) return null;
-    final out = <List<double>>[];
-    for (final p in ring) {
-      if (p is List && p.length >= 2) {
-        out.add([(p[0] as num).toDouble(), (p[1] as num).toDouble()]);
-      }
-    }
-    return out.length < 3 ? null : out;
-  }
-
-  double? _d(Object? v) => v == null ? null : (v as num).toDouble();
 }

@@ -14,16 +14,17 @@ abstract final class MapZoneDisplay {
   // footprints so the map stays readable; everything else is drawn.
   static const wideZoomMinRadiusMeters = 2000;
 
-  /// Temporary: draw only OpenAIP airspaces on the map 
+  /// Temporary: draw only OpenAIP airspaces on the map
   /// (compare with openaip.net).
   static const openAipOnly = true;
 
-  static bool isOpenAipZone(FlyZone zone) => zone.id.startsWith('openaip_');
+  static bool isOpenAipZone(FlyZone zone) => zone.source == ZoneSource.openaip;
 
-  static bool isMadhelAerodrome(FlyZone zone) => zone.id.startsWith('madhel_');
+  static bool isMadhelAerodrome(FlyZone zone) =>
+      zone.source == ZoneSource.madhel;
 
   static bool isOpenAipPolygon(FlyZone zone) =>
-      zone.id.startsWith('openaip_') &&
+      isOpenAipZone(zone) &&
       zone.boundary != null &&
       zone.boundary!.length >= 3;
 

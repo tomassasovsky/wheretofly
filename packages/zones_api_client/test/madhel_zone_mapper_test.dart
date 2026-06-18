@@ -1,6 +1,7 @@
 import 'package:test/test.dart';
 import 'package:zones_api_client/src/madhel_zone_mapper.dart';
 import 'package:zones_api_client/src/zone_permission_ids.dart';
+import 'package:zones_api_client/src/zone_source_ids.dart';
 
 void main() {
   group('MadhelZoneMapper', () {
@@ -22,6 +23,7 @@ void main() {
       expect(zone.categoryId, 'controlled_airspace');
       expect(zone.radiusMeters, 9000);
       expect(zone.allowedPermissionIds, ZonePermissionIds.controlledAirspace);
+      expect(zone.source, ZoneSourceIds.madhel);
     });
 
     test('maps uncontrolled aerodrome as restricted', () {
