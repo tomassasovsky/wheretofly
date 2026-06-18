@@ -31,6 +31,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get verdictNotAllowed => 'No podés volar aquí';
 
   @override
+  String get verdictUncertain => 'Verificá manualmente';
+
+  @override
+  String get uncertainReasonsHeading => 'Por qué no estamos seguros';
+
+  @override
+  String get reasonZoneDataUnavailable =>
+      'No hay datos de zonas disponibles; no podemos confirmar que el punto esté libre.';
+
+  @override
+  String get socialVerdictUnavailable => 'Veredicto no disponible';
+
+  @override
   String permissionConsidered(Object label, Object category) {
     return 'Permiso considerado: $label ($category)';
   }
@@ -738,7 +751,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get flightDataSourcesZoneOpenAipBody =>
-      'Espacio aéreo mantenido por la comunidad (áreas controladas, restricciones, etc.) desde exportaciones de OpenAIP, fusionadas en el servidor cuando está configurado. Las zonas se aproximan como círculos por rendimiento.';
+      'Espacio aéreo mantenido por la comunidad (áreas controladas, restricciones, TMA, etc.) desde la exportación diaria de Argentina de OpenAIP, fusionada en el servidor. Los espacios aéreos se dibujan como polígonos exactos en el mapa.';
 
   @override
   String get flightDataSourcesZoneCuratedTitle => 'Zonas curadas';

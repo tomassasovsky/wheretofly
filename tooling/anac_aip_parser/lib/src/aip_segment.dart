@@ -35,11 +35,21 @@ class ArcSegment extends AipSegment {
 
 /// A full circle centred on [center] with [radiusNm] radius (no start/end).
 class CircleSegment extends AipSegment {
-  const CircleSegment({
-    required this.center,
-    required this.radiusNm,
-  }) : super(center); // [to] unused for full circles — set to centre
+  const CircleSegment({required this.center, required this.radiusNm})
+    : super(center); // [to] unused for full circles — set to centre
 
   final AipCoord center;
   final double radiusNm;
+}
+
+/// Follows a named shared boundary polyline (e.g. the FIR EZEIZA/MONTEVIDEO
+/// limit) from the preceding point to [to], instead of a straight chord.
+///
+/// [boundaryId] is resolved against [FirBoundary.byId]. Used for AIP text like
+/// "siguiendo el límite común FIR EZEIZA/MONTEVIDEO hacia el Sur hasta COORD".
+class BoundaryFollowSegment extends AipSegment {
+  const BoundaryFollowSegment({required this.boundaryId, required AipCoord to})
+    : super(to);
+
+  final String boundaryId;
 }

@@ -149,6 +149,48 @@ void main() {
       }
     });
   });
+
+  group('FIR shared boundary', () {
+    test('"siguiendo el límite FIR" traces the canonical polyline', () {
+      // Enter near the FIR limit and follow it south to an exit point. Both
+      // endpoints are off the line; the result must snap onto it so the edge
+      // is collinear with TMA BAIRES (which uses the same FIR vertices).
+      const text = '''
+        342058S-0580302W,
+        siguiendo el límite común FIR EZEIZA/MONTEVIDEO hacia el Sur
+        hasta 343058S-0575402W,
+        343058S-0580202W, 341846S-0584608W.
+      ''';
+      final (start, segs) = parser.parse(text)!;
+      expect(
+        segs.whereType<BoundaryFollowSegment>(),
+        isNotEmpty,
+        reason: 'FIR clause should yield a BoundaryFollowSegment',
+      );
+      final ring = densifier.densify(start, segs);
+
+      // Perpendicular distance (NM) of a point to the FIR segment F1–F2.
+      const f1 = SharedBoundary.ezeMvd; // ordered N→S
+      final a = f1[1], b = f1[2]; // -34.000/-58.400  and  -34.583/-57.833
+      double offNm(List<double> p) {
+        const cl = 0.824; // cos(34.4°)
+        final ax = a.lon * cl, ay = a.lat;
+        final bx = b.lon * cl, by = b.lat;
+        final px = p[0] * cl, py = p[1];
+        final dx = bx - ax, dy = by - ay;
+        final len = math.sqrt(dx * dx + dy * dy);
+        return ((px - ax) * dy - (py - ay) * dx).abs() / len * 60;
+      }
+
+      // The two FIR-follow vertices (entry & exit) must lie on the FIR line.
+      final onLine = ring.where((p) => offNm(p) < 0.05).toList();
+      expect(
+        onLine.length,
+        greaterThanOrEqualTo(2),
+        reason: 'entry and exit should snap onto the FIR line',
+      );
+    });
+  });
 }
 
 double _haversine(double lat1, double lon1, double lat2, double lon2) {
@@ -156,7 +198,8 @@ double _haversine(double lat1, double lon1, double lat2, double lon2) {
   const toRad = math.pi / 180;
   final dLat = (lat2 - lat1) * toRad;
   final dLon = (lon2 - lon1) * toRad;
-  final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+  final a =
+      math.sin(dLat / 2) * math.sin(dLat / 2) +
       math.cos(lat1 * toRad) *
           math.cos(lat2 * toRad) *
           math.sin(dLon / 2) *

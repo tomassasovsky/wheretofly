@@ -17,6 +17,25 @@ void main() {
       expect(limits.hasParsedLimits, isTrue);
     });
 
+    test('parses numeric referenceDatum from export files', () {
+      final limits = OpenAipAltitudeLimits.fromAirspaceJson({
+        'lowerLimit': {'value': 0, 'unit': 1, 'referenceDatum': 0},
+        'upperLimit': {'value': 2500, 'unit': 1, 'referenceDatum': 1},
+      });
+      expect(limits.lowerMetersAgl, 0);
+      expect(limits.upperMetersMsl, closeTo(762, 1));
+      expect(limits.describe(), 'GND – 2500 ft MSL');
+    });
+
+    test('parses numeric unit codes from export files', () {
+      final limits = OpenAipAltitudeLimits.fromAirspaceJson({
+        'lowerLimit': {'value': 500, 'unit': 0, 'referenceDatum': 0},
+        'upperLimit': {'value': 120, 'unit': 0, 'referenceDatum': 0},
+      });
+      expect(limits.lowerMetersAgl, 500);
+      expect(limits.upperMetersAgl, 120);
+    });
+
     test('parses GND AGL band', () {
       final limits = OpenAipAltitudeLimits.fromAirspaceJson({
         'lowerCeiling': {'value': 0, 'unit': 'FT', 'referenceDatum': 'GND'},

@@ -31,36 +31,56 @@ class ZoneDetailCard extends StatelessWidget {
   final MapWeatherState? weatherState;
   final String? zoneVersion;
 
+  // Exhaustive switches on [VerdictStatus] (no `default`) so the next status
+  // addition is a compile error, not a silent wrong color.
   Color _verdictColor(BuildContext context) {
-    switch (assessment.verdict) {
-      case FlightVerdict.allowed:
+    switch (assessment.status) {
+      case VerdictStatus.allowed:
         return const Color(0xFF2E7D32);
-      case FlightVerdict.allowedWithPermission:
+      case VerdictStatus.conditional:
         return const Color(0xFFF9A825);
-      case FlightVerdict.notAllowed:
+      case VerdictStatus.blocked:
         return const Color(0xFFD32F2F);
+      case VerdictStatus.uncertain:
+        return const Color(0xFF607D8B);
     }
   }
 
   IconData get _verdictIcon {
-    switch (assessment.verdict) {
-      case FlightVerdict.allowed:
+    switch (assessment.status) {
+      case VerdictStatus.allowed:
         return Icons.check_circle;
-      case FlightVerdict.allowedWithPermission:
+      case VerdictStatus.conditional:
         return Icons.verified_user;
-      case FlightVerdict.notAllowed:
+      case VerdictStatus.blocked:
         return Icons.block;
+      case VerdictStatus.uncertain:
+        return Icons.help_outline;
     }
   }
 
   String _headline(AppLocalizations l10n) {
-    switch (assessment.verdict) {
-      case FlightVerdict.allowed:
+    switch (assessment.status) {
+      case VerdictStatus.allowed:
         return l10n.verdictAllowed;
-      case FlightVerdict.allowedWithPermission:
+      case VerdictStatus.conditional:
         return l10n.verdictAllowedWithPermission;
-      case FlightVerdict.notAllowed:
+      case VerdictStatus.blocked:
         return l10n.verdictNotAllowed;
+      case VerdictStatus.uncertain:
+        return l10n.verdictUncertain;
+    }
+  }
+
+  /// Localized copy for reasons rendered in the dedicated reasons section.
+  /// [VerdictReason.mslGroundElevationUnknown] is intentionally absent — it
+  /// renders via its own MSL disclaimer banner, never twice.
+  String? _reasonText(AppLocalizations l10n, VerdictReason reason) {
+    switch (reason) {
+      case VerdictReason.zoneDataUnavailable:
+        return l10n.reasonZoneDataUnavailable;
+      case VerdictReason.mslGroundElevationUnknown:
+        return null;
     }
   }
 
@@ -184,7 +204,9 @@ class ZoneDetailCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
               ],
-              if (assessment.zones.isEmpty && assessment.modalityAllowed)
+              if (assessment.zones.isEmpty &&
+                  assessment.modalityAllowed &&
+                  assessment.status != VerdictStatus.uncertain)
                 Text(l10n.noZones, style: theme.textTheme.bodyMedium)
               else if (assessment.zones.isNotEmpty)
                 ...assessment.zones.map(
@@ -193,8 +215,9 @@ class ZoneDetailCard extends StatelessWidget {
                     covered: z.allowsFlightFor(assessment.permission),
                   ),
                 ),
+              ..._buildReasonsSection(l10n, theme),
               if (assessment.hasControlledAirspaceZones &&
-                  assessment.verdict != FlightVerdict.notAllowed) ...[
+                  assessment.status != VerdictStatus.blocked) ...[
                 const SizedBox(height: 8),
                 _InfoBanner(
                   text: l10n.controlledAirspaceCoordination,
@@ -229,7 +252,7 @@ class ZoneDetailCard extends StatelessWidget {
                   label: Text(l10n.socialShareFlyCheck),
                 ),
               ],
-              if (assessment.verdict == FlightVerdict.notAllowed) ...[
+              if (assessment.status == VerdictStatus.blocked) ...[
                 const SizedBox(height: 12),
                 FilledButton.icon(
                   onPressed: () => _openPermitResources(context),
@@ -242,6 +265,29 @@ class ZoneDetailCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Reasons section below the headline. Renders every reason that lacks a
+  /// dedicated banner (so MSL never double-renders) with a one-line heading.
+  List<Widget> _buildReasonsSection(AppLocalizations l10n, ThemeData theme) {
+    final texts = [
+      for (final reason in assessment.reasons)
+        if (_reasonText(l10n, reason) case final text?) text,
+    ];
+    if (texts.isEmpty) return const [];
+    return [
+      const SizedBox(height: 8),
+      Text(
+        l10n.uncertainReasonsHeading,
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
+      for (final text in texts) ...[
+        const SizedBox(height: 8),
+        _InfoBanner(text: text, warning: true),
+      ],
+    ];
   }
 }
 

@@ -6,13 +6,13 @@ import 'package:zones_api_client/src/models/zone_data.dart';
 void main() {
   group('FlightAssessment.minimumRequiredPermission', () {
     test('open area + VLOS requires recreational permission', () {
-      const assessment = FlightAssessment(
+      final assessment = FlightAssessment(
         permission: PermissionLevel.recreational,
         modality: FlightModality.vlos,
-        verdict: FlightVerdict.allowed,
+        status: VerdictStatus.allowed,
         modalityAllowed: true,
         altitudeRange: AltitudeRange.openCategoryDefault,
-        zones: [],
+        zones: const [],
       );
 
       expect(
@@ -22,13 +22,13 @@ void main() {
     });
 
     test('open area + BVLOS requires commercial authorization', () {
-      const assessment = FlightAssessment(
+      final assessment = FlightAssessment(
         permission: PermissionLevel.recreational,
         modality: FlightModality.bvlosFpv,
-        verdict: FlightVerdict.notAllowed,
+        status: VerdictStatus.blocked,
         modalityAllowed: false,
         altitudeRange: AltitudeRange.openCategoryDefault,
-        zones: [],
+        zones: const [],
       );
 
       expect(
@@ -91,6 +91,82 @@ void main() {
       );
 
       expect(assessment.minimumRequiredPermission, isNull);
+    });
+  });
+
+  group('FlightAssessment.verdict (legacy compat mapping)', () {
+    FlightAssessment assessmentWith(VerdictStatus status) => FlightAssessment(
+          permission: PermissionLevel.recreational,
+          modality: FlightModality.vlos,
+          status: status,
+          modalityAllowed: true,
+          altitudeRange: AltitudeRange.openCategoryDefault,
+          zones: const [],
+        );
+
+    test('allowed maps to FlightVerdict.allowed', () {
+      expect(
+        assessmentWith(VerdictStatus.allowed).verdict,
+        FlightVerdict.allowed,
+      );
+    });
+
+    test('conditional maps to FlightVerdict.allowedWithPermission', () {
+      expect(
+        assessmentWith(VerdictStatus.conditional).verdict,
+        FlightVerdict.allowedWithPermission,
+      );
+    });
+
+    test('blocked maps to FlightVerdict.notAllowed', () {
+      expect(
+        assessmentWith(VerdictStatus.blocked).verdict,
+        FlightVerdict.notAllowed,
+      );
+    });
+
+    test('uncertain maps conservatively to FlightVerdict.notAllowed', () {
+      expect(
+        assessmentWith(VerdictStatus.uncertain).verdict,
+        FlightVerdict.notAllowed,
+      );
+    });
+  });
+
+  group('FlightAssessment.hasMslAltitudeUncertainty', () {
+    FlightAssessment assessmentWith(List<VerdictReason> reasons) =>
+        FlightAssessment(
+          permission: PermissionLevel.recreational,
+          modality: FlightModality.vlos,
+          status: VerdictStatus.allowed,
+          modalityAllowed: true,
+          altitudeRange: AltitudeRange.openCategoryDefault,
+          zones: const [],
+          reasons: reasons,
+        );
+
+    test('true when reasons contain mslGroundElevationUnknown', () {
+      expect(
+        assessmentWith([VerdictReason.mslGroundElevationUnknown])
+            .hasMslAltitudeUncertainty,
+        isTrue,
+      );
+    });
+
+    test('false when reasons lack mslGroundElevationUnknown', () {
+      expect(
+        assessmentWith([VerdictReason.zoneDataUnavailable])
+            .hasMslAltitudeUncertainty,
+        isFalse,
+      );
+    });
+
+    test('reasons list is unmodifiable', () {
+      final assessment = assessmentWith([VerdictReason.zoneDataUnavailable]);
+      expect(
+        () => assessment.reasons.add(VerdictReason.mslGroundElevationUnknown),
+        throwsUnsupportedError,
+      );
     });
   });
 }

@@ -53,16 +53,20 @@ class FlightRulesRepository {
   List<FlyZone> get zones => List.unmodifiable(_zones);
 
   /// Returns all zones whose horizontal footprint contains [point].
-  List<FlyZone> zonesAt(LatLng point) =>
-      _zones.where((z) => z.contains(point)).toList();
+  List<FlyZone> zonesAt(
+    LatLng point, {
+    List<FlyZone>? zones,
+  }) =>
+      (zones ?? _zones).where((z) => z.contains(point)).toList();
 
   /// Zones that contain [point] and overlap [altitude] vertically.
   List<FlyZone> zonesAtAltitude(
     LatLng point,
     AltitudeRange altitude, {
     double groundElevationMslMeters = 0,
+    List<FlyZone>? zones,
   }) =>
-      zonesAt(point)
+      zonesAt(point, zones: zones)
           .where(
             (z) => z.overlapsAltitudeRange(
               altitude.minMetersAgl,
@@ -74,37 +78,57 @@ class FlightRulesRepository {
 
   /// Evaluates whether a pilot holding [permission] may fly [modality] at
   /// [point] through [altitudeRange] (takeoff to cruise).
+  ///
+  /// When [zones] is set, assessment uses that list instead of the repository
+  /// snapshot (for example, the zones currently drawn on the map).
   FlightAssessment assess(
     LatLng point,
     PermissionLevel permission,
     FlightModality modality, {
     AltitudeRange altitudeRange = AltitudeRange.openCategoryDefault,
     double groundElevationMslMeters = 0,
+    List<FlyZone>? zones,
   }) {
-    final horizontal = zonesAt(point);
+    final zoneList = zones ?? _zones;
+    final horizontal = zonesAt(point, zones: zoneList);
     final hits = zonesAtAltitude(
       point,
       altitudeRange,
       groundElevationMslMeters: groundElevationMslMeters,
+      zones: zoneList,
     );
     final skippedByAltitude =
         horizontal.where((z) => !hits.contains(z)).toList();
     final modalityAllowed = permission.rank >= modality.minimumPermission.rank;
     final zonesAllowed = hits.every((z) => z.allowsFlightFor(permission));
+    final hasZoneData = zoneList.isNotEmpty;
+    final hasMslLimits = [...hits, ...skippedByAltitude].any(
+      (z) => z.lowerLimitMetersMsl != null || z.upperLimitMetersMsl != null,
+    );
 
-    final FlightVerdict verdict;
+    // Typed reasons (deduped, insertion-ordered). Future axes append here.
+    final reasons = <VerdictReason>{
+      if (!hasZoneData) VerdictReason.zoneDataUnavailable,
+      if (hasMslLimits) VerdictReason.mslGroundElevationUnknown,
+    }.toList();
+
+    // Precedence ladder — definite blocks are never softened to uncertain.
+    final VerdictStatus status;
     if (!modalityAllowed || !zonesAllowed) {
-      verdict = FlightVerdict.notAllowed;
+      status = VerdictStatus.blocked;
+    } else if (!hasZoneData) {
+      status = VerdictStatus.uncertain;
     } else if (hits.isNotEmpty) {
-      verdict = FlightVerdict.allowedWithPermission;
+      status = VerdictStatus.conditional;
     } else {
-      verdict = FlightVerdict.allowed;
+      status = VerdictStatus.allowed;
     }
 
     return FlightAssessment(
       permission: permission,
       modality: modality,
-      verdict: verdict,
+      status: status,
+      reasons: reasons,
       modalityAllowed: modalityAllowed,
       altitudeRange: altitudeRange,
       zones: hits,

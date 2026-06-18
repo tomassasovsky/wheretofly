@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
+import 'package:where_to_fly/social/verdict_snapshot.dart';
 
 class PostCard extends StatelessWidget {
   const PostCard({
@@ -18,21 +19,15 @@ class PostCard extends StatelessWidget {
     return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 
+  // Surface-specific chip color. The token vocabulary and labels are shared via
+  // [VerdictSnapshot]; only the palette differs between the feed and reels.
   Color _verdictColor(BuildContext context, String? verdict) {
     return switch (verdict) {
       'allowed' => const Color(0xFF2E7D32),
-      'allowedWithPermission' => const Color(0xFFF9A825),
-      'notAllowed' => const Color(0xFFD32F2F),
+      'conditional' || 'allowedWithPermission' => const Color(0xFFF9A825),
+      'blocked' || 'notAllowed' => const Color(0xFFD32F2F),
+      'uncertain' => const Color(0xFF607D8B),
       _ => Theme.of(context).colorScheme.primary,
-    };
-  }
-
-  String _verdictLabel(AppLocalizations l10n, String? verdict) {
-    return switch (verdict) {
-      'allowed' => l10n.verdictAllowed,
-      'allowedWithPermission' => l10n.verdictAllowedWithPermission,
-      'notAllowed' => l10n.verdictNotAllowed,
-      _ => l10n.socialShareFlyCheck,
     };
   }
 
@@ -40,7 +35,7 @@ class PostCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final verdict = post.verdictSnapshot?['verdict']?.toString();
+    final verdict = VerdictSnapshot.token(post.verdictSnapshot);
 
     return InkWell(
       onTap: () => PostRoute(postId: post.id).push<void>(context),
@@ -123,7 +118,7 @@ class PostCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        _verdictLabel(l10n, verdict),
+                        VerdictSnapshot.label(l10n, verdict),
                         style: theme.textTheme.labelMedium?.copyWith(
                           color: _verdictColor(context, verdict),
                           fontWeight: FontWeight.w600,

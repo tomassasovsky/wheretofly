@@ -14,7 +14,18 @@ abstract final class MapZoneDisplay {
   // footprints so the map stays readable; everything else is drawn.
   static const wideZoomMinRadiusMeters = 2000;
 
+  /// Temporary: draw only OpenAIP airspaces on the map 
+  /// (compare with openaip.net).
+  static const openAipOnly = true;
+
+  static bool isOpenAipZone(FlyZone zone) => zone.id.startsWith('openaip_');
+
   static bool isMadhelAerodrome(FlyZone zone) => zone.id.startsWith('madhel_');
+
+  static bool isOpenAipPolygon(FlyZone zone) =>
+      zone.id.startsWith('openaip_') &&
+      zone.boundary != null &&
+      zone.boundary!.length >= 3;
 
   static bool _isWideZoom(double zoom) => zoom < urbanZoomThreshold;
 
@@ -25,7 +36,7 @@ abstract final class MapZoneDisplay {
     required double zoom,
     Set<String> highlightIds = const {},
   }) {
-    var visible = zones;
+    var visible = openAipOnly ? zones.where(isOpenAipZone).toList() : zones;
     if (bounds != null) {
       visible = visible.where((z) => _intersectsBounds(z, bounds)).toList();
     }
@@ -34,10 +45,15 @@ abstract final class MapZoneDisplay {
         .where((z) => _isSignificantAtZoom(z, zoom, highlightIds))
         .toList();
 
-    final cap = _maxCirclesForZoom(zoom);
-    if (visible.length <= cap) return visible;
+    // OpenAIP polygons are vertex-exact and cheap to cull by bounds; draw all
+    // of them and only cap point/circle zones for readability.
+    final polygons = visible.where(isOpenAipPolygon).toList(growable: false);
+    final circles = visible.where((z) => !isOpenAipPolygon(z)).toList();
 
-    visible.sort((a, b) {
+    final cap = _maxCirclesForZoom(zoom);
+    if (circles.length <= cap) return [...polygons, ...circles];
+
+    circles.sort((a, b) {
       final aHighlight = highlightIds.contains(a.id);
       final bHighlight = highlightIds.contains(b.id);
       if (aHighlight != bHighlight) return aHighlight ? -1 : 1;
@@ -45,7 +61,7 @@ abstract final class MapZoneDisplay {
       if (severity != 0) return severity;
       return b.radiusMeters.compareTo(a.radiusMeters);
     });
-    return visible.take(cap).toList();
+    return [...polygons, ...circles.take(cap)];
   }
 
   static int _maxCirclesForZoom(double zoom) =>
@@ -58,6 +74,7 @@ abstract final class MapZoneDisplay {
   ) {
     if (highlightIds.contains(zone.id)) return true;
     if (isMadhelAerodrome(zone)) return true;
+    if (isOpenAipPolygon(zone)) return true;
     if (_alwaysDraw(zone)) return true;
 
     // Only thin out the smallest footprints at country/region zoom; from the
@@ -83,6 +100,7 @@ abstract final class MapZoneDisplay {
     required bool highlighted,
     double? zoom,
   }) {
+    if (openAipOnly && isOpenAipZone(zone)) return true;
     if (highlighted) return true;
     if (zoom != null && _isWideZoom(zoom) && isMadhelAerodrome(zone)) {
       return true;
@@ -103,6 +121,7 @@ abstract final class MapZoneDisplay {
     double? zoom,
   }) {
     if (!shouldFill(zone, highlighted: highlighted, zoom: zoom)) return 0;
+    if (openAipOnly && isOpenAipZone(zone)) return isDark ? 0.20 : 0.14;
     if (highlighted) return isDark ? 0.28 : 0.18;
     if (zoom != null && _isWideZoom(zoom) && isMadhelAerodrome(zone)) {
       return 0.11;

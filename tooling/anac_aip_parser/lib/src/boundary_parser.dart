@@ -22,8 +22,9 @@ import 'aip_segment.dart';
 class BoundaryParser {
   // ---- coord ----------------------------------------------------------------
 
-  static final _coordRe =
-      RegExp(r'(\d{2})(\d{2})(\d{2})([NS])-(\d{3})(\d{2})(\d{2})([EW])');
+  static final _coordRe = RegExp(
+    r'(\d{2})(\d{2})(\d{2})([NS])-(\d{3})(\d{2})(\d{2})([EW])',
+  );
 
   // ---- arc: "siguiendo un arco de X NM de radio con centro en … (COORD)" ---
 
@@ -36,9 +37,7 @@ class BoundaryParser {
   // Matches the centre coord in parentheses: "(344927S-0583207W)".
   // Also handles the DME variant where the coord appears in parentheses after
   // the navaid name.
-  static final _arcCentreRe = RegExp(
-    r'\(\s*(\d{6}[NS]-\d{7}[EW])\s*\)',
-  );
+  static final _arcCentreRe = RegExp(r'\(\s*(\d{6}[NS]-\d{7}[EW])\s*\)');
 
   // "en sentido horario" or "en sentido antihorario / contrario al reloj"
   static final _cwRe = RegExp(
@@ -64,6 +63,30 @@ class BoundaryParser {
     caseSensitive: false,
   );
 
+  // ---- shared boundary: "siguiendo el límite [común] FIR EZEIZA/MONTEVIDEO" -
+  // Maps recognised boundary phrasings to a canonical polyline id.
+  static final _firEzeMvdRe = RegExp(
+    r'l[ií]mite\s+(?:com[uú]n\s+)?(?:de\s+(?:la\s+)?)?FIR\s+EZEIZA\s*/\s*MONTEVIDEO',
+    caseSensitive: false,
+  );
+  // Tolerant form used in transcriptions: "el límite FIR".
+  static final _firShortRe = RegExp(r'l[ií]mite\s+FIR', caseSensitive: false);
+
+  // "siguiendo el límite CTR EZEIZA" — shared CTR/CTR boundary.
+  static final _ctrEzeRe = RegExp(
+    r'l[ií]mite\s+CTR\s+EZEIZA',
+    caseSensitive: false,
+  );
+
+  static String? _boundaryId(String chunk) {
+    // Check the more specific CTR phrasing before the tolerant FIR fallback.
+    if (_ctrEzeRe.hasMatch(chunk)) return 'ctr_eze_north';
+    if (_firEzeMvdRe.hasMatch(chunk) || _firShortRe.hasMatch(chunk)) {
+      return 'fir_eze_mvd';
+    }
+    return null;
+  }
+
   /// Parses [text] and returns `(start, segments)`.
   ///
   /// Returns `null` if no coordinates are found.
@@ -72,7 +95,13 @@ class BoundaryParser {
     final normalised = text.replaceAll(RegExp(r'\s+'), ' ').trim();
 
     // Find all coord positions (used to split the text into chunks).
-    final allMatches = _coordRe.allMatches(normalised).toList();
+    // Exclude coords that appear inside parentheses — those are arc centres
+    // referenced by name (e.g. "VOR/DME EZE (344927S-0583207W)") and must not
+    // be treated as boundary vertices.
+    final allMatches = _coordRe.allMatches(normalised).where((m) {
+      final before = normalised.substring(0, m.start).trimRight();
+      return !before.endsWith('(');
+    }).toList();
     if (allMatches.isEmpty) return null;
 
     // Full-circle zone: single coordinate = the centre, whole text is a circle.
@@ -89,7 +118,6 @@ class BoundaryParser {
     var pos = allMatches.first.end;
 
     for (var i = 1; i < allMatches.length; i++) {
-      final matchEnd = allMatches[i].end;
       final coordEnd = allMatches[i].end;
       // Text chunk between previous coord and this one.
       final chunk = normalised.substring(pos, coordEnd);
@@ -122,28 +150,44 @@ class BoundaryParser {
         final hastaM = _hastaRe.firstMatch(chunk);
         if (hastaM != null) {
           endCoord = AipCoord.parse(hastaM.group(1)!);
-          // Advance i past any coords consumed by the hasta clause.
-          while (i + 1 < allMatches.length) {
-            final next = _coordFrom(allMatches[i + 1]);
-            if (_approxEqual(next, endCoord)) {
+          // When arc centres are filtered from allMatches, thisCoord is already
+          // the hasta endpoint — skip the search to avoid over-advancing i.
+          if (!_approxEqual(thisCoord, endCoord)) {
+            // Advance i past any coords consumed by the hasta clause.
+            while (i + 1 < allMatches.length) {
+              final next = _coordFrom(allMatches[i + 1]);
+              if (_approxEqual(next, endCoord)) {
+                i++;
+                pos = allMatches[i].end;
+                break;
+              }
               i++;
-              pos = allMatches[i].end;
-              break;
             }
-            i++;
           }
         }
 
         bool? cw = _parseCw(chunk);
         String? hint = _parseHint(chunk);
-        segments.add(ArcSegment(
-          center: centre,
-          radiusNm: radius,
-          to: endCoord,
-          clockwise: cw,
-          directionHint: hint,
-        ));
+        segments.add(
+          ArcSegment(
+            center: centre,
+            radiusNm: radius,
+            to: endCoord,
+            clockwise: cw,
+            directionHint: hint,
+          ),
+        );
         pos = allMatches[i].end;
+        continue;
+      }
+
+      // Shared FIR boundary: trace the canonical polyline to this coord.
+      final boundaryId = _boundaryId(chunk);
+      if (boundaryId != null) {
+        segments.add(
+          BoundaryFollowSegment(boundaryId: boundaryId, to: thisCoord),
+        );
+        pos = coordEnd;
         continue;
       }
 
@@ -156,9 +200,9 @@ class BoundaryParser {
   }
 
   static AipCoord _coordFrom(RegExpMatch m) => AipCoord(
-        _dms(m.group(1)!, m.group(2)!, m.group(3)!, m.group(4)! == 'S'),
-        _dms(m.group(5)!, m.group(6)!, m.group(7)!, m.group(8)! == 'W'),
-      );
+    _dms(m.group(1)!, m.group(2)!, m.group(3)!, m.group(4)! == 'S'),
+    _dms(m.group(5)!, m.group(6)!, m.group(7)!, m.group(8)! == 'W'),
+  );
 
   static double _dms(String d, String min, String sec, bool neg) {
     final v = int.parse(d) + int.parse(min) / 60.0 + int.parse(sec) / 3600.0;

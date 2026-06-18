@@ -20,18 +20,21 @@ class ZoneIngestService {
     BundledZonesApiClient? bundled,
     MadhelZonesApiClient? madhel,
     OpenAipZonesApiClient? openaip,
+    OpenAipExportZonesApiClient? openaipExport,
     this.aipZonesPath,
   }) : _db = database,
        _zoneService = zoneService,
        _bundled = bundled ?? const BundledZonesApiClient(),
        _madhel = madhel ?? MadhelZonesApiClient(),
-       _openaip = openaip;
+       _openaip = openaip,
+       _openaipExport = openaipExport ?? OpenAipExportZonesApiClient();
 
   final Database _db;
   final ZoneService _zoneService;
   final BundledZonesApiClient _bundled;
   final MadhelZonesApiClient _madhel;
   final OpenAipZonesApiClient? _openaip;
+  final OpenAipExportZonesApiClient _openaipExport;
 
   /// Optional path to `anac_aip_zones.geojson` (from the parser tool).
   final String? aipZonesPath;
@@ -120,7 +123,9 @@ class ZoneIngestService {
         'coordinates': [zone.longitude, zone.latitude],
       };
     }
-    final closed = [for (final p in ring) [p[0], p[1]]];
+    final closed = [
+      for (final p in ring) [p[0], p[1]],
+    ];
     final first = closed.first;
     final last = closed.last;
     if (first[0] != last[0] || first[1] != last[1]) {
@@ -149,10 +154,17 @@ class ZoneIngestService {
   }
 
   Future<List<ZoneData>> _safeOpenAip() async {
-    final client = _openaip;
-    if (client == null) return const [];
+    final apiClient = _openaip;
+    if (apiClient != null) {
+      try {
+        final fromApi = await apiClient.fetchZones();
+        if (fromApi.isNotEmpty) return fromApi;
+      } on Object {
+        // Fall through to the daily country export.
+      }
+    }
     try {
-      return await client.fetchZones();
+      return await _openaipExport.fetchZones();
     } on Object {
       return const [];
     }
@@ -197,7 +209,8 @@ class _AipGeoJsonParser {
     final lon = _d(props['longitude']);
     if (lat == null || lon == null) return null;
 
-    final permissions = (props['allowedPermissionIds'] as List?)
+    final permissions =
+        (props['allowedPermissionIds'] as List?)
             ?.map((e) => e.toString())
             .toSet() ??
         const <String>{};

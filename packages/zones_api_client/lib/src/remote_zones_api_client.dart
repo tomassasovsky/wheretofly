@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:zones_api_client/src/models/zone_data.dart';
+import 'package:zones_api_client/src/text_encoding.dart';
 import 'package:zones_api_client/src/zones_feed_client.dart';
 
 /// Thrown when the remote zones feed cannot be fetched or parsed.
@@ -90,14 +91,14 @@ class RemoteZonesApiClient implements ZonesFeedClient {
 
     return ZoneData(
       id: (props['id'] ?? feature['id'] ?? '').toString(),
-      name: (props['name'] ?? '').toString(),
+      name: repairUtf8Text((props['name'] ?? '').toString()),
       categoryId: (props['categoryId'] ?? 'restricted').toString(),
       latitude: lat,
       longitude: lon,
       radiusMeters: (props['radiusMeters'] as num?)?.toDouble() ?? 3000,
       polygon: polygon,
       allowedPermissionIds: permissions,
-      details: (props['details'] ?? '').toString(),
+      details: repairUtf8Text((props['details'] ?? '').toString()),
       lowerLimitMetersAgl: _optionalDouble(props['lowerLimitMetersAgl']),
       upperLimitMetersAgl: _optionalDouble(props['upperLimitMetersAgl']),
       lowerLimitMetersMsl: _optionalDouble(props['lowerLimitMetersMsl']),

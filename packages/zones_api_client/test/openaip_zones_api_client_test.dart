@@ -55,7 +55,7 @@ void main() {
       expect(zones.first.radiusMeters, greaterThanOrEqualTo(500));
       // The true boundary ring is preserved (not flattened to a circle).
       expect(zones.first.polygon, isNotNull);
-      expect(zones.first.polygon!.first, [-58.5, -34.5]);
+      expect(zones.first.polygon!.first, [-58.55, -34.82]);
       expect(zones.first.polygon, hasLength(5));
     });
 

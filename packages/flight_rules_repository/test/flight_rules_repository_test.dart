@@ -199,4 +199,128 @@ void main() {
       expect(result.blockingZones, isEmpty);
     });
   });
+
+  group('FlightRulesRepository verdict status', () {
+    const point = LatLng(-34.55, -58.65);
+
+    test('empty repository yields uncertain with zoneDataUnavailable', () {
+      final repo = FlightRulesRepository.fromZoneData([]);
+      final result = repo.assess(
+        point,
+        PermissionLevel.recreational,
+        FlightModality.vlos,
+      );
+
+      expect(result.status, VerdictStatus.uncertain);
+      expect(result.reasons, [VerdictReason.zoneDataUnavailable]);
+      // Conservative legacy mapping — never a silent false "allowed".
+      expect(result.verdict, FlightVerdict.notAllowed);
+    });
+
+    test('clear open area yields allowed with no reasons', () {
+      final repo = FlightRulesRepository.fromZoneData([
+        const ZoneData(
+          id: 'far',
+          name: 'FAR',
+          categoryId: 'restricted',
+          latitude: -10,
+          longitude: -10,
+          radiusMeters: 1000,
+          allowedPermissionIds: {'recreational'},
+          details: 'test',
+        ),
+      ]);
+      final result = repo.assess(
+        point,
+        PermissionLevel.recreational,
+        FlightModality.vlos,
+      );
+
+      expect(result.status, VerdictStatus.allowed);
+      expect(result.reasons, isEmpty);
+    });
+
+    test('flyable overlapping zone yields conditional', () {
+      final repo = FlightRulesRepository.fromZoneData([
+        const ZoneData(
+          id: 'ctr',
+          name: 'CTR',
+          categoryId: 'controlled_airspace',
+          latitude: -34.55,
+          longitude: -58.65,
+          radiusMeters: 5000,
+          allowedPermissionIds: {'authorized_commercial', 'special_permit'},
+          details: 'test',
+        ),
+      ]);
+      final result = repo.assess(
+        point,
+        PermissionLevel.authorizedCommercial,
+        FlightModality.vlos,
+      );
+
+      expect(result.status, VerdictStatus.conditional);
+    });
+
+    test('uncovered overlapping zone yields blocked, never uncertain', () {
+      final repo = FlightRulesRepository.fromZoneData([
+        const ZoneData(
+          id: 'ctr',
+          name: 'CTR',
+          categoryId: 'controlled_airspace',
+          latitude: -34.55,
+          longitude: -58.65,
+          radiusMeters: 5000,
+          allowedPermissionIds: {'authorized_commercial'},
+          details: 'test',
+        ),
+      ]);
+      final result = repo.assess(
+        point,
+        PermissionLevel.recreational,
+        FlightModality.vlos,
+      );
+
+      expect(result.status, VerdictStatus.blocked);
+    });
+
+    test('modality block yields blocked even without zone data', () {
+      final repo = FlightRulesRepository.fromZoneData([]);
+      final result = repo.assess(
+        point,
+        PermissionLevel.recreational,
+        FlightModality.bvlosFpv,
+      );
+
+      // Definite modality block is never softened to uncertain.
+      expect(result.status, VerdictStatus.blocked);
+    });
+
+    test('MSL-limited zone emits reason without forcing uncertain', () {
+      final repo = FlightRulesRepository.fromZoneData([
+        const ZoneData(
+          id: 'high_tma',
+          name: 'TMA HIGH FLOOR',
+          categoryId: 'controlled_airspace',
+          latitude: -34.55,
+          longitude: -58.65,
+          radiusMeters: 50000,
+          allowedPermissionIds: {'special_permit'},
+          details: 'test',
+          lowerLimitMetersMsl: 914.4,
+        ),
+      ]);
+      final result = repo.assess(
+        point,
+        PermissionLevel.registeredPilot,
+        FlightModality.evlos,
+      );
+
+      expect(
+        result.reasons,
+        contains(VerdictReason.mslGroundElevationUnknown),
+      );
+      expect(result.status, isNot(VerdictStatus.uncertain));
+    });
+  });
 }

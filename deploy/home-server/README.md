@@ -11,18 +11,22 @@ subdomains.
 
 ## Subdomains
 
-| Host | Role |
-|------|------|
+
+| Host                     | Role                                           |
+| ------------------------ | ---------------------------------------------- |
 | `dondevolar.aquiles.dev` | Public HTTPS API (NPM → `dondevolar-api:9080`) |
+
 
 Internal only (no DNS records):
 
-| Service | URL inside compose |
-|---------|-------------------|
-| Photon | `http://photon:2322` |
-| Postgres | `postgres:5432` |
-| Redis | `redis:6379` |
-| MinIO | `minio:9000` |
+
+| Service  | URL inside compose   |
+| -------- | -------------------- |
+| Photon   | `http://photon:2322` |
+| Postgres | `postgres:5432`      |
+| Redis    | `redis:6379`         |
+| MinIO    | `minio:9000`         |
+
 
 ## Nginx Proxy Manager
 
@@ -49,20 +53,22 @@ Redeploy the Dónde Volar stack after adding the override.
 
 **Hosts → Proxy Hosts → Add Proxy Host**
 
-| Field | Value |
-|-------|--------|
-| Domain Names | `dondevolar.aquiles.dev` |
-| Scheme | `http` |
-| Forward Hostname / IP | `dondevolar-api` |
-| Forward Port | `9080` |
-| Cache Assets | Off |
-| Block Common Exploits | On (optional) |
-| Websockets Support | On (safe default for future routes) |
+
+| Field                 | Value                               |
+| --------------------- | ----------------------------------- |
+| Domain Names          | `dondevolar.aquiles.dev`            |
+| Scheme                | `http`                              |
+| Forward Hostname / IP | `dondevolar-api`                    |
+| Forward Port          | `9080`                              |
+| Cache Assets          | Off                                 |
+| Block Common Exploits | On (optional)                       |
+| Websockets Support    | On (safe default for future routes) |
+
 
 **SSL** tab:
 
 - SSL Certificate: **Request a new SSL Certificate** (Let’s Encrypt), or use an
-  existing wildcard for `*.aquiles.dev`
+existing wildcard for `*.aquiles.dev`
 - Force SSL, HTTP/2, and HSTS — per your preference
 
 Save. NPM terminates HTTPS; the API stays on plain HTTP inside Docker.
@@ -89,21 +95,23 @@ curl -sS https://dondevolar.aquiles.dev/health | jq .
 
 ### Troubleshooting “Running on http://:::9080” but nothing works
 
-| Symptom | Cause | Fix |
-|--------|--------|-----|
-| `zones.geojson` Is a directory | Host file missing at deploy; Docker created a folder | See **Zone feed** fix below; **rebuild** `api` (feed is in the image now). |
-| `FormatException: Invalid port` on `/health` | `DATABASE_URL` with special chars in password (`@`, `:`, …) | Use current compose (`POSTGRES_*` vars, no `DATABASE_URL`). **Rebuild** `api`. |
-| Log shows `:::9080` | Old image bound IPv6 only | **Rebuild** the `api` image (Dockerfile now uses IPv4 / `0.0.0.0`). |
-| NPM → `dondevolar-api` fails | API not on NPM’s network | Add `docker-compose.override.yml` (NPM network) or connect `dondevolar-api` in Portainer **Networks**. |
-| NPM → host IP:9080 fails | Port published only on `127.0.0.1` | Set `API_BIND=0.0.0.0` in stack env and redeploy (default in compose now). |
-| `wget` from container works, NPM does not | Wrong NPM forward target | Forward host **`dondevolar-api`**, port **9080**, scheme **http** (not https to the container). |
+
+| Symptom                                      | Cause                                                       | Fix                                                                                                    |
+| -------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `zones.geojson` Is a directory               | Host file missing at deploy; Docker created a folder        | See **Zone feed** fix below; **rebuild** `api` (feed is in the image now).                             |
+| `FormatException: Invalid port` on `/health` | `DATABASE_URL` with special chars in password (`@`, `:`, …) | Use current compose (`POSTGRES_*` vars, no `DATABASE_URL`). **Rebuild** `api`.                         |
+| Log shows `:::9080`                          | Old image bound IPv6 only                                   | **Rebuild** the `api` image (Dockerfile now uses IPv4 / `0.0.0.0`).                                    |
+| NPM → `dondevolar-api` fails                 | API not on NPM’s network                                    | Add `docker-compose.override.yml` (NPM network) or connect `dondevolar-api` in Portainer **Networks**. |
+| NPM → host IP:9080 fails                     | Port published only on `127.0.0.1`                          | Set `API_BIND=0.0.0.0` in stack env and redeploy (default in compose now).                             |
+| `wget` from container works, NPM does not    | Wrong NPM forward target                                    | Forward host `**dondevolar-api`**, port **9080**, scheme **http** (not https to the container).        |
+
 
 After redeploy, logs should show something like `Running on http://0.0.0.0:9080` (not `:::`).
 
 ### If you cannot share a Docker network
 
 - Set `API_BIND=0.0.0.0`, redeploy, then in NPM forward to your **host LAN IP**
-  (e.g. `192.168.1.x`) port `9080`, or
+(e.g. `192.168.1.x`) port `9080`, or
 - In Portainer, connect `dondevolar-api` to the NPM network manually.
 
 Do not expose Postgres, Redis, MinIO, or Photon on the public internet.
@@ -122,13 +130,13 @@ current setup).
 1. Clone this repository on the server (or use Portainer “Git repository” deploy).
 2. **Stacks → Add stack** → compose path `deploy/home-server/docker-compose.yml`
 3. **Environment variables** (stack editor → *Environment variables* → *Advanced*):
-   paste from [`.env.example`](.env.example) and replace placeholders. You do **not**
+  paste from `[.env.example](.env.example)` and replace placeholders. You do **not**
    need a `.env` file on disk — Portainer injects these into Compose substitution.
    Required: `POSTGRES_PASSWORD`, `JWT_SECRET`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`.
    Postgres uses `POSTGRES_*` variables (password may contain `@`, `:`, etc.).
 4. Add `docker-compose.override.yml` (NPM network) and redeploy.
 5. First Photon start downloads ~3.9 GB Argentina index; geocoding works after
-   Photon logs `Listening on http://0.0.0.0:2322/`.
+  Photon logs `Listening on http://0.0.0.0:2322/`.
 
 **Git deploy note:** the stack builds from the **repository root** (`context: ../..`)
 so path dependencies (`packages/argentina_bounds`, `packages/zones_api_client`) resolve.
@@ -137,7 +145,7 @@ Rebuild `api` after updating that file in git.
 
 ## API port
 
-Default **`9080`** (avoids conflict with other services on `8080`). Change stack env
+Default `**9080`** (avoids conflict with other services on `8080`). Change stack env
 `API_PORT` (and NPM forward port):
 
 ```bash
@@ -149,7 +157,7 @@ Update the NPM **Forward Port** to match.
 
 ## Cron (zone feed + weather alerts)
 
-Header `x-cron-secret` must equal **`JWT_SECRET`** from the stack environment.
+Header `x-cron-secret` must equal `**JWT_SECRET`** from the stack environment.
 
 ```bash
 curl -sS -X POST https://dondevolar.aquiles.dev/v1/cron/zone_ingest \

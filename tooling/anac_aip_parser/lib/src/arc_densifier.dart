@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'aip_coord.dart';
 import 'aip_segment.dart';
+import 'shared_boundary.dart';
 
 /// Converts a parsed boundary (start coord + segment list) into a dense
 /// `[longitude, latitude]` polygon ring suitable for GeoJSON.
@@ -44,6 +45,25 @@ class ArcDensifier {
           ring.clear();
           ring.addAll(pts);
           current = seg.center;
+
+        case BoundaryFollowSegment():
+          final poly = SharedBoundary.byId(seg.boundaryId);
+          if (poly == null) {
+            // Unknown boundary — fall back to a straight chord.
+            ring.add([seg.to.lon, seg.to.lat]);
+            current = seg.to;
+            break;
+          }
+          final path = SharedBoundary.follow(current, seg.to, poly);
+          // Snap the entry vertex onto the boundary (removes the chord kink),
+          // then trace the polyline to the snapped exit.
+          if (path.isNotEmpty && ring.isNotEmpty) {
+            ring[ring.length - 1] = [path.first.lon, path.first.lat];
+            for (final p in path.skip(1)) {
+              ring.add([p.lon, p.lat]);
+            }
+            current = path.last;
+          }
       }
     }
 
@@ -70,7 +90,8 @@ class ArcDensifier {
     final startB = _bearing(c.lat, c.lon, from.lat, from.lon);
     final endB = _bearing(c.lat, c.lon, seg.to.lat, seg.to.lon);
 
-    final cw = seg.clockwise ?? _inferClockwise(startB, endB, seg.directionHint);
+    final cw =
+        seg.clockwise ?? _inferClockwise(startB, endB, seg.directionHint);
 
     return _arcPoints(c.lat, c.lon, radiusM, startB, endB, cw);
   }
@@ -100,8 +121,8 @@ class ArcDensifier {
     }
 
     // Guard against degenerate full-circle arcs (start ≈ end, large sweep).
-    final fullCircle = (startB - endB).abs() < 0.01 ||
-        (startB - endB).abs() > 359.9;
+    final fullCircle =
+        (startB - endB).abs() < 0.01 || (startB - endB).abs() > 359.9;
     if (fullCircle) target = cw ? startB + 360 : startB - 360;
 
     final step = cw ? arcStepDeg : -arcStepDeg;
@@ -124,8 +145,14 @@ class ArcDensifier {
     if (hint == null) return _shorterArcIsCw(startB, endB);
     final hintB = _hintBearing(hint);
     if (hintB < 0) return _shorterArcIsCw(startB, endB);
-    // Go the direction (CW or CCW) that passes through the hinted bearing.
-    return _cwPassesThrough(startB, endB, hintB);
+    // "hacia el <dir>" gives the initial direction of *travel* along the arc,
+    // not a compass bearing the arc sweeps through. Travelling clockwise
+    // (increasing bearing from the centre) the boundary point moves toward
+    // startB + 90°; anticlockwise it moves toward startB - 90°. Pick the sense
+    // whose travel direction is closest to the hinted compass direction.
+    final cwTravel = (startB + 90) % 360;
+    final ccwTravel = (startB - 90 + 360) % 360;
+    return _angularGap(cwTravel, hintB) <= _angularGap(ccwTravel, hintB);
   }
 
   static bool _shorterArcIsCw(double startB, double endB) {
@@ -133,14 +160,10 @@ class ArcDensifier {
     return cw <= 180;
   }
 
-  /// Returns true if going CW from [startB] to [endB] passes through [through].
-  static bool _cwPassesThrough(double startB, double endB, double through) {
-    final s = startB % 360;
-    var e = endB % 360;
-    var t = through % 360;
-    if (e <= s) e += 360;
-    if (t <= s) t += 360;
-    return t <= e;
+  /// Smallest absolute angle (degrees, 0-180) between bearings [a] and [b].
+  static double _angularGap(double a, double b) {
+    final d = (a - b).abs() % 360;
+    return d > 180 ? 360 - d : d;
   }
 
   static double _hintBearing(String hint) {
@@ -175,7 +198,8 @@ class ArcDensifier {
     final lat2R = lat2 * _deg2rad;
     final dLonR = (lon2 - lon1) * _deg2rad;
     final y = math.sin(dLonR) * math.cos(lat2R);
-    final x = math.cos(lat1R) * math.sin(lat2R) -
+    final x =
+        math.cos(lat1R) * math.sin(lat2R) -
         math.sin(lat1R) * math.cos(lat2R) * math.cos(dLonR);
     return (math.atan2(y, x) * _rad2deg + 360) % 360;
   }
@@ -196,7 +220,8 @@ class ArcDensifier {
       math.sin(lat1R) * math.cos(d) +
           math.cos(lat1R) * math.sin(d) * math.cos(brng),
     );
-    final lon2 = lon1R +
+    final lon2 =
+        lon1R +
         math.atan2(
           math.sin(brng) * math.sin(d) * math.cos(lat1R),
           math.cos(d) - math.sin(lat1R) * math.sin(lat2),
