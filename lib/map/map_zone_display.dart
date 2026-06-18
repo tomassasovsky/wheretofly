@@ -14,9 +14,13 @@ abstract final class MapZoneDisplay {
   // footprints so the map stays readable; everything else is drawn.
   static const wideZoomMinRadiusMeters = 2000;
 
-  /// Temporary: draw only OpenAIP airspaces on the map
-  /// (compare with openaip.net).
-  static const openAipOnly = true;
+  /// Altitude ceiling (m AGL) for the render filter: the highest altitude any
+  /// drone permit plans to. Zones floored above this never constrain a drone,
+  /// so they are not drawn. Using the broadest drone ceiling guarantees the map
+  /// never hides a zone an assessment (which clamps lower per permission) would
+  /// still flag.
+  static const altitudeCeilingMetersAgl =
+      AltitudeRange.maxPlanningAltitudeMetersAgl;
 
   static bool isOpenAipZone(FlyZone zone) => zone.source == ZoneSource.openaip;
 
@@ -37,7 +41,15 @@ abstract final class MapZoneDisplay {
     required double zoom,
     Set<String> highlightIds = const {},
   }) {
-    var visible = openAipOnly ? zones.where(isOpenAipZone).toList() : zones;
+    // Drop zones whose floor is above every drone ceiling; keep highlighted
+    // zones and unknown-floor zones (unknown is never treated as high).
+    var visible = zones
+        .where(
+          (z) =>
+              highlightIds.contains(z.id) ||
+              z.constrainsAltitudeBelow(altitudeCeilingMetersAgl),
+        )
+        .toList();
     if (bounds != null) {
       visible = visible.where((z) => _intersectsBounds(z, bounds)).toList();
     }
@@ -101,7 +113,6 @@ abstract final class MapZoneDisplay {
     required bool highlighted,
     double? zoom,
   }) {
-    if (openAipOnly && isOpenAipZone(zone)) return true;
     if (highlighted) return true;
     if (zoom != null && _isWideZoom(zoom) && isMadhelAerodrome(zone)) {
       return true;
@@ -122,7 +133,6 @@ abstract final class MapZoneDisplay {
     double? zoom,
   }) {
     if (!shouldFill(zone, highlighted: highlighted, zoom: zoom)) return 0;
-    if (openAipOnly && isOpenAipZone(zone)) return isDark ? 0.20 : 0.14;
     if (highlighted) return isDark ? 0.28 : 0.18;
     if (zoom != null && _isWideZoom(zoom) && isMadhelAerodrome(zone)) {
       return 0.11;

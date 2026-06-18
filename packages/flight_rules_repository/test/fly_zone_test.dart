@@ -3,6 +3,51 @@ import 'package:latlong2/latlong.dart';
 import 'package:test/test.dart';
 
 void main() {
+  group('FlyZone.constrainsAltitudeBelow', () {
+    FlyZone zone({
+      double? lowerAgl,
+      double? lowerMsl,
+    }) =>
+        FlyZone(
+          id: 'z',
+          name: 'Zone',
+          category: ZoneCategory.controlledAirspace,
+          center: const LatLng(-34.6, -58.4),
+          radiusMeters: 5000,
+          permissionsThatAllowFlight: const {},
+          details: '',
+          lowerLimitMetersAgl: lowerAgl,
+          lowerLimitMetersMsl: lowerMsl,
+        );
+
+    test('true when the zone has no vertical limits (unknown is not high)', () {
+      expect(zone().constrainsAltitudeBelow(122), isTrue);
+    });
+
+    test('false when the AGL floor is above the ceiling', () {
+      expect(zone(lowerAgl: 2000).constrainsAltitudeBelow(500), isFalse);
+    });
+
+    test('true when the AGL floor is below the ceiling', () {
+      expect(zone(lowerAgl: 100).constrainsAltitudeBelow(500), isTrue);
+    });
+
+    test('false for an FL045 MSL floor at sea level', () {
+      expect(zone(lowerMsl: 1372).constrainsAltitudeBelow(500), isFalse);
+    });
+
+    test('true for an MSL floor once ground elevation is accounted for', () {
+      // Floor 1372 m MSL over 1300 m terrain is only 72 m AGL.
+      expect(
+        zone(lowerMsl: 1372).constrainsAltitudeBelow(
+          500,
+          groundElevationMslMeters: 1300,
+        ),
+        isTrue,
+      );
+    });
+  });
+
   group('FlyZone.contains', () {
     test('falls back to circle when no boundary', () {
       const zone = FlyZone(
