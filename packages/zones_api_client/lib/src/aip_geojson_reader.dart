@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:zones_api_client/src/models/zone_data.dart';
 import 'package:zones_api_client/src/text_encoding.dart';
+import 'package:zones_api_client/src/zone_source_ids.dart';
 
 /// Reads ANAC AIP zone polygons produced by `tooling/anac_aip_parser`.
 class AipGeoJsonReader {
@@ -56,6 +57,7 @@ class AipGeoJsonReader {
       upperLimitMetersAgl: _d(props['upperLimitMetersAgl']),
       lowerLimitMetersMsl: _d(props['lowerLimitMetersMsl']),
       upperLimitMetersMsl: _d(props['upperLimitMetersMsl']),
+      source: ZoneSourceIds.aip,
     );
   }
 

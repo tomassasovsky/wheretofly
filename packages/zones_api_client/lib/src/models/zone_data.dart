@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:zones_api_client/src/zone_source_ids.dart';
 
 /// Raw data-transfer object for a flight-restriction zone.
 ///
@@ -20,6 +21,10 @@ class ZoneData extends Equatable {
     this.upperLimitMetersAgl,
     this.lowerLimitMetersMsl,
     this.upperLimitMetersMsl,
+    this.source = ZoneSourceIds.bundled,
+    this.confirmedBy,
+    this.activeFrom,
+    this.activeTo,
   });
 
   final String id;
@@ -55,6 +60,24 @@ class ZoneData extends Equatable {
   final double? lowerLimitMetersMsl;
   final double? upperLimitMetersMsl;
 
+  /// Provenance: the id of the source this zone's geometry originates from
+  /// (see [ZoneSourceIds]). Defaults to [ZoneSourceIds.bundled]; every live
+  /// source mapper sets it explicitly.
+  final String source;
+
+  /// Optional id of a second source that confirms this zone's identity or
+  /// restriction (e.g. OpenAIP geometry confirmed by ANAC AIP). `null` when the
+  /// zone is single-sourced.
+  final String? confirmedBy;
+
+  /// Start of the validity window (UTC), for time-bounded NOTAM zones. `null`
+  /// for permanent zones or an open-ended start.
+  final DateTime? activeFrom;
+
+  /// End of the validity window (UTC), for time-bounded NOTAM zones. `null` for
+  /// permanent zones or an open-ended end.
+  final DateTime? activeTo;
+
   bool get hasVerticalLimits =>
       lowerLimitMetersAgl != null ||
       upperLimitMetersAgl != null ||
@@ -76,5 +99,9 @@ class ZoneData extends Equatable {
         upperLimitMetersAgl,
         lowerLimitMetersMsl,
         upperLimitMetersMsl,
+        source,
+        confirmedBy,
+        activeFrom,
+        activeTo,
       ];
 }

@@ -121,6 +121,86 @@ void main() {
     verify(() => storage.write('zone_feed_etag', '"v1"')).called(1);
   });
 
+  test('parses explicit source, confirmedBy, and validity window', () async {
+    final geojson = jsonEncode({
+      'type': 'FeatureCollection',
+      'features': [
+        {
+          'type': 'Feature',
+          'properties': {
+            'id': 'notam_z1',
+            'name': 'Temporary',
+            'categoryId': 'restricted',
+            'radiusMeters': 1000,
+            'allowedPermissionIds': <String>[],
+            'details': 'x',
+            'source': 'openaip',
+            'confirmedBy': 'aip',
+            'activeFrom': '2026-06-18T15:00:00-03:00',
+            'activeTo': '2026-06-18T21:00:00-03:00',
+          },
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [-58.4, -34.6],
+          },
+        },
+      ],
+    });
+
+    when(
+      () => httpClient.get(any(), headers: any(named: 'headers')),
+    ).thenAnswer((_) async => http.Response(geojson, 200));
+
+    final client = BackendZonesApiClient(
+      baseUrl: Uri.parse('http://localhost:8080'),
+      storage: storage,
+      httpClient: httpClient,
+    );
+
+    final zone = (await client.fetchZones()).single;
+    expect(zone.source, 'openaip');
+    expect(zone.confirmedBy, 'aip');
+    expect(zone.activeFrom, DateTime.utc(2026, 6, 18, 18));
+    expect(zone.activeTo, DateTime.utc(2026, 6, 19));
+  });
+
+  test('falls back to the id prefix when source is absent', () async {
+    final geojson = jsonEncode({
+      'type': 'FeatureCollection',
+      'features': [
+        {
+          'type': 'Feature',
+          'properties': {
+            'id': 'openaip_legacy',
+            'name': 'Legacy',
+            'categoryId': 'restricted',
+            'radiusMeters': 1000,
+            'allowedPermissionIds': <String>[],
+            'details': 'x',
+          },
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [-58.4, -34.6],
+          },
+        },
+      ],
+    });
+
+    when(
+      () => httpClient.get(any(), headers: any(named: 'headers')),
+    ).thenAnswer((_) async => http.Response(geojson, 200));
+
+    final client = BackendZonesApiClient(
+      baseUrl: Uri.parse('http://localhost:8080'),
+      storage: storage,
+      httpClient: httpClient,
+    );
+
+    final zone = (await client.fetchZones()).single;
+    expect(zone.source, 'openaip');
+    expect(zone.activeFrom, isNull);
+  });
+
   test('parses Polygon geometry into the boundary ring', () async {
     final geojson = jsonEncode({
       'type': 'FeatureCollection',

@@ -128,6 +128,7 @@ class _GeoJsonFeatureParser {
     final center = _parseCenter(geometry, props, polygon);
     if (center == null) return null;
     final (lat, lon) = center;
+    final id = (props['id'] ?? feature['id'] ?? '').toString();
 
     final permissions = (props['allowedPermissionIds'] as List?)
             ?.map((e) => e.toString())
@@ -135,7 +136,7 @@ class _GeoJsonFeatureParser {
         const <String>{};
 
     return ZoneData(
-      id: (props['id'] ?? feature['id'] ?? '').toString(),
+      id: id,
       name: (props['name'] ?? '').toString(),
       categoryId: (props['categoryId'] ?? 'restricted').toString(),
       latitude: lat,
@@ -148,6 +149,10 @@ class _GeoJsonFeatureParser {
       upperLimitMetersAgl: _optionalDouble(props['upperLimitMetersAgl']),
       lowerLimitMetersMsl: _optionalDouble(props['lowerLimitMetersMsl']),
       upperLimitMetersMsl: _optionalDouble(props['upperLimitMetersMsl']),
+      source: (props['source'] as String?) ?? ZoneSourceIds.fromIdPrefix(id),
+      confirmedBy: props['confirmedBy'] as String?,
+      activeFrom: parseUtcDateTime(props['activeFrom']),
+      activeTo: parseUtcDateTime(props['activeTo']),
     );
   }
 

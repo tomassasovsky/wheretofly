@@ -48,6 +48,7 @@ void main() {
       radiusMeters: 2500,
       permissionsThatAllowFlight: {PermissionLevel.authorizedCommercial},
       details: 'test',
+      source: ZoneSource.madhel,
     );
 
     test('hides MADHEL aerodromes while openAipOnly is enabled', () {
@@ -93,6 +94,7 @@ void main() {
       ],
       permissionsThatAllowFlight: {PermissionLevel.authorizedCommercial},
       details: 'test',
+      source: ZoneSource.openaip,
     );
 
     test('keeps all OpenAIP polygon zones when culling circles', () {
@@ -108,6 +110,7 @@ void main() {
             PermissionLevel.authorizedCommercial,
           },
           details: 'test',
+          source: ZoneSource.madhel,
         ),
       )..add(openAipPolygon);
 
@@ -133,6 +136,7 @@ void main() {
             PermissionLevel.authorizedCommercial,
           },
           details: 'test',
+          source: ZoneSource.openaip,
         ),
       )..addAll([openAipPolygon, madhelAerodrome]);
 

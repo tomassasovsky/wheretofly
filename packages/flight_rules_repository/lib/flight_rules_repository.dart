@@ -8,3 +8,4 @@ export 'src/models/flight_modality.dart';
 export 'src/models/fly_zone.dart';
 export 'src/models/permission_level.dart';
 export 'src/models/zone_category.dart';
+export 'src/models/zone_source.dart';

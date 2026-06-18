@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:equatable/equatable.dart';
 import 'package:flight_rules_repository/src/models/permission_level.dart';
 import 'package:flight_rules_repository/src/models/zone_category.dart';
+import 'package:flight_rules_repository/src/models/zone_source.dart';
 import 'package:latlong2/latlong.dart';
 
 /// Domain model: a geofenced area with a flight restriction. The footprint is
@@ -22,6 +23,10 @@ class FlyZone extends Equatable {
     this.upperLimitMetersAgl,
     this.lowerLimitMetersMsl,
     this.upperLimitMetersMsl,
+    this.source = ZoneSource.bundled,
+    this.confirmedBy,
+    this.activeFrom,
+    this.activeTo,
   });
 
   final String id;
@@ -50,6 +55,22 @@ class FlyZone extends Equatable {
   final double? lowerLimitMetersMsl;
   final double? upperLimitMetersMsl;
 
+  /// Where this zone's geometry originates. Defaults to [ZoneSource.bundled];
+  /// the repository sets it from `ZoneData.source`.
+  final ZoneSource source;
+
+  /// A second source confirming this zone's identity/restriction (e.g. OpenAIP
+  /// geometry confirmed by ANAC AIP), or `null` when single-sourced.
+  final ZoneSource? confirmedBy;
+
+  /// Start of the validity window (UTC) for time-bounded NOTAM zones, or `null`
+  /// for permanent zones / an open-ended start.
+  final DateTime? activeFrom;
+
+  /// End of the validity window (UTC) for time-bounded NOTAM zones, or `null`
+  /// for permanent zones / an open-ended end.
+  final DateTime? activeTo;
+
   bool get hasVerticalLimits =>
       lowerLimitMetersAgl != null ||
       upperLimitMetersAgl != null ||
@@ -77,8 +98,8 @@ class FlyZone extends Equatable {
       final yi = ring[i].latitude;
       final xj = ring[j].longitude;
       final yj = ring[j].latitude;
-      final intersects = (yi > y) != (yj > y) &&
-          x < (xj - xi) * (y - yi) / (yj - yi) + xi;
+      final intersects =
+          (yi > y) != (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
       if (intersects) inside = !inside;
     }
     return inside;
@@ -160,5 +181,9 @@ class FlyZone extends Equatable {
         upperLimitMetersAgl,
         lowerLimitMetersMsl,
         upperLimitMetersMsl,
+        source,
+        confirmedBy,
+        activeFrom,
+        activeTo,
       ];
 }

@@ -4,6 +4,7 @@ import 'package:flight_rules_repository/src/models/flight_modality.dart';
 import 'package:flight_rules_repository/src/models/fly_zone.dart';
 import 'package:flight_rules_repository/src/models/permission_level.dart';
 import 'package:flight_rules_repository/src/models/zone_category.dart';
+import 'package:flight_rules_repository/src/models/zone_source.dart';
 import 'package:flight_rules_repository/src/zone_deduplicator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:zones_api_client/zones_api_client.dart';
@@ -152,5 +153,11 @@ class FlightRulesRepository {
         upperLimitMetersAgl: data.upperLimitMetersAgl,
         lowerLimitMetersMsl: data.lowerLimitMetersMsl,
         upperLimitMetersMsl: data.upperLimitMetersMsl,
+        source: ZoneSource.fromId(data.source),
+        confirmedBy: data.confirmedBy == null
+            ? null
+            : ZoneSource.fromId(data.confirmedBy),
+        activeFrom: data.activeFrom,
+        activeTo: data.activeTo,
       );
 }

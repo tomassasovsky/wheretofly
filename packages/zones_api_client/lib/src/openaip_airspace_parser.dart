@@ -4,6 +4,7 @@ import 'package:zones_api_client/src/models/zone_data.dart';
 import 'package:zones_api_client/src/openaip_altitude_parser.dart';
 import 'package:zones_api_client/src/text_encoding.dart';
 import 'package:zones_api_client/src/zone_permission_ids.dart';
+import 'package:zones_api_client/src/zone_source_ids.dart';
 
 /// Shared parsing for OpenAIP airspace records (REST API items and export
 /// GeoJSON features).
@@ -69,6 +70,7 @@ abstract final class OpenAipAirspaceParser {
       upperLimitMetersAgl: altitude.upperMetersAgl,
       lowerLimitMetersMsl: altitude.lowerMetersMsl,
       upperLimitMetersMsl: altitude.upperMetersMsl,
+      source: ZoneSourceIds.openaip,
     );
   }
 

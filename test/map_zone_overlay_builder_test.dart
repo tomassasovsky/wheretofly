@@ -15,6 +15,7 @@ void main() {
       radiusMeters: 5000,
       permissionsThatAllowFlight: {},
       details: 'test',
+      source: ZoneSource.openaip,
     );
 
     test('selectedPoint is null when no point selected', () {

@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:zones_api_client/src/models/zone_data.dart';
 import 'package:zones_api_client/src/text_encoding.dart';
+import 'package:zones_api_client/src/zone_source_ids.dart';
+import 'package:zones_api_client/src/zone_time.dart';
 import 'package:zones_api_client/src/zones_feed_client.dart';
 
 /// Thrown when the remote zones feed cannot be fetched or parsed.
@@ -83,6 +85,7 @@ class RemoteZonesApiClient implements ZonesFeedClient {
     final center = _parseCenter(geometry, props, polygon);
     if (center == null) return null;
     final (lat, lon) = center;
+    final id = (props['id'] ?? feature['id'] ?? '').toString();
 
     final permissions = (props['allowedPermissionIds'] as List?)
             ?.map((e) => e.toString())
@@ -90,7 +93,7 @@ class RemoteZonesApiClient implements ZonesFeedClient {
         const <String>{};
 
     return ZoneData(
-      id: (props['id'] ?? feature['id'] ?? '').toString(),
+      id: id,
       name: repairUtf8Text((props['name'] ?? '').toString()),
       categoryId: (props['categoryId'] ?? 'restricted').toString(),
       latitude: lat,
@@ -103,6 +106,10 @@ class RemoteZonesApiClient implements ZonesFeedClient {
       upperLimitMetersAgl: _optionalDouble(props['upperLimitMetersAgl']),
       lowerLimitMetersMsl: _optionalDouble(props['lowerLimitMetersMsl']),
       upperLimitMetersMsl: _optionalDouble(props['upperLimitMetersMsl']),
+      source: (props['source'] as String?) ?? ZoneSourceIds.fromIdPrefix(id),
+      confirmedBy: props['confirmedBy'] as String?,
+      activeFrom: parseUtcDateTime(props['activeFrom']),
+      activeTo: parseUtcDateTime(props['activeTo']),
     );
   }
 

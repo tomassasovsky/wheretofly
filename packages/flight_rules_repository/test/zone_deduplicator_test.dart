@@ -2,6 +2,7 @@ import 'package:flight_rules_repository/src/zone_deduplicator.dart';
 import 'package:test/test.dart';
 import 'package:zones_api_client/src/models/zone_data.dart';
 import 'package:zones_api_client/src/zone_permission_ids.dart';
+import 'package:zones_api_client/src/zone_source_ids.dart';
 
 void main() {
   group('ZoneDeduplicator', () {
@@ -34,7 +35,7 @@ void main() {
       );
     });
 
-    test('collapses duplicate ids and prefers higher-priority source', () {
+    test('collapses duplicate ids, last write wins on a source tie', () {
       const bundled = ZoneData(
         id: 'madhel_AER',
         name: 'Bundled Aeroparque',
@@ -44,6 +45,7 @@ void main() {
         radiusMeters: 9000,
         allowedPermissionIds: ZonePermissionIds.controlledAirspace,
         details: 'bundled',
+        source: ZoneSourceIds.madhel,
       );
       const live = ZoneData(
         id: 'madhel_AER',
@@ -54,11 +56,116 @@ void main() {
         radiusMeters: 9000,
         allowedPermissionIds: ZonePermissionIds.controlledAirspace,
         details: 'live',
+        source: ZoneSourceIds.madhel,
       );
 
       final deduped = ZoneDeduplicator.dedupe([bundled, live]);
       expect(deduped, hasLength(1));
       expect(deduped.single.name, 'Live Aeroparque');
+    });
+
+    test('collapses by source priority regardless of insertion order', () {
+      const openaip = ZoneData(
+        id: 'z1',
+        name: 'OpenAIP geometry',
+        categoryId: 'restricted',
+        latitude: -34.6,
+        longitude: -58.4,
+        radiusMeters: 5000,
+        allowedPermissionIds: ZonePermissionIds.controlledAirspace,
+        details: 'openaip',
+        source: ZoneSourceIds.openaip,
+      );
+      const madhel = ZoneData(
+        id: 'z1',
+        name: 'MADHEL circle',
+        categoryId: 'restricted',
+        latitude: -34.6,
+        longitude: -58.4,
+        radiusMeters: 2500,
+        allowedPermissionIds: ZonePermissionIds.controlledAirspace,
+        details: 'madhel',
+        source: ZoneSourceIds.madhel,
+      );
+
+      // OpenAIP (priority 40) outranks MADHEL (10) whichever is inserted last.
+      expect(
+        ZoneDeduplicator.dedupe([madhel, openaip]).single.name,
+        'OpenAIP geometry',
+      );
+      expect(
+        ZoneDeduplicator.dedupe([openaip, madhel]).single.name,
+        'OpenAIP geometry',
+      );
+    });
+
+    test('OpenAIP geometry outranks an AIP record on the same id', () {
+      const openaip = ZoneData(
+        id: 'z2',
+        name: 'OpenAIP geometry',
+        categoryId: 'restricted',
+        latitude: -34.6,
+        longitude: -58.4,
+        radiusMeters: 5000,
+        allowedPermissionIds: ZonePermissionIds.controlledAirspace,
+        details: 'openaip',
+        source: ZoneSourceIds.openaip,
+      );
+      const aip = ZoneData(
+        id: 'z2',
+        name: 'AIP record',
+        categoryId: 'restricted',
+        latitude: -34.6,
+        longitude: -58.4,
+        radiusMeters: 5000,
+        allowedPermissionIds: ZonePermissionIds.controlledAirspace,
+        details: 'aip',
+        source: ZoneSourceIds.aip,
+      );
+
+      // AIP (35) outranks bundled but yields to OpenAIP geometry (40).
+      expect(
+        ZoneDeduplicator.dedupe([openaip, aip]).single.name,
+        'OpenAIP geometry',
+      );
+      expect(
+        ZoneDeduplicator.dedupe([aip, openaip]).single.name,
+        'OpenAIP geometry',
+      );
+    });
+
+    test('an active NOTAM outranks every permanent source on the same id', () {
+      const aip = ZoneData(
+        id: 'z3',
+        name: 'Permanent AIP',
+        categoryId: 'restricted',
+        latitude: -34.6,
+        longitude: -58.4,
+        radiusMeters: 5000,
+        allowedPermissionIds: ZonePermissionIds.controlledAirspace,
+        details: 'aip',
+        source: ZoneSourceIds.aip,
+      );
+      const notam = ZoneData(
+        id: 'z3',
+        name: 'Temporary NOTAM',
+        categoryId: 'restricted',
+        latitude: -34.6,
+        longitude: -58.4,
+        radiusMeters: 5000,
+        allowedPermissionIds: ZonePermissionIds.none,
+        details: 'notam',
+        source: ZoneSourceIds.notam,
+      );
+
+      expect(
+        ZoneDeduplicator.dedupe([aip, notam]).single.name,
+        'Temporary NOTAM',
+      );
+      expect(
+        ZoneDeduplicator.dedupe([notam, aip]).single.name,
+        'Temporary NOTAM',
+      );
     });
 
     test('keeps prohibited zone inside a larger restricted area', () {
