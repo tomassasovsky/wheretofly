@@ -13,6 +13,7 @@ export 'src/openaip_zones_api_client.dart';
 export 'src/remote_zones_api_client.dart';
 export 'src/text_encoding.dart';
 export 'src/zone_identity.dart';
+export 'src/zone_merger.dart';
 export 'src/zone_source_ids.dart';
 export 'src/zone_time.dart';
 export 'src/zones_feed_client.dart';

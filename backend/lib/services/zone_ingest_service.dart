@@ -40,8 +40,9 @@ class ZoneIngestService {
   final String? aipZonesPath;
 
   /// Merges bundled, MADHEL, OpenAIP, and AIP-parsed zones, writes
-  /// [outputPath], bumps version. AIP zones take highest precedence so their
-  /// exact polygon boundaries win over any same-id circle approximations.
+  /// [outputPath], bumps version. Same-id duplicates collapse with AIP polygons
+  /// winning over circle approximations; cross-source AIP+OpenAIP pairs then
+  /// collapse via [ZoneMerger] to OpenAIP geometry with AIP authority.
   Future<String> ingestAndPublish({required String outputPath}) async {
     final bundledZones = await _bundled.fetchZones();
     final liveMadhel = await _safeMadhel();
@@ -59,7 +60,11 @@ class ZoneIngestService {
       merged[zone.id] = zone;
     }
 
-    final features = merged.values.map(_toFeature).toList();
+    // Collapse cross-source AIP+OpenAIP pairs (same rule as the runtime
+    // repository) so each real zone is published once with OpenAIP geometry
+    // and AIP authority.
+    final collapsed = ZoneMerger.merge(merged.values.toList());
+    final features = collapsed.map(_toFeature).toList();
 
     final version = DateTime.now().toUtc().toIso8601String();
     final collection = {
