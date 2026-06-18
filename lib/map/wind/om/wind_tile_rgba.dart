@@ -27,7 +27,7 @@ Uint8List buildWindTileRgba({
     lats[i] = math.atan(0.5 * (math.exp(n) - math.exp(-n))) * 180 / math.pi;
     // tile2lon inlined with precomputed scale.
     final nx = tileRead.x + (i + 0.5) / tileSize;
-    lons[i] = ((nx / scale * 360 + 360) % 360) - 180;
+    lons[i] = nx / scale * 360 - 180;
   }
 
   final rgba = Uint8List(tileSize * tileSize * 4);

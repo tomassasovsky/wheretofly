@@ -7,6 +7,10 @@
   "verdictAllowed": "You can fly here",
   "verdictAllowedWithPermission": "You can fly with your permit",
   "verdictNotAllowed": "You can't fly here",
+  "verdictUncertain": "Verify manually",
+  "uncertainReasonsHeading": "Why we're not sure",
+  "reasonZoneDataUnavailable": "Zone data is unavailable — we can't confirm this point is clear.",
+  "socialVerdictUnavailable": "Verdict unavailable",
   "permissionConsidered": "Permission considered: {label} ({category})",
   "@permissionConsidered": {
     "placeholders": { "label": {}, "category": {} }
@@ -261,7 +265,7 @@
   "flightDataSourcesZoneMadhelTitle": "ANAC MADHEL",
   "flightDataSourcesZoneMadhelBody": "Aerodromes and heliports from Argentina’s MADHEL open data (ANAC). Shown as protection circles around published coordinates. The app also keeps a bundled snapshot for offline use.",
   "flightDataSourcesZoneOpenAipTitle": "OpenAIP",
-  "flightDataSourcesZoneOpenAipBody": "Community-maintained airspace (controlled areas, restrictions, etc.) from OpenAIP country exports, merged on the server when configured. Zones are approximated as circles for performance.",
+  "flightDataSourcesZoneOpenAipBody": "Community-maintained airspace (controlled areas, restrictions, TMAs, etc.) from OpenAIP's daily Argentina export, merged on the server. Airspaces are drawn as exact polygons on the map.",
   "flightDataSourcesZoneCuratedTitle": "Curated zones",
   "flightDataSourcesZoneCuratedBody": "Additional circles for parks, critical infrastructure, and other areas maintained in the project’s zone packages and baseline feed. These are not live government polygons.",
   "flightDataSourcesZoneFeedTitle": "Dónde Volar zone feed",

@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 double tile2lon(double x, int z) {
-  return (((x / math.pow(2, z)) * 360 + 360) % 360) - 180;
+  return x / math.pow(2, z) * 360 - 180;
 }
 
 double tile2lat(double y, int z) {

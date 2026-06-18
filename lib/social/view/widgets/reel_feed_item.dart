@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:where_to_fly/app/router/app_routes.dart';
 import 'package:where_to_fly/l10n/gen/app_localizations.dart';
+import 'package:where_to_fly/social/verdict_snapshot.dart';
 import 'package:where_to_fly/social/view/widgets/post_media_view.dart';
 
 /// TikTok-style full-screen reel with media, caption overlay, and actions.
@@ -15,21 +16,15 @@ class ReelFeedItem extends StatelessWidget {
   final SocialPost post;
   final bool isActive;
 
+  // Surface-specific chip color (brighter palette for the full-bleed reel). The
+  // token vocabulary and labels are shared via [VerdictSnapshot].
   Color _verdictColor(String? verdict) {
     return switch (verdict) {
       'allowed' => const Color(0xFF66BB6A),
-      'allowedWithPermission' => const Color(0xFFFFCA28),
-      'notAllowed' => const Color(0xFFEF5350),
+      'conditional' || 'allowedWithPermission' => const Color(0xFFFFCA28),
+      'blocked' || 'notAllowed' => const Color(0xFFEF5350),
+      'uncertain' => const Color(0xFF90A4AE),
       _ => Colors.white,
-    };
-  }
-
-  String _verdictLabel(AppLocalizations l10n, String? verdict) {
-    return switch (verdict) {
-      'allowed' => l10n.verdictAllowed,
-      'allowedWithPermission' => l10n.verdictAllowedWithPermission,
-      'notAllowed' => l10n.verdictNotAllowed,
-      _ => l10n.socialShareFlyCheck,
     };
   }
 
@@ -39,7 +34,7 @@ class ReelFeedItem extends StatelessWidget {
     final media = post.primaryMedia;
     if (media == null) return const SizedBox.shrink();
 
-    final verdict = post.verdictSnapshot?['verdict']?.toString();
+    final verdict = VerdictSnapshot.token(post.verdictSnapshot);
     final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Stack(
@@ -136,7 +131,7 @@ class ReelFeedItem extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    _verdictLabel(l10n, verdict),
+                    VerdictSnapshot.label(l10n, verdict),
                     style: TextStyle(
                       color: _verdictColor(verdict),
                       fontWeight: FontWeight.w600,

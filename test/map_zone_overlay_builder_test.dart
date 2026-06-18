@@ -8,7 +8,7 @@ import 'package:where_to_fly/map/map_zone_overlay_builder.dart';
 void main() {
   group('MapZoneOverlayBuilder', () {
     const zone = FlyZone(
-      id: 'prohibited-1',
+      id: 'openaip_prohibited_1',
       name: 'Restricted',
       category: ZoneCategory.prohibited,
       center: LatLng(-34.61, -58.36),
@@ -32,13 +32,13 @@ void main() {
     });
 
     test('circles includes highlighted assessment zones', () {
-      const assessment = FlightAssessment(
+      final assessment = FlightAssessment(
         permission: PermissionLevel.recreational,
         modality: FlightModality.vlos,
-        verdict: FlightVerdict.notAllowed,
+        status: VerdictStatus.blocked,
         modalityAllowed: true,
         altitudeRange: AltitudeRange.openCategoryDefault,
-        zones: [zone],
+        zones: const [zone],
       );
       final state = MapState(
         zones: const [zone],

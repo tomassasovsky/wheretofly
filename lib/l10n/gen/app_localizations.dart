@@ -140,6 +140,30 @@ abstract class AppLocalizations {
   /// **'You can\'t fly here'**
   String get verdictNotAllowed;
 
+  /// No description provided for @verdictUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify manually'**
+  String get verdictUncertain;
+
+  /// No description provided for @uncertainReasonsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Why we\'re not sure'**
+  String get uncertainReasonsHeading;
+
+  /// No description provided for @reasonZoneDataUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone data is unavailable — we can\'t confirm this point is clear.'**
+  String get reasonZoneDataUnavailable;
+
+  /// No description provided for @socialVerdictUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Verdict unavailable'**
+  String get socialVerdictUnavailable;
+
   /// No description provided for @permissionConsidered.
   ///
   /// In en, this message translates to:
@@ -1391,7 +1415,7 @@ abstract class AppLocalizations {
   /// No description provided for @flightDataSourcesZoneOpenAipBody.
   ///
   /// In en, this message translates to:
-  /// **'Community-maintained airspace (controlled areas, restrictions, etc.) from OpenAIP country exports, merged on the server when configured. Zones are approximated as circles for performance.'**
+  /// **'Community-maintained airspace (controlled areas, restrictions, TMAs, etc.) from OpenAIP\'s daily Argentina export, merged on the server. Airspaces are drawn as exact polygons on the map.'**
   String get flightDataSourcesZoneOpenAipBody;
 
   /// No description provided for @flightDataSourcesZoneCuratedTitle.

@@ -78,6 +78,7 @@ class MapCubit extends Cubit<MapState> {
           state.permission,
           state.modality,
           altitudeRange: state.altitudeRange,
+          zones: state.zones,
         ),
       ),
     );
@@ -111,6 +112,7 @@ class MapCubit extends Cubit<MapState> {
               next.permission,
               next.modality,
               altitudeRange: next.altitudeRange,
+              zones: next.zones,
             ),
     );
   }

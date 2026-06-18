@@ -120,4 +120,58 @@ void main() {
     expect(zones.first.id, 'zone_1');
     verify(() => storage.write('zone_feed_etag', '"v1"')).called(1);
   });
+
+  test('parses Polygon geometry into the boundary ring', () async {
+    final geojson = jsonEncode({
+      'type': 'FeatureCollection',
+      'features': [
+        {
+          'type': 'Feature',
+          'properties': {
+            'id': 'ctr_1',
+            'name': 'CTR',
+            'categoryId': 'controlled_airspace',
+            'latitude': -34.5,
+            'longitude': -58.5,
+            'radiusMeters': 8000,
+            'allowedPermissionIds': ['controlled'],
+            'details': 'x',
+          },
+          'geometry': {
+            'type': 'Polygon',
+            'coordinates': [
+              [
+                [-59.0, -34.0],
+                [-58.0, -34.0],
+                [-58.0, -35.0],
+                [-59.0, -35.0],
+                [-59.0, -34.0],
+              ],
+            ],
+          },
+        },
+      ],
+    });
+
+    when(
+      () => httpClient.get(any(), headers: any(named: 'headers')),
+    ).thenAnswer((_) async => http.Response(geojson, 200));
+
+    final client = BackendZonesApiClient(
+      baseUrl: Uri.parse('http://localhost:8080'),
+      storage: storage,
+      httpClient: httpClient,
+    );
+
+    final zones = await client.fetchZones();
+    expect(zones, hasLength(1));
+    final zone = zones.first;
+    // Centre comes from properties, not the geometry.
+    expect(zone.latitude, -34.5);
+    expect(zone.longitude, -58.5);
+    // Ring preserved as [lon, lat] pairs, including the closing vertex.
+    expect(zone.polygon, isNotNull);
+    expect(zone.polygon!.first, [-59.0, -34.0]);
+    expect(zone.polygon!.length, 5);
+  });
 }

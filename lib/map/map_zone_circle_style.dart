@@ -11,6 +11,7 @@ class MapZoneCircleStyle {
     required this.fillColor,
     required this.strokeColor,
     required this.strokeWidth,
+    this.boundary,
   });
 
   final String id;
@@ -19,4 +20,8 @@ class MapZoneCircleStyle {
   final Color fillColor;
   final Color strokeColor;
   final int strokeWidth;
+
+  /// True boundary ring when the zone has real geometry; rendered as a polygon
+  /// instead of a circle. `null` zones fall back to [center]/[radiusMeters].
+  final List<LatLng>? boundary;
 }

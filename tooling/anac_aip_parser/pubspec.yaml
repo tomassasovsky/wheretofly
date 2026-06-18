@@ -1,0 +1,15 @@
+name: anac_aip_parser
+description: Parses ANAC Argentina AIP boundary text into GeoJSON polygons.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.0.0
+
+executables:
+  anac_aip_parser:
+    script: generate_zones

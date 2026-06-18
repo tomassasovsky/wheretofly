@@ -24,6 +24,7 @@ class AppConfig {
     required this.googleClientId,
     required this.appleClientId,
     required this.zoneFeedPath,
+    this.aipZonesPath,
     this.port = 8080,
     this.accessTokenTtl = const Duration(minutes: 15),
     this.refreshTokenTtl = const Duration(days: 30),
@@ -86,6 +87,7 @@ class AppConfig {
       googleClientId: env['GOOGLE_CLIENT_ID'] ?? '',
       appleClientId: env['APPLE_CLIENT_ID'] ?? '',
       zoneFeedPath: env['ZONE_FEED_PATH'] ?? 'data/zones.geojson',
+      aipZonesPath: env['AIP_ZONES_PATH'] ?? 'data/anac_aip_zones.geojson',
       port: int.tryParse(env['PORT'] ?? '') ?? 8080,
     );
   }
@@ -149,6 +151,10 @@ class AppConfig {
 
   /// Filesystem path to the published zone GeoJSON feed.
   final String zoneFeedPath;
+
+  /// Filesystem path to the pre-generated ANAC AIP zones GeoJSON (from
+  /// `tooling/anac_aip_parser`). `null` or missing file → silently skipped.
+  final String? aipZonesPath;
 
   /// HTTP port the Dart Frog server binds to.
   final int port;

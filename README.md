@@ -119,7 +119,7 @@ Published by the **Dónde Volar backend** (`GET /v1/zones`), merging:
 
 1. **Bundled baseline** — parks, prohibited/restricted government sites, critical infrastructure.
 2. **ANAC MADHEL** — `https://datos.anac.gob.ar/madhel/api/v2/airports/`.
-3. **OpenAIP** — controlled/restricted airspace when `OPENAIP_API_KEY` is set on the backend.
+3. **OpenAIP** — controlled/restricted airspace polygons from the daily Argentina export (no API key required). When `OPENAIP_API_KEY` is set, the live REST API is tried first.
 
 The app caches zones locally; unreachable backend + empty cache falls back to a bundled emergency snapshot.
 
@@ -130,9 +130,13 @@ curl -X POST http://localhost:8080/v1/zones/ingest \
 
 # Optional static mirror
 dart run packages/zones_api_client/tool/export_geojson.dart > feed/zones.geojson
+
+# Compare OpenAIP footprints against ANAC AIP polygons (when available)
+dart run packages/zones_api_client/tool/validate_openaip_zones.dart \
+  --aip backend/data/anac_aip_zones.geojson
 ```
 
-Zones are modelled as circles (MADHEL centres + category default radii). **Always confirm current ANAC NOTAMs/AIP before flying.**
+OpenAIP airspaces render as exact polygons; MADHEL aerodromes and bundled landmarks remain circular. **Always confirm current ANAC NOTAMs/AIP before flying.**
 
 ## Regulatory sources
 

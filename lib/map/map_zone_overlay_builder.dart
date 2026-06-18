@@ -50,6 +50,7 @@ abstract final class MapZoneOverlayBuilder {
           zone: zone,
           zoom: zoom,
         ),
+        boundary: zone.boundary,
       );
     }).toList();
   }

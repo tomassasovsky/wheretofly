@@ -92,6 +92,32 @@ void main() {
     );
 
     blocTest<MapCubit, MapState>(
+      'checkPoint on empty-zone repository emits uncertain assessment',
+      build: () => MapCubit(FlightRulesRepository.fromZoneData([])),
+      act: (cubit) => cubit.checkPoint(const LatLng(-34.6080, -58.3702)),
+      verify: (cubit) {
+        final assessment = cubit.state.assessment!;
+        expect(assessment.status, VerdictStatus.uncertain);
+        expect(assessment.reasons, contains(VerdictReason.zoneDataUnavailable));
+        // Conservative legacy mapping — never a silent false "allowed".
+        expect(assessment.verdict, FlightVerdict.notAllowed);
+      },
+    );
+
+    blocTest<MapCubit, MapState>(
+      'updateZones to an empty list yields uncertain for the selected point',
+      build: () => MapCubit(repository),
+      act: (cubit) => cubit
+        ..checkPoint(const LatLng(-38, -50))
+        ..updateZones([]),
+      verify: (cubit) {
+        final assessment = cubit.state.assessment!;
+        expect(assessment.status, VerdictStatus.uncertain);
+        expect(assessment.reasons, contains(VerdictReason.zoneDataUnavailable));
+      },
+    );
+
+    blocTest<MapCubit, MapState>(
       'selectAltitudeRange persists and re-evaluates',
       build: () => MapCubit(repository, settingsRepository: settingsRepository),
       act: (cubit) => cubit

@@ -31,6 +31,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verdictNotAllowed => 'You can\'t fly here';
 
   @override
+  String get verdictUncertain => 'Verify manually';
+
+  @override
+  String get uncertainReasonsHeading => 'Why we\'re not sure';
+
+  @override
+  String get reasonZoneDataUnavailable =>
+      'Zone data is unavailable — we can\'t confirm this point is clear.';
+
+  @override
+  String get socialVerdictUnavailable => 'Verdict unavailable';
+
+  @override
   String permissionConsidered(Object label, Object category) {
     return 'Permission considered: $label ($category)';
   }
@@ -738,7 +751,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flightDataSourcesZoneOpenAipBody =>
-      'Community-maintained airspace (controlled areas, restrictions, etc.) from OpenAIP country exports, merged on the server when configured. Zones are approximated as circles for performance.';
+      'Community-maintained airspace (controlled areas, restrictions, TMAs, etc.) from OpenAIP\'s daily Argentina export, merged on the server. Airspaces are drawn as exact polygons on the map.';
 
   @override
   String get flightDataSourcesZoneCuratedTitle => 'Curated zones';

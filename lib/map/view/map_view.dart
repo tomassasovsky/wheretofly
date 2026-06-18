@@ -12,6 +12,7 @@ import 'package:where_to_fly/map/map_camera_controller.dart';
 import 'package:where_to_fly/map/map_initializer.dart';
 import 'package:where_to_fly/map/map_layout.dart';
 import 'package:where_to_fly/map/map_overlay_policy.dart';
+import 'package:where_to_fly/map/map_zone_display.dart';
 import 'package:where_to_fly/map/map_zone_sync.dart';
 import 'package:where_to_fly/map/view/map_search_listeners.dart';
 import 'package:where_to_fly/map/view/widgets/config_bar.dart';
@@ -45,6 +46,10 @@ class _MapViewState extends State<MapView> {
     _searchFocusNode.addListener(_onSearchFocusChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      if (MapZoneDisplay.openAipOnly) {
+        unawaited(syncMapZonesFromBackend(context));
+        return;
+      }
       final authState = context.read<AuthCubit>().state;
       if (authState.isAuthenticated) {
         unawaited(syncMapZonesFromBackend(context));

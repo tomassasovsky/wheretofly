@@ -36,6 +36,36 @@ class OpenAipAltitudeLimits {
       upperMetersAgl != null ||
       lowerMetersMsl != null ||
       upperMetersMsl != null;
+
+  /// Human-readable vertical limits for zone detail UI.
+  String describe() {
+    final lower = _describeBound(
+      aglMeters: lowerMetersAgl,
+      mslMeters: lowerMetersMsl,
+      fallback: 'Surface',
+    );
+    final upper = _describeBound(
+      aglMeters: upperMetersAgl,
+      mslMeters: upperMetersMsl,
+      fallback: 'Unlimited',
+    );
+    return '$lower – $upper';
+  }
+
+  static String _describeBound({
+    required double? aglMeters,
+    required double? mslMeters,
+    required String fallback,
+  }) {
+    if (aglMeters != null) {
+      if (aglMeters == 0) return 'GND';
+      return '${_formatFeet(aglMeters)} ft AGL';
+    }
+    if (mslMeters != null) return '${_formatFeet(mslMeters)} ft MSL';
+    return fallback;
+  }
+
+  static int _formatFeet(double meters) => (meters / 0.3048).round();
 }
 
 class _ParsedLimit {
@@ -57,11 +87,10 @@ _ParsedLimit? _parseLimit(Object? raw) {
   if (value is String) return _parseLimitString(value, map);
   if (value == null) return null;
 
-  final unit = (map['unit'] ?? map['uom'] ?? 'FT').toString().toUpperCase();
-  final datum =
-      (map['referenceDatum'] ?? map['reference'] ?? map['datum'] ?? 'GND')
-          .toString()
-          .toUpperCase();
+  final unit = _normalizeUnit(map['unit'] ?? map['uom'] ?? 'FT');
+  final datum = _normalizeDatum(
+    map['referenceDatum'] ?? map['reference'] ?? map['datum'] ?? 'GND',
+  );
 
   final meters = value is num
       ? _toMeters(value.toDouble(), unit)
@@ -88,12 +117,33 @@ _ParsedLimit? _parseLimitString(
   if (match == null) return null;
 
   final value = double.parse(match.group(1)!);
-  final unit =
-      (match.group(2) ?? parent?['unit']?.toString() ?? 'FT').toUpperCase();
-  final datum =
-      (match.group(3) ?? parent?['referenceDatum']?.toString() ?? 'GND')
-          .toUpperCase();
+  final unit = _normalizeUnit(match.group(2) ?? parent?['unit'] ?? 'FT');
+  final datum = _normalizeDatum(
+    match.group(3) ?? parent?['referenceDatum'] ?? 'GND',
+  );
   return _limitForDatum(_toMeters(value, unit), datum);
+}
+
+String _normalizeUnit(Object? raw) {
+  if (raw is num) {
+    return switch (raw.toInt()) {
+      0 => 'M',
+      1 => 'FT',
+      _ => raw.toString().toUpperCase(),
+    };
+  }
+  return raw.toString().toUpperCase();
+}
+
+String _normalizeDatum(Object? raw) {
+  if (raw is num) {
+    return switch (raw.toInt()) {
+      0 => 'GND',
+      1 => 'MSL',
+      _ => raw.toString().toUpperCase(),
+    };
+  }
+  return raw.toString().toUpperCase();
 }
 
 _ParsedLimit _limitForDatum(double meters, String datum) {
