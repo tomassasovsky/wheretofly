@@ -146,6 +146,21 @@ class FlyZone extends Equatable {
   ) =>
       aMin <= bMax && bMin <= aMax;
 
+  /// Whether this zone can constrain a flight anywhere between the ground and
+  /// [ceilingMetersAgl]. A zone whose **known floor is above the ceiling**
+  /// never reaches drone altitudes and returns `false`; a zone with unknown
+  /// vertical limits returns `true` (unknown is not treated as high). Mirrors
+  /// [overlapsAltitudeRange] over the range `[0, ceiling]`.
+  bool constrainsAltitudeBelow(
+    double ceilingMetersAgl, {
+    double groundElevationMslMeters = 0,
+  }) =>
+      overlapsAltitudeRange(
+        0,
+        ceilingMetersAgl,
+        groundElevationMslMeters: groundElevationMslMeters,
+      );
+
   /// Whether a pilot holding [permission] may fly inside this zone.
   bool allowsFlightFor(PermissionLevel permission) =>
       permissionsThatAllowFlight.contains(permission);

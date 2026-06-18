@@ -15,6 +15,17 @@ void main() {
       details: 'test',
     );
 
+    const madhelAerodrome = FlyZone(
+      id: 'madhel_ACM',
+      name: 'La Cura Malal',
+      category: ZoneCategory.restricted,
+      center: LatLng(-34.08, -60.14),
+      radiusMeters: 2500,
+      permissionsThatAllowFlight: {PermissionLevel.authorizedCommercial},
+      details: 'test',
+      source: ZoneSource.madhel,
+    );
+
     test('uses stroke-only styling for controlled airspace by default', () {
       expect(
         MapZoneDisplay.shouldFill(smallControlled, highlighted: false),
@@ -30,34 +41,13 @@ void main() {
       );
     });
 
-    test('hides non-OpenAIP zones while openAipOnly is enabled', () {
+    test('draws zones of any source (no source-based debug filter)', () {
       final visible = MapZoneDisplay.visibleZones(
-        zones: [smallControlled],
+        zones: [smallControlled, madhelAerodrome],
         bounds: null,
         zoom: 14,
-        highlightIds: {'ctr'},
       );
-      expect(visible, isEmpty);
-    });
-
-    const madhelAerodrome = FlyZone(
-      id: 'madhel_ACM',
-      name: 'La Cura Malal',
-      category: ZoneCategory.restricted,
-      center: LatLng(-34.08, -60.14),
-      radiusMeters: 2500,
-      permissionsThatAllowFlight: {PermissionLevel.authorizedCommercial},
-      details: 'test',
-      source: ZoneSource.madhel,
-    );
-
-    test('hides MADHEL aerodromes while openAipOnly is enabled', () {
-      final visible = MapZoneDisplay.visibleZones(
-        zones: [madhelAerodrome],
-        bounds: null,
-        zoom: 8,
-      );
-      expect(visible, isEmpty);
+      expect(visible.map((z) => z.id), containsAll(['ctr', 'madhel_ACM']));
     });
 
     test('fills MADHEL aerodromes at wide zoom for visibility', () {
@@ -80,6 +70,75 @@ void main() {
       );
     });
 
+    group('altitude relevance filter', () {
+      const highFloorAgl = FlyZone(
+        id: 'airway',
+        name: 'High airway',
+        category: ZoneCategory.controlledAirspace,
+        center: LatLng(-34.61, -58.36),
+        radiusMeters: 5000,
+        permissionsThatAllowFlight: {PermissionLevel.authorizedCommercial},
+        details: 'test',
+        lowerLimitMetersAgl: 2000,
+      );
+
+      const fl045Msl = FlyZone(
+        id: 'fl045',
+        name: 'FL045 floor',
+        category: ZoneCategory.controlledAirspace,
+        center: LatLng(-34.61, -58.36),
+        radiusMeters: 5000,
+        permissionsThatAllowFlight: {PermissionLevel.authorizedCommercial},
+        details: 'test',
+        lowerLimitMetersMsl: 1372,
+      );
+
+      const lowFloor = FlyZone(
+        id: 'low',
+        name: 'Low floor',
+        category: ZoneCategory.controlledAirspace,
+        center: LatLng(-34.61, -58.36),
+        radiusMeters: 5000,
+        permissionsThatAllowFlight: {PermissionLevel.authorizedCommercial},
+        details: 'test',
+        lowerLimitMetersAgl: 100,
+      );
+
+      List<FlyZone> visible(
+        List<FlyZone> zones, {
+        Set<String> highlightIds = const {},
+      }) =>
+          MapZoneDisplay.visibleZones(
+            zones: zones,
+            bounds: null,
+            zoom: 14,
+            highlightIds: highlightIds,
+          );
+
+      test('hides a zone whose known AGL floor is above the ceiling', () {
+        expect(visible([highFloorAgl]), isEmpty);
+      });
+
+      test('hides an FL045-floored (MSL) zone at sea level', () {
+        expect(visible([fl045Msl]), isEmpty);
+      });
+
+      test('shows a zone with unknown vertical limits', () {
+        expect(visible([smallControlled]).map((z) => z.id), contains('ctr'));
+      });
+
+      test('shows a zone floored below the ceiling', () {
+        expect(visible([lowFloor]).map((z) => z.id), contains('low'));
+      });
+
+      test('shows a high-floor zone when it is highlighted', () {
+        expect(
+          visible([highFloorAgl], highlightIds: {'airway'}).map((z) => z.id),
+          contains('airway'),
+        );
+      });
+    });
+
     const openAipPolygon = FlyZone(
       id: 'openaip_eze_ctr',
       name: 'EZE CTR',
@@ -97,7 +156,7 @@ void main() {
       source: ZoneSource.openaip,
     );
 
-    test('keeps all OpenAIP polygon zones when culling circles', () {
+    test('keeps every OpenAIP polygon when culling circles', () {
       final zones = List.generate(
         350,
         (i) => FlyZone(
@@ -120,10 +179,12 @@ void main() {
         zoom: 14,
       );
 
-      expect(visible, [openAipPolygon]);
+      // Polygon is exempt from the circle cap; circles are capped to maxCircles.
+      expect(visible.first, openAipPolygon);
+      expect(visible, hasLength(MapZoneDisplay.maxCircles + 1));
     });
 
-    test('caps OpenAIP circles but keeps every OpenAIP polygon', () {
+    test('caps circles but keeps every OpenAIP polygon', () {
       final zones = List.generate(
         350,
         (i) => FlyZone(
@@ -147,8 +208,7 @@ void main() {
       );
 
       expect(visible.any((z) => z.id == 'openaip_eze_ctr'), isTrue);
-      expect(visible.any((z) => z.id == 'madhel_ACM'), isFalse);
-      expect(visible, hasLength(301));
+      expect(visible, hasLength(MapZoneDisplay.maxCircles + 1));
     });
   });
 }
